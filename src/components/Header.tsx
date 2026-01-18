@@ -5,12 +5,13 @@ const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const navLinks = [
-    { label: "Home", href: "#home" },
-    { label: "About", href: "#about" },
-    { label: "Programs", href: "#programs" },
-    { label: "Impact", href: "#impact" },
-    { label: "Get Involved", href: "#get-involved" },
-    { label: "Contact", href: "#contact" },
+    { label: "Home", href: "/" },
+    { label: "About", href: "/#about" },
+    { label: "Programs", href: "/#programs" },
+    { label: "Events", href: "/events" },
+    { label: "News", href: "/news" },
+    { label: "Gallery", href: "/gallery" },
+    { label: "Contact", href: "/#contact" },
   ];
 
   return (
@@ -42,7 +43,7 @@ const Header = () => {
 
           {/* Donate Button */}
           <a
-            href="#donate"
+            href="/donate"
             className="hidden md:inline-flex btn-secondary text-sm"
           >
             Donate Now
