@@ -4,6 +4,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import AnimatedSection from "@/components/AnimatedSection";
 import { NewsArticle } from "@/components/NewsCard";
+import { sanitizeHTML, createShareUrl } from "@/lib/sanitize";
 
 const allNews: NewsArticle[] = [
   {
@@ -136,7 +137,8 @@ const NewsArticlePage = () => {
     });
   };
 
-  const shareUrl = window.location.href;
+  // Use safe URL encoding for share links
+  const currentUrl = window.location.href;
 
   return (
     <div className="min-h-screen bg-background">
@@ -186,10 +188,10 @@ const NewsArticlePage = () => {
                 </div>
               </div>
 
-              {/* Article Body */}
+              {/* Article Body - Sanitized HTML */}
               <div
                 className="prose prose-lg max-w-none prose-headings:font-display prose-headings:text-foreground prose-p:text-muted-foreground prose-a:text-primary prose-strong:text-foreground prose-li:text-muted-foreground"
-                dangerouslySetInnerHTML={{ __html: article.content }}
+                dangerouslySetInnerHTML={{ __html: sanitizeHTML(article.content) }}
               />
 
               {/* Share Section */}
@@ -201,26 +203,29 @@ const NewsArticlePage = () => {
                   </div>
                   <div className="flex items-center gap-3">
                     <a
-                      href={`https://www.facebook.com/sharer/sharer.php?u=${shareUrl}`}
+                      href={createShareUrl("facebook", currentUrl)}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="p-2 rounded-full bg-muted hover:bg-primary hover:text-primary-foreground transition-colors"
+                      aria-label="Share on Facebook"
                     >
                       <Facebook size={18} />
                     </a>
                     <a
-                      href={`https://twitter.com/intent/tweet?url=${shareUrl}&text=${article.title}`}
+                      href={createShareUrl("twitter", currentUrl, article.title)}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="p-2 rounded-full bg-muted hover:bg-primary hover:text-primary-foreground transition-colors"
+                      aria-label="Share on Twitter"
                     >
                       <Twitter size={18} />
                     </a>
                     <a
-                      href={`https://www.linkedin.com/shareArticle?mini=true&url=${shareUrl}&title=${article.title}`}
+                      href={createShareUrl("linkedin", currentUrl, article.title)}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="p-2 rounded-full bg-muted hover:bg-primary hover:text-primary-foreground transition-colors"
+                      aria-label="Share on LinkedIn"
                     >
                       <Linkedin size={18} />
                     </a>

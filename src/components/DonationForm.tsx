@@ -1,6 +1,9 @@
 import { useState } from "react";
 import { Heart, Gift, Users, Check } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { z } from "zod";
+import { useFormSecurity } from "@/hooks/useFormSecurity";
+import { toast } from "sonner";
 
 const donationAmounts = [
   { amount: 500, label: "₹500", impact: "Provide school supplies for 1 child" },
@@ -15,6 +18,34 @@ const donationTypes = [
   { id: "monthly", label: "Monthly", icon: Gift },
   { id: "sponsor", label: "Sponsor", icon: Users },
 ];
+
+// Validation schemas
+const step2Schema = z.object({
+  name: z
+    .string()
+    .trim()
+    .min(2, "Name must be at least 2 characters")
+    .max(100, "Name must be less than 100 characters"),
+  email: z
+    .string()
+    .trim()
+    .email("Please enter a valid email address")
+    .max(255, "Email must be less than 255 characters"),
+  phone: z
+    .string()
+    .trim()
+    .refine(
+      (val) => val === "" || /^[6-9]\d{9}$/.test(val),
+      "Please enter a valid 10-digit phone number"
+    ),
+  panNumber: z
+    .string()
+    .trim()
+    .refine(
+      (val) => val === "" || /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/.test(val),
+      "Please enter a valid PAN number (e.g., ABCDE1234F)"
+    ),
+});
 
 const DonationForm = () => {
   const [donationType, setDonationType] = useState("one-time");
@@ -31,17 +62,67 @@ const DonationForm = () => {
     dedicateTo: "",
     dedicateMessage: "",
   });
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
+  const {
+    honeypotProps,
+    validateSubmission,
+    recordSubmission,
+    isCooldown,
+    cooldownRemaining,
+  } = useFormSecurity({ minSubmitTimeSeconds: 3, cooldownMs: 60000 });
 
   const currentAmount = customAmount ? parseInt(customAmount) : selectedAmount;
 
+  const validateStep2 = (): boolean => {
+    const result = step2Schema.safeParse(formData);
+    if (!result.success) {
+      const fieldErrors: Record<string, string> = {};
+      result.error.errors.forEach((err) => {
+        const field = err.path[0] as string;
+        fieldErrors[field] = err.message;
+      });
+      setErrors(fieldErrors);
+      return false;
+    }
+    setErrors({});
+    return true;
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (step === 2) {
+      if (!validateStep2()) return;
+    }
+    
     if (step < 3) {
       setStep(step + 1);
     } else {
-      // Handle payment integration
-      console.log("Processing donation:", { donationType, amount: currentAmount, ...formData });
-      alert("Thank you for your generous donation! Our team will contact you shortly to complete the payment process.");
+      // Final submission security check
+      if (!validateSubmission()) {
+        toast.error("Please wait before submitting again");
+        return;
+      }
+
+      // Amount validation
+      if (!currentAmount || currentAmount < 100) {
+        toast.error("Minimum donation amount is ₹100");
+        return;
+      }
+
+      recordSubmission();
+      toast.success(
+        "Thank you for your generous donation! Our team will contact you shortly to complete the payment process."
+      );
+    }
+  };
+
+  const handleChange = (field: string, value: string | boolean) => {
+    setFormData({ ...formData, [field]: value });
+    // Clear error when user starts typing
+    if (errors[field]) {
+      setErrors({ ...errors, [field]: "" });
     }
   };
 
@@ -72,6 +153,9 @@ const DonationForm = () => {
       </div>
 
       <form onSubmit={handleSubmit}>
+        {/* Honeypot field */}
+        <input {...honeypotProps} />
+
         <AnimatePresence mode="wait">
           {step === 1 && (
             <motion.div
@@ -143,12 +227,18 @@ const DonationForm = () => {
                   </span>
                   <input
                     type="number"
-                    placeholder="Enter custom amount"
+                    placeholder="Enter custom amount (min ₹100)"
                     value={customAmount}
                     onChange={(e) => {
-                      setCustomAmount(e.target.value);
-                      setSelectedAmount(null);
+                      const value = e.target.value;
+                      // Limit input
+                      if (value.length <= 8) {
+                        setCustomAmount(value);
+                        setSelectedAmount(null);
+                      }
                     }}
+                    min={100}
+                    max={10000000}
                     className="w-full pl-8 pr-4 py-3 rounded-xl border-2 border-border focus:border-primary focus:outline-none transition-colors"
                   />
                 </div>
@@ -172,10 +262,16 @@ const DonationForm = () => {
                   <input
                     type="text"
                     required
+                    maxLength={100}
                     value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    className="w-full px-4 py-3 rounded-xl border-2 border-border focus:border-primary focus:outline-none transition-colors"
+                    onChange={(e) => handleChange("name", e.target.value)}
+                    className={`w-full px-4 py-3 rounded-xl border-2 focus:border-primary focus:outline-none transition-colors ${
+                      errors.name ? "border-destructive" : "border-border"
+                    }`}
                   />
+                  {errors.name && (
+                    <p className="mt-1 text-sm text-destructive">{errors.name}</p>
+                  )}
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-foreground mb-2">
@@ -184,10 +280,16 @@ const DonationForm = () => {
                   <input
                     type="email"
                     required
+                    maxLength={255}
                     value={formData.email}
-                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    className="w-full px-4 py-3 rounded-xl border-2 border-border focus:border-primary focus:outline-none transition-colors"
+                    onChange={(e) => handleChange("email", e.target.value)}
+                    className={`w-full px-4 py-3 rounded-xl border-2 focus:border-primary focus:outline-none transition-colors ${
+                      errors.email ? "border-destructive" : "border-border"
+                    }`}
                   />
+                  {errors.email && (
+                    <p className="mt-1 text-sm text-destructive">{errors.email}</p>
+                  )}
                 </div>
               </div>
               <div className="grid md:grid-cols-2 gap-4">
@@ -197,10 +299,20 @@ const DonationForm = () => {
                   </label>
                   <input
                     type="tel"
+                    maxLength={10}
                     value={formData.phone}
-                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                    className="w-full px-4 py-3 rounded-xl border-2 border-border focus:border-primary focus:outline-none transition-colors"
+                    onChange={(e) => {
+                      const value = e.target.value.replace(/\D/g, "");
+                      handleChange("phone", value);
+                    }}
+                    placeholder="10-digit number"
+                    className={`w-full px-4 py-3 rounded-xl border-2 focus:border-primary focus:outline-none transition-colors ${
+                      errors.phone ? "border-destructive" : "border-border"
+                    }`}
                   />
+                  {errors.phone && (
+                    <p className="mt-1 text-sm text-destructive">{errors.phone}</p>
+                  )}
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-foreground mb-2">
@@ -209,11 +321,16 @@ const DonationForm = () => {
                   <input
                     type="text"
                     value={formData.panNumber}
-                    onChange={(e) => setFormData({ ...formData, panNumber: e.target.value.toUpperCase() })}
+                    onChange={(e) => handleChange("panNumber", e.target.value.toUpperCase())}
                     maxLength={10}
                     placeholder="XXXXX0000X"
-                    className="w-full px-4 py-3 rounded-xl border-2 border-border focus:border-primary focus:outline-none transition-colors uppercase"
+                    className={`w-full px-4 py-3 rounded-xl border-2 focus:border-primary focus:outline-none transition-colors uppercase ${
+                      errors.panNumber ? "border-destructive" : "border-border"
+                    }`}
                   />
+                  {errors.panNumber && (
+                    <p className="mt-1 text-sm text-destructive">{errors.panNumber}</p>
+                  )}
                 </div>
               </div>
               <div className="flex items-center gap-3">
@@ -221,7 +338,7 @@ const DonationForm = () => {
                   type="checkbox"
                   id="anonymous"
                   checked={formData.anonymous}
-                  onChange={(e) => setFormData({ ...formData, anonymous: e.target.checked })}
+                  onChange={(e) => handleChange("anonymous", e.target.checked)}
                   className="w-5 h-5 rounded border-border text-primary focus:ring-primary"
                 />
                 <label htmlFor="anonymous" className="text-sm text-foreground">
@@ -246,9 +363,7 @@ const DonationForm = () => {
                     type="checkbox"
                     id="dedicate"
                     checked={formData.dedicateDonation}
-                    onChange={(e) =>
-                      setFormData({ ...formData, dedicateDonation: e.target.checked })
-                    }
+                    onChange={(e) => handleChange("dedicateDonation", e.target.checked)}
                     className="w-5 h-5 rounded border-border text-primary focus:ring-primary"
                   />
                   <label htmlFor="dedicate" className="text-sm font-medium text-foreground">
@@ -261,16 +376,16 @@ const DonationForm = () => {
                       type="text"
                       placeholder="In honor/memory of..."
                       value={formData.dedicateTo}
-                      onChange={(e) => setFormData({ ...formData, dedicateTo: e.target.value })}
+                      onChange={(e) => handleChange("dedicateTo", e.target.value)}
+                      maxLength={100}
                       className="w-full px-4 py-3 rounded-xl border-2 border-border focus:border-primary focus:outline-none transition-colors"
                     />
                     <textarea
                       placeholder="Optional message..."
                       value={formData.dedicateMessage}
-                      onChange={(e) =>
-                        setFormData({ ...formData, dedicateMessage: e.target.value })
-                      }
+                      onChange={(e) => handleChange("dedicateMessage", e.target.value)}
                       rows={3}
+                      maxLength={500}
                       className="w-full px-4 py-3 rounded-xl border-2 border-border focus:border-primary focus:outline-none transition-colors resize-none"
                     />
                   </div>
@@ -320,10 +435,14 @@ const DonationForm = () => {
           )}
           <button
             type="submit"
-            disabled={!currentAmount || currentAmount < 100}
+            disabled={!currentAmount || currentAmount < 100 || isCooldown}
             className="flex-1 btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {step === 3 ? "Complete Donation" : "Continue"}
+            {step === 3
+              ? isCooldown
+                ? `Please wait ${cooldownRemaining}s`
+                : "Complete Donation"
+              : "Continue"}
           </button>
         </div>
       </form>
