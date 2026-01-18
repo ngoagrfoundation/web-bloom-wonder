@@ -45,11 +45,11 @@ const Header = () => {
   };
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-sm border-b border-border">
+    <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md">
       <div className="container mx-auto px-4">
-        <div className="flex items-center justify-between h-16 md:h-20">
+        <div className="flex items-center justify-between h-18 md:h-20">
           {/* Logo */}
-          <Link to="/" className="flex items-center gap-2">
+          <Link to="/" className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center">
               <span className="text-primary-foreground font-display font-bold text-lg">A</span>
             </div>
@@ -59,23 +59,23 @@ const Header = () => {
           </Link>
 
           {/* Desktop Navigation */}
-          <nav className="hidden lg:flex items-center gap-6">
+          <nav className="hidden lg:flex items-center gap-8">
             {navLinks.map((link) =>
               link.dropdown ? (
                 <DropdownMenu key={link.label}>
-                  <DropdownMenuTrigger className="flex items-center gap-1 text-foreground/80 hover:text-primary transition-colors font-medium text-sm outline-none">
+                  <DropdownMenuTrigger className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-colors font-medium text-sm outline-none">
                     {link.label}
-                    <ChevronDown size={16} />
+                    <ChevronDown size={14} className="opacity-60" />
                   </DropdownMenuTrigger>
                   <DropdownMenuContent 
-                    className="bg-popover border border-border shadow-lg min-w-[220px] z-[60]"
-                    sideOffset={8}
+                    className="bg-popover border-0 shadow-lg min-w-[240px] z-[60] p-2"
+                    sideOffset={12}
                   >
                     {link.dropdown.map((item) => (
                       <DropdownMenuItem key={item.label} asChild>
                         <Link
                           to={item.href}
-                          className="cursor-pointer px-4 py-2 hover:bg-accent"
+                          className="cursor-pointer px-4 py-2.5 rounded-lg hover:bg-muted text-sm"
                         >
                           {item.label}
                         </Link>
@@ -87,7 +87,7 @@ const Header = () => {
                 <Link
                   key={link.label}
                   to={link.href}
-                  className="text-foreground/80 hover:text-primary transition-colors font-medium text-sm"
+                  className="text-muted-foreground hover:text-foreground transition-colors font-medium text-sm"
                 >
                   {link.label}
                 </Link>
@@ -98,14 +98,14 @@ const Header = () => {
           {/* Donate Button */}
           <Link
             to="/donate"
-            className="hidden lg:inline-flex btn-secondary text-sm"
+            className="hidden lg:inline-flex bg-primary text-primary-foreground hover:bg-primary/90 transition-colors px-5 py-2.5 rounded-lg font-medium text-sm"
           >
             Donate Now
           </Link>
 
           {/* Mobile Menu Button */}
           <button
-            className="lg:hidden p-2 text-foreground"
+            className="lg:hidden p-2 text-foreground hover:bg-muted rounded-lg transition-colors"
             onClick={() => setIsMenuOpen(!isMenuOpen)}
             aria-label="Toggle menu"
           >
@@ -115,30 +115,30 @@ const Header = () => {
 
         {/* Mobile Navigation */}
         {isMenuOpen && (
-          <nav className="lg:hidden py-4 border-t border-border animate-fade-in max-h-[70vh] overflow-y-auto">
-            <div className="flex flex-col gap-2">
+          <nav className="lg:hidden py-6 animate-fade-in max-h-[75vh] overflow-y-auto">
+            <div className="flex flex-col gap-1">
               {navLinks.map((link) =>
                 link.dropdown ? (
                   <div key={link.label}>
                     <button
                       onClick={() => toggleMobileDropdown(link.label)}
-                      className="flex items-center justify-between w-full py-2 text-foreground/80 hover:text-primary transition-colors font-medium"
+                      className="flex items-center justify-between w-full py-3 px-2 text-foreground hover:bg-muted rounded-lg transition-colors font-medium"
                     >
                       {link.label}
                       <ChevronDown
                         size={16}
-                        className={`transition-transform ${
+                        className={`transition-transform text-muted-foreground ${
                           openMobileDropdown === link.label ? "rotate-180" : ""
                         }`}
                       />
                     </button>
                     {openMobileDropdown === link.label && (
-                      <div className="pl-4 flex flex-col gap-2 mt-2 animate-fade-in">
+                      <div className="pl-4 flex flex-col gap-1 mt-1 animate-fade-in">
                         {link.dropdown.map((item) => (
                           <Link
                             key={item.label}
                             to={item.href}
-                            className="py-2 text-muted-foreground hover:text-primary transition-colors text-sm"
+                            className="py-2.5 px-3 text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg transition-colors text-sm"
                             onClick={() => setIsMenuOpen(false)}
                           >
                             {item.label}
@@ -151,7 +151,7 @@ const Header = () => {
                   <Link
                     key={link.label}
                     to={link.href}
-                    className="py-2 text-foreground/80 hover:text-primary transition-colors font-medium"
+                    className="py-3 px-2 text-foreground hover:bg-muted rounded-lg transition-colors font-medium"
                     onClick={() => setIsMenuOpen(false)}
                   >
                     {link.label}
@@ -160,7 +160,7 @@ const Header = () => {
               )}
               <Link
                 to="/donate"
-                className="btn-secondary text-center mt-4"
+                className="btn-primary text-center mt-4"
                 onClick={() => setIsMenuOpen(false)}
               >
                 Donate Now

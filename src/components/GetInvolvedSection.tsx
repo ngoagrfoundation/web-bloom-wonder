@@ -3,8 +3,9 @@ import {
   Users,
   GraduationCap,
   AlertTriangle,
-  DollarSign,
+  Heart,
 } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const involvementOptions = [
   {
@@ -40,65 +41,77 @@ const involvementOptions = [
     buttonHref: "#contact",
   },
   {
-    icon: DollarSign,
+    icon: Heart,
     title: "Donate",
     description:
       "Your contribution, no matter the size, creates real impact in communities.",
     buttonText: "Donate Now",
-    buttonHref: "#donate",
+    buttonHref: "/donate",
     featured: true,
   },
 ];
 
 const GetInvolvedSection = () => {
   return (
-    <section id="get-involved" className="py-20 section-cream">
+    <section id="get-involved" className="py-24 section-cream">
       <div className="container mx-auto px-4">
         {/* Section Header */}
         <div className="text-center mb-16">
           <h2 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-4">
             Get Involved
           </h2>
-          <p className="text-muted-foreground max-w-2xl mx-auto">
+          <p className="text-muted-foreground max-w-xl mx-auto">
             There are many ways to join our mission. Find the one that's right for you.
           </p>
         </div>
 
         {/* Options Grid */}
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl mx-auto">
-          {involvementOptions.map((option, index) => (
+          {involvementOptions.map((option) => (
             <div
               key={option.title}
               className={`card-elevated p-6 text-center ${
                 option.featured
-                  ? "lg:col-span-1 md:col-span-2 lg:col-span-1 border-2 border-secondary"
+                  ? "bg-primary text-primary-foreground"
                   : ""
               }`}
-              style={{ animationDelay: `${index * 0.1}s` }}
             >
               <div
-                className={`w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center ${
-                  option.featured ? "bg-secondary" : "bg-muted"
+                className={`w-14 h-14 rounded-full mx-auto mb-5 flex items-center justify-center ${
+                  option.featured ? "bg-primary-foreground/20" : "bg-muted"
                 }`}
               >
                 <option.icon
-                  className={`w-8 h-8 ${
-                    option.featured ? "text-secondary-foreground" : "text-primary"
+                  className={`w-6 h-6 ${
+                    option.featured ? "text-primary-foreground" : "text-primary"
                   }`}
                 />
               </div>
-              <h3 className="font-display text-xl font-semibold text-foreground mb-2">
+              <h3 className={`font-display text-xl font-semibold mb-2 ${
+                option.featured ? "text-primary-foreground" : "text-foreground"
+              }`}>
                 {option.title}
               </h3>
-              <p className="text-muted-foreground text-sm mb-4 leading-relaxed">
+              <p className={`text-sm mb-5 leading-relaxed ${
+                option.featured ? "text-primary-foreground/80" : "text-muted-foreground"
+              }`}>
                 {option.description}
               </p>
-              <a
-                href={option.buttonHref}
-                className={option.featured ? "btn-secondary inline-block" : "btn-outline inline-block text-sm"}
-              >
-                {option.buttonText}
-              </a>
+              {option.featured ? (
+                <Link
+                  to={option.buttonHref}
+                  className="inline-block bg-primary-foreground text-primary hover:bg-primary-foreground/90 transition-colors px-5 py-2.5 rounded-lg font-medium text-sm"
+                >
+                  {option.buttonText}
+                </Link>
+              ) : (
+                <a
+                  href={option.buttonHref}
+                  className="inline-block text-primary hover:text-primary/80 font-medium text-sm transition-colors"
+                >
+                  {option.buttonText} →
+                </a>
+              )}
             </div>
           ))}
         </div>

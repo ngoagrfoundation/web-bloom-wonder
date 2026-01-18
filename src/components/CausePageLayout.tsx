@@ -57,7 +57,7 @@ const CausePageLayout = ({
     <div className="min-h-screen">
       <Header />
       <main className="pt-20">
-        {/* Hero Section */}
+        {/* Hero Section - Cleaner */}
         <section className="relative h-[50vh] min-h-[400px]">
           <div className="absolute inset-0">
             <img
@@ -65,21 +65,21 @@ const CausePageLayout = ({
               alt={title}
               className="w-full h-full object-cover"
             />
-            <div className="absolute inset-0 bg-gradient-to-r from-foreground/80 to-foreground/40" />
+            <div className="absolute inset-0 bg-gradient-to-r from-foreground/70 to-foreground/30" />
           </div>
           <div className="relative container mx-auto px-4 h-full flex flex-col justify-center">
             <AnimatedSection animation="fadeUp">
               <Link
                 to="/#causes"
-                className="inline-flex items-center gap-2 text-primary-foreground/80 hover:text-primary-foreground mb-4 transition-colors"
+                className="inline-flex items-center gap-2 text-primary-foreground/70 hover:text-primary-foreground mb-6 transition-colors text-sm"
               >
-                <ArrowLeft size={20} />
+                <ArrowLeft size={18} />
                 Back to Causes
               </Link>
-              <h1 className="font-display text-4xl md:text-5xl font-bold text-primary-foreground mb-4">
+              <h1 className="font-display text-3xl md:text-4xl lg:text-5xl font-bold text-primary-foreground mb-4">
                 {title}
               </h1>
-              <p className="text-xl text-secondary font-medium">
+              <p className="text-lg text-secondary font-medium">
                 {urgentMessage}
               </p>
             </AnimatedSection>
@@ -87,11 +87,11 @@ const CausePageLayout = ({
         </section>
 
         {/* Main Content */}
-        <section className="py-16 bg-background">
+        <section className="py-20 bg-background">
           <div className="container mx-auto px-4">
             <div className="grid lg:grid-cols-3 gap-12">
               {/* Left Column - Story */}
-              <div className="lg:col-span-2 space-y-8">
+              <div className="lg:col-span-2 space-y-10">
                 <AnimatedSection animation="fadeUp">
                   <h2 className="font-display text-2xl font-bold text-foreground mb-4">
                     The Story
@@ -110,19 +110,19 @@ const CausePageLayout = ({
                   </p>
                 </AnimatedSection>
 
-                {/* Fund Usage */}
+                {/* Fund Usage - Cleaner */}
                 <AnimatedSection animation="fadeUp" delay={0.2}>
-                  <h2 className="font-display text-2xl font-bold text-foreground mb-4">
+                  <h2 className="font-display text-2xl font-bold text-foreground mb-6">
                     How Your Donation Helps
                   </h2>
-                  <div className="space-y-4">
+                  <div className="space-y-5">
                     {fundUsage.map((item, index) => (
                       <div key={index}>
-                        <div className="flex justify-between mb-2">
+                        <div className="flex justify-between mb-2 text-sm">
                           <span className="text-foreground font-medium">{item.item}</span>
                           <span className="text-muted-foreground">{item.percentage}%</span>
                         </div>
-                        <div className="h-2 bg-muted rounded-full overflow-hidden">
+                        <div className="h-1.5 bg-muted rounded-full overflow-hidden">
                           <motion.div
                             className="h-full bg-secondary rounded-full"
                             initial={{ width: 0 }}
@@ -139,7 +139,7 @@ const CausePageLayout = ({
                 {/* Gallery */}
                 {galleryImages.length > 0 && (
                   <AnimatedSection animation="fadeUp" delay={0.3}>
-                    <h2 className="font-display text-2xl font-bold text-foreground mb-4">
+                    <h2 className="font-display text-2xl font-bold text-foreground mb-6">
                       Gallery
                     </h2>
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
@@ -148,7 +148,7 @@ const CausePageLayout = ({
                           key={index}
                           src={img}
                           alt={`Gallery ${index + 1}`}
-                          className="w-full h-32 object-cover rounded-lg"
+                          className="w-full h-32 object-cover rounded-xl"
                         />
                       ))}
                     </div>
@@ -162,18 +162,18 @@ const CausePageLayout = ({
                   <div className="card-elevated p-6 sticky top-24">
                     {/* Progress */}
                     <div className="mb-6">
-                      <div className="flex justify-between items-end mb-2">
+                      <div className="flex justify-between items-end mb-3">
                         <div>
                           <span className="text-3xl font-display font-bold text-primary">
                             ₹{raised.toLocaleString()}
                           </span>
-                          <span className="text-muted-foreground"> raised</span>
+                          <span className="text-muted-foreground text-sm ml-1">raised</span>
                         </div>
-                        <span className="text-muted-foreground">
+                        <span className="text-muted-foreground text-sm">
                           of ₹{goal.toLocaleString()}
                         </span>
                       </div>
-                      <div className="h-3 bg-muted rounded-full overflow-hidden">
+                      <div className="h-2 bg-muted rounded-full overflow-hidden">
                         <motion.div
                           className="h-full bg-primary rounded-full"
                           initial={{ width: 0 }}
@@ -193,7 +193,7 @@ const CausePageLayout = ({
                         <Link
                           key={amount}
                           to={`/donate?amount=${amount}`}
-                          className="py-2 px-3 border border-border rounded-lg text-center hover:border-primary hover:text-primary transition-colors text-sm font-medium"
+                          className="py-2.5 px-3 border border-border rounded-lg text-center hover:border-primary hover:text-primary transition-colors text-sm font-medium"
                         >
                           ₹{amount}
                         </Link>
@@ -203,29 +203,29 @@ const CausePageLayout = ({
                     {/* Main Donate Button */}
                     <Link
                       to="/donate"
-                      className="btn-primary w-full flex items-center justify-center gap-2 mb-4"
+                      className="btn-primary w-full flex items-center justify-center gap-2 mb-3"
                     >
-                      <Heart size={20} />
+                      <Heart size={18} />
                       Donate Now
                     </Link>
 
                     {/* Share Button */}
                     <button
                       onClick={handleShare}
-                      className="btn-outline w-full flex items-center justify-center gap-2"
+                      className="w-full flex items-center justify-center gap-2 py-3 text-muted-foreground hover:text-foreground transition-colors text-sm font-medium"
                     >
-                      <Share2 size={20} />
+                      <Share2 size={16} />
                       Share This Cause
                     </button>
 
                     {/* Related Focus Area */}
                     <div className="mt-6 pt-6 border-t border-border">
-                      <p className="text-sm text-muted-foreground mb-2">Related Focus Area:</p>
+                      <p className="text-xs text-muted-foreground mb-2">Related Focus Area</p>
                       <Link
                         to={relatedFocusLink}
-                        className="text-primary hover:underline font-medium"
+                        className="text-primary hover:text-primary/80 font-medium text-sm transition-colors"
                       >
-                        {relatedFocus}
+                        {relatedFocus} →
                       </Link>
                     </div>
                   </div>
