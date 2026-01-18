@@ -44,21 +44,21 @@ const latestNews: NewsArticle[] = [
 
 const NewsSection = () => {
   return (
-    <section className="py-20 section-warm">
+    <section className="py-24 bg-background">
       <div className="container mx-auto px-4">
-        <AnimatedSection className="text-center mb-12">
-          <span className="text-secondary font-semibold text-sm uppercase tracking-wider">
+        <AnimatedSection className="text-center mb-14">
+          <span className="text-secondary font-medium text-sm uppercase tracking-wider">
             Latest Updates
           </span>
-          <h2 className="text-3xl md:text-4xl font-display font-bold text-foreground mt-2 mb-4">
+          <h2 className="text-3xl md:text-4xl font-display font-bold text-foreground mt-3 mb-4">
             News & Stories
           </h2>
-          <p className="text-muted-foreground max-w-2xl mx-auto">
+          <p className="text-muted-foreground max-w-xl mx-auto">
             Stay updated with our latest initiatives, success stories, and community impact.
           </p>
         </AnimatedSection>
 
-        <StaggerContainer className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
+        <StaggerContainer className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-14">
           {latestNews.map((article) => (
             <StaggerItem key={article.id}>
               <NewsCard article={article} />
@@ -69,7 +69,7 @@ const NewsSection = () => {
         <AnimatedSection className="text-center">
           <Link
             to="/news"
-            className="inline-flex items-center gap-2 btn-outline group"
+            className="inline-flex items-center gap-2 text-primary hover:text-primary/80 font-medium transition-colors group"
           >
             View All News
             <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ChevronLeft, ChevronRight, Quote } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 const testimonials = [
   {
@@ -34,65 +34,64 @@ const TestimonialsSection = () => {
   };
 
   return (
-    <section className="py-20 bg-background">
+    <section className="py-24 section-warm">
       <div className="container mx-auto px-4">
         {/* Section Header */}
-        <div className="text-center mb-16">
+        <div className="text-center mb-14">
           <h2 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-4">
             Voices of Change
           </h2>
-          <p className="text-muted-foreground max-w-2xl mx-auto">
+          <p className="text-muted-foreground max-w-xl mx-auto">
             Hear from the people whose lives have been touched by our programs.
           </p>
         </div>
 
-        {/* Testimonial Carousel */}
-        <div className="max-w-4xl mx-auto">
-          <div className="bg-card rounded-2xl p-8 md:p-12 shadow-xl relative">
-            {/* Quote Icon */}
-            <div className="absolute top-6 left-6 md:top-8 md:left-8">
-              <Quote className="w-12 h-12 text-secondary/30" />
-            </div>
-
-            {/* Testimonial Content */}
-            <div className="text-center pt-8">
-              <blockquote className="font-display text-lg md:text-xl text-foreground italic mb-8 leading-relaxed">
-                "{testimonials[currentIndex].quote}"
-              </blockquote>
-              <div>
-                <p className="font-semibold text-primary text-lg">
-                  {testimonials[currentIndex].name}
-                </p>
-                <p className="text-muted-foreground text-sm">
-                  {testimonials[currentIndex].role}
-                </p>
-              </div>
+        {/* Testimonial */}
+        <div className="max-w-3xl mx-auto">
+          <div className="text-center">
+            {/* Quote */}
+            <blockquote className="font-display text-xl md:text-2xl text-foreground italic mb-8 leading-relaxed">
+              "{testimonials[currentIndex].quote}"
+            </blockquote>
+            
+            {/* Author */}
+            <div className="mb-10">
+              <p className="font-semibold text-foreground text-lg">
+                {testimonials[currentIndex].name}
+              </p>
+              <p className="text-muted-foreground text-sm">
+                {testimonials[currentIndex].role}
+              </p>
             </div>
 
             {/* Navigation */}
-            <div className="flex justify-center gap-4 mt-8">
+            <div className="flex justify-center items-center gap-6">
               <button
                 onClick={prevTestimonial}
-                className="w-10 h-10 rounded-full border border-border flex items-center justify-center text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+                className="w-10 h-10 rounded-full flex items-center justify-center text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
                 aria-label="Previous testimonial"
               >
                 <ChevronLeft className="w-5 h-5" />
               </button>
+              
               <div className="flex items-center gap-2">
                 {testimonials.map((_, index) => (
                   <button
                     key={index}
                     onClick={() => setCurrentIndex(index)}
-                    className={`w-2 h-2 rounded-full transition-colors ${
-                      index === currentIndex ? "bg-primary" : "bg-border"
+                    className={`w-2 h-2 rounded-full transition-all ${
+                      index === currentIndex 
+                        ? "bg-primary w-6" 
+                        : "bg-border hover:bg-muted-foreground"
                     }`}
                     aria-label={`Go to testimonial ${index + 1}`}
                   />
                 ))}
               </div>
+              
               <button
                 onClick={nextTestimonial}
-                className="w-10 h-10 rounded-full border border-border flex items-center justify-center text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+                className="w-10 h-10 rounded-full flex items-center justify-center text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
                 aria-label="Next testimonial"
               >
                 <ChevronRight className="w-5 h-5" />

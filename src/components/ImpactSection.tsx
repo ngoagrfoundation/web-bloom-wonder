@@ -72,7 +72,7 @@ const ImpactSection = () => {
   }, []);
 
   return (
-    <section id="impact" className="py-20 section-warm" ref={sectionRef}>
+    <section id="impact" className="py-24 bg-background" ref={sectionRef}>
       <div className="container mx-auto px-4">
         {/* Section Header */}
         <div className="text-center mb-16">
@@ -85,26 +85,27 @@ const ImpactSection = () => {
           </p>
         </div>
 
-        {/* Stats Grid */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
-          {stats.map((stat, index) => (
-            <div
-              key={stat.label}
-              className="stat-card"
-              style={{ animationDelay: `${index * 0.1}s` }}
-            >
-              <div className="font-display text-4xl md:text-5xl font-bold text-primary mb-2">
-                <AnimatedCounter
-                  value={stat.value}
-                  suffix={stat.suffix}
-                  isVisible={isVisible}
-                />
+        {/* Stats Grid - Cleaner with subtle dividers */}
+        <div className="max-w-4xl mx-auto">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-0 lg:divide-x lg:divide-border">
+            {stats.map((stat) => (
+              <div
+                key={stat.label}
+                className="text-center px-4"
+              >
+                <div className="font-display text-4xl md:text-5xl font-bold text-primary mb-2">
+                  <AnimatedCounter
+                    value={stat.value}
+                    suffix={stat.suffix}
+                    isVisible={isVisible}
+                  />
+                </div>
+                <p className="text-muted-foreground text-sm">
+                  {stat.label}
+                </p>
               </div>
-              <p className="text-muted-foreground text-sm md:text-base">
-                {stat.label}
-              </p>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       </div>
     </section>

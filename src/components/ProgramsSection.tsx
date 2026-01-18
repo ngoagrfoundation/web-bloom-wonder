@@ -29,7 +29,7 @@ const programs = [
 
 const ProgramsSection = () => {
   return (
-    <section id="programs" className="py-20 bg-background">
+    <section id="programs" className="py-24 section-cream">
       <div className="container mx-auto px-4">
         {/* Section Header */}
         <div className="text-center mb-16">
@@ -44,23 +44,21 @@ const ProgramsSection = () => {
 
         {/* Programs Grid */}
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {programs.map((program, index) => (
+          {programs.map((program) => (
             <div
               key={program.title}
               className="card-elevated overflow-hidden group"
-              style={{ animationDelay: `${index * 0.1}s` }}
             >
               {/* Image */}
-              <div className="relative h-48 overflow-hidden">
+              <div className="relative h-52 overflow-hidden">
                 <img
                   src={program.image}
                   alt={program.title}
-                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-foreground/60 to-transparent" />
                 <div className="absolute bottom-4 left-4">
-                  <div className="w-12 h-12 rounded-full bg-secondary flex items-center justify-center">
-                    <program.icon className="w-6 h-6 text-secondary-foreground" />
+                  <div className="w-11 h-11 rounded-full bg-card flex items-center justify-center shadow-md">
+                    <program.icon className="w-5 h-5 text-primary" />
                   </div>
                 </div>
               </div>
@@ -70,7 +68,7 @@ const ProgramsSection = () => {
                 <h3 className="font-display text-xl font-semibold text-foreground mb-3">
                   {program.title}
                 </h3>
-                <p className="text-muted-foreground text-sm mb-4 leading-relaxed">
+                <p className="text-muted-foreground text-sm mb-5 leading-relaxed">
                   {program.description}
                 </p>
                 <a

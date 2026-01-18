@@ -46,13 +46,13 @@ const causes = [
 
 const CausesSection = () => {
   return (
-    <section id="causes" className="py-20 bg-background">
+    <section id="causes" className="py-24 bg-background">
       <div className="container mx-auto px-4">
-        <AnimatedSection animation="fadeUp" className="text-center mb-12">
+        <AnimatedSection animation="fadeUp" className="text-center mb-14">
           <span className="text-secondary font-medium text-sm uppercase tracking-wider">
             Make a Difference
           </span>
-          <h2 className="font-display text-3xl md:text-4xl font-bold text-foreground mt-2 mb-4">
+          <h2 className="font-display text-3xl md:text-4xl font-bold text-foreground mt-3 mb-4">
             Our Active Causes
           </h2>
           <p className="text-muted-foreground max-w-2xl mx-auto">
