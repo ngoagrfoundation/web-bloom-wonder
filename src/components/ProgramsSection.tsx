@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { GraduationCap, HeartPulse, Briefcase, ArrowRight } from "lucide-react";
 import educationImage from "@/assets/education-program.jpg";
 import healthcareImage from "@/assets/healthcare-program.jpg";
@@ -10,6 +11,7 @@ const programs = [
     description:
       "Providing access to quality education through community learning centers, scholarships, and after-school programs for underprivileged children.",
     image: educationImage,
+    link: "/programs/education",
   },
   {
     icon: HeartPulse,
@@ -17,6 +19,7 @@ const programs = [
     description:
       "Organizing regular health camps, providing essential medical services, and ensuring healthcare reaches those who need it most in remote areas.",
     image: healthcareImage,
+    link: "/programs/healthcare",
   },
   {
     icon: Briefcase,
@@ -24,6 +27,7 @@ const programs = [
     description:
       "Empowering women and youth through skill development, vocational training, and self-help groups for sustainable income generation.",
     image: livelihoodImage,
+    link: "/programs/livelihood",
   },
 ];
 
@@ -71,13 +75,13 @@ const ProgramsSection = () => {
                 <p className="text-muted-foreground text-sm mb-5 leading-relaxed">
                   {program.description}
                 </p>
-                <a
-                  href="#"
+                <Link
+                  to={program.link}
                   className="inline-flex items-center gap-2 text-primary font-medium text-sm group/link"
                 >
                   Learn More
                   <ArrowRight className="w-4 h-4 transition-transform group-hover/link:translate-x-1" />
-                </a>
+                </Link>
               </div>
             </div>
           ))}

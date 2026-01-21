@@ -53,6 +53,9 @@ const FocusPageLayout = ({
               src={heroImage}
               alt={title}
               className="w-full h-full object-cover"
+              onError={(e) => {
+                e.currentTarget.src = "/placeholder.svg";
+              }}
             />
             <div className="absolute inset-0 bg-gradient-to-r from-foreground/70 to-foreground/30" />
           </div>
