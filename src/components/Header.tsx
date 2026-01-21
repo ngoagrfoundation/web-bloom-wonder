@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Menu, X, ChevronDown } from "lucide-react";
 import {
   DropdownMenu,
@@ -12,6 +12,8 @@ import agrLogo from "@/assets/agr-logo.svg";
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [openMobileDropdown, setOpenMobileDropdown] = useState<string | null>(null);
+  const navigate = useNavigate();
+  const location = useLocation();
 
   const focusAreas = [
     { label: "Women's Empowerment", href: "/focus/womens-empowerment" },
@@ -43,6 +45,32 @@ const Header = () => {
 
   const toggleMobileDropdown = (label: string) => {
     setOpenMobileDropdown(openMobileDropdown === label ? null : label);
+  };
+
+  const handleNavClick = (href: string, e: React.MouseEvent) => {
+    // Check if it's a hash link
+    if (href.includes('#')) {
+      e.preventDefault();
+      const hash = href.split('#')[1];
+      
+      // If we're not on the home page, navigate there first
+      if (location.pathname !== '/') {
+        navigate('/');
+        // Wait for navigation, then scroll
+        setTimeout(() => {
+          const element = document.getElementById(hash);
+          if (element) {
+            element.scrollIntoView({ behavior: 'smooth' });
+          }
+        }, 100);
+      } else {
+        // Already on home page, just scroll
+        const element = document.getElementById(hash);
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth' });
+        }
+      }
+    }
   };
 
   return (
@@ -83,6 +111,15 @@ const Header = () => {
                     ))}
                   </DropdownMenuContent>
                 </DropdownMenu>
+              ) : link.href.includes('#') ? (
+                <a
+                  key={link.label}
+                  href={link.href}
+                  onClick={(e) => handleNavClick(link.href, e)}
+                  className="text-muted-foreground hover:text-foreground transition-colors font-medium text-sm cursor-pointer"
+                >
+                  {link.label}
+                </a>
               ) : (
                 <Link
                   key={link.label}
@@ -147,6 +184,18 @@ const Header = () => {
                       </div>
                     )}
                   </div>
+                ) : link.href.includes('#') ? (
+                  <a
+                    key={link.label}
+                    href={link.href}
+                    onClick={(e) => {
+                      handleNavClick(link.href, e);
+                      setIsMenuOpen(false);
+                    }}
+                    className="py-3 px-2 text-foreground hover:bg-muted rounded-lg transition-colors font-medium cursor-pointer"
+                  >
+                    {link.label}
+                  </a>
                 ) : (
                   <Link
                     key={link.label}

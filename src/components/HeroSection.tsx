@@ -10,18 +10,30 @@ const slides = [
   {
     image: heroImage,
     alt: "Community volunteers working together",
+    title: "Empowering Communities,",
+    subtitle: "Transforming Lives",
+    description: "Dedicated to uplifting rural communities through education, healthcare, and sustainable livelihood programs across India.",
   },
   {
     image: educationImage,
     alt: "Education program for rural children",
+    title: "Education for All,",
+    subtitle: "Building Futures",
+    description: "Providing quality education and learning resources to underserved children, empowering the next generation with knowledge.",
   },
   {
     image: healthcareImage,
     alt: "Healthcare initiative in villages",
+    title: "Healthcare Access,",
+    subtitle: "Saving Lives",
+    description: "Bringing essential healthcare services and medical support to remote villages where access is limited.",
   },
   {
     image: livelihoodImage,
     alt: "Livelihood and skill development",
+    title: "Skill Development,",
+    subtitle: "Creating Opportunities",
+    description: "Training and supporting individuals with vocational skills to build sustainable livelihoods and self-reliance.",
   },
 ];
 
@@ -55,85 +67,87 @@ const HeroSection = () => {
       id="home"
       className="relative h-[70vh] min-h-[500px] pt-20 bg-gradient-to-br from-background to-muted"
     >
-      <div className="container mx-auto px-4 h-full">
-        <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 h-full items-center">
-          {/* Left: Text Content */}
-          <div className="space-y-6 animate-slide-up order-2 lg:order-1">
-            <h1 className="font-display text-3xl md:text-4xl lg:text-5xl font-bold text-foreground leading-tight">
-              Empowering Communities,
-              <br />
-              <span className="text-primary">Transforming Lives</span>
-            </h1>
-            <p className="text-muted-foreground text-base md:text-lg max-w-lg leading-relaxed">
-              Dedicated to uplifting rural communities through education, healthcare, 
-              and sustainable livelihood programs across India.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4">
-              <a href="#about" className="btn-primary">
-                Learn More
-              </a>
-              <a
-                href="#get-involved"
-                className="border border-border text-foreground hover:bg-muted transition-all duration-200 px-6 py-3 rounded-lg font-medium text-center"
-              >
-                Get Involved
-              </a>
-            </div>
-          </div>
-
-          {/* Right: Image Carousel */}
-          <div className="relative h-[280px] md:h-[350px] lg:h-full order-1 lg:order-2">
-            <div className="overflow-hidden rounded-2xl h-full" ref={emblaRef}>
-              <div className="flex h-full">
-                {slides.map((slide, index) => (
-                  <div
-                    key={index}
-                    className="flex-[0_0_100%] min-w-0 relative h-full"
-                  >
-                    <img
-                      src={slide.image}
-                      alt={slide.alt}
-                      className="w-full h-full object-cover"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-foreground/20 to-transparent" />
+      {/* Full-width Carousel */}
+      <div className="overflow-hidden h-full" ref={emblaRef}>
+        <div className="flex h-full">
+          {slides.map((slide, index) => (
+            <div
+              key={index}
+              className="flex-[0_0_100%] min-w-0 h-full"
+            >
+              <div className="container mx-auto px-4 h-full">
+                <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 h-full items-center">
+                  {/* Left: Text Content */}
+                  <div className="space-y-6 order-2 lg:order-1">
+                    <h1 className="font-display text-3xl md:text-4xl lg:text-5xl font-bold text-foreground leading-tight">
+                      {slide.title}
+                      <br />
+                      <span className="text-primary">{slide.subtitle}</span>
+                    </h1>
+                    <p className="text-muted-foreground text-base md:text-lg max-w-lg leading-relaxed">
+                      {slide.description}
+                    </p>
+                    <div className="flex flex-col sm:flex-row gap-4">
+                      <a href="#about" className="btn-primary">
+                        Learn More
+                      </a>
+                      <a
+                        href="#get-involved"
+                        className="border border-border text-foreground hover:bg-muted transition-all duration-200 px-6 py-3 rounded-lg font-medium text-center"
+                      >
+                        Get Involved
+                      </a>
+                    </div>
                   </div>
-                ))}
+
+                  {/* Right: Image */}
+                  <div className="relative h-[280px] md:h-[350px] lg:h-full order-1 lg:order-2">
+                    <div className="rounded-2xl h-full overflow-hidden">
+                      <img
+                        src={slide.image}
+                        alt={slide.alt}
+                        className="w-full h-full object-cover"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-foreground/20 to-transparent rounded-2xl" />
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
-
-            {/* Navigation Arrows */}
-            <button
-              onClick={scrollPrev}
-              className="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-background/80 backdrop-blur-sm flex items-center justify-center text-foreground hover:bg-background transition-colors shadow-lg"
-              aria-label="Previous slide"
-            >
-              <ChevronLeft size={20} />
-            </button>
-            <button
-              onClick={scrollNext}
-              className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-background/80 backdrop-blur-sm flex items-center justify-center text-foreground hover:bg-background transition-colors shadow-lg"
-              aria-label="Next slide"
-            >
-              <ChevronRight size={20} />
-            </button>
-
-            {/* Dots Navigation */}
-            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
-              {slides.map((_, index) => (
-                <button
-                  key={index}
-                  onClick={() => scrollTo(index)}
-                  className={`w-2 h-2 rounded-full transition-all duration-300 ${
-                    index === selectedIndex
-                      ? "bg-primary w-6"
-                      : "bg-background/60 hover:bg-background/80"
-                  }`}
-                  aria-label={`Go to slide ${index + 1}`}
-                />
-              ))}
-            </div>
-          </div>
+          ))}
         </div>
+      </div>
+
+      {/* Navigation Arrows */}
+      <button
+        onClick={scrollPrev}
+        className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-background/80 backdrop-blur-sm flex items-center justify-center text-foreground hover:bg-background transition-colors shadow-lg z-10"
+        aria-label="Previous slide"
+      >
+        <ChevronLeft size={20} />
+      </button>
+      <button
+        onClick={scrollNext}
+        className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-background/80 backdrop-blur-sm flex items-center justify-center text-foreground hover:bg-background transition-colors shadow-lg z-10"
+        aria-label="Next slide"
+      >
+        <ChevronRight size={20} />
+      </button>
+
+      {/* Dots Navigation */}
+      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 z-10">
+        {slides.map((_, index) => (
+          <button
+            key={index}
+            onClick={() => scrollTo(index)}
+            className={`w-2 h-2 rounded-full transition-all duration-300 ${
+              index === selectedIndex
+                ? "bg-primary w-6"
+                : "bg-foreground/40 hover:bg-foreground/60"
+            }`}
+            aria-label={`Go to slide ${index + 1}`}
+          />
+        ))}
       </div>
     </section>
   );
