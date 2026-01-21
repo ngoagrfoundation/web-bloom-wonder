@@ -17,9 +17,6 @@ interface CausePageLayoutProps {
   heroImage: string;
   story: string;
   need: string;
-  goal: number;
-  raised: number;
-  donors: number;
   fundUsage: FundUsage[];
   galleryImages?: string[];
   relatedFocus: string;
@@ -33,16 +30,11 @@ const CausePageLayout = ({
   heroImage,
   story,
   need,
-  goal,
-  raised,
-  donors,
   fundUsage,
   galleryImages = [],
   relatedFocus,
   relatedFocusLink,
 }: CausePageLayoutProps) => {
-  const progress = Math.min((raised / goal) * 100, 100);
-
   const handleShare = () => {
     if (navigator.share) {
       navigator.share({
@@ -160,34 +152,10 @@ const CausePageLayout = ({
               <div className="lg:col-span-1">
                 <AnimatedSection animation="fadeUp">
                   <div className="card-elevated p-6 sticky top-24">
-                    {/* Progress */}
-                    <div className="mb-6">
-                      <div className="flex justify-between items-end mb-3">
-                        <div>
-                          <span className="text-3xl font-display font-bold text-primary">
-                            ₹{raised.toLocaleString()}
-                          </span>
-                          <span className="text-muted-foreground text-sm ml-1">raised</span>
-                        </div>
-                        <span className="text-muted-foreground text-sm">
-                          of ₹{goal.toLocaleString()}
-                        </span>
-                      </div>
-                      <div className="h-2 bg-muted rounded-full overflow-hidden">
-                        <motion.div
-                          className="h-full bg-primary rounded-full"
-                          initial={{ width: 0 }}
-                          animate={{ width: `${progress}%` }}
-                          transition={{ duration: 1 }}
-                        />
-                      </div>
-                      <div className="flex justify-between mt-2 text-sm text-muted-foreground">
-                        <span>{Math.round(progress)}% funded</span>
-                        <span>{donors} donors</span>
-                      </div>
-                    </div>
-
                     {/* Quick Donate Amounts */}
+                    <h3 className="font-display text-lg font-semibold text-foreground mb-4">
+                      Support This Cause
+                    </h3>
                     <div className="grid grid-cols-3 gap-2 mb-4">
                       {[500, 1000, 2500].map((amount) => (
                         <Link
