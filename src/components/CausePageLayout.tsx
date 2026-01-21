@@ -47,7 +47,6 @@ const CausePageLayout = ({
   return (
     <MobileLayout>
       <main className="pt-14 md:pt-20">
-      <main className="pt-20">
         {/* Hero Section - Cleaner */}
         <section className="relative h-[50vh] min-h-[400px]">
           <div className="absolute inset-0">
@@ -208,8 +207,7 @@ const CausePageLayout = ({
           </div>
         </section>
       </main>
-      <Footer />
-    </div>
+    </MobileLayout>
   );
 };
 

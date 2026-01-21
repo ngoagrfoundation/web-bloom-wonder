@@ -188,8 +188,7 @@ const ProgramPageLayout = ({
           </div>
         </section>
       </main>
-      <Footer />
-    </div>
+    </MobileLayout>
   );
 };
 

@@ -200,8 +200,7 @@ const FocusPageLayout = ({
           </div>
         </section>
       </main>
-      <Footer />
-    </div>
+    </MobileLayout>
   );
 };
 
