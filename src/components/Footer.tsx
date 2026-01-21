@@ -1,5 +1,6 @@
 import { Heart } from "lucide-react";
 import { Link } from "react-router-dom";
+import agrLogo from "@/assets/agr-logo.svg";
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
@@ -40,15 +41,12 @@ const Footer = () => {
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-8">
           {/* Brand */}
           <div>
-            <div className="flex items-center gap-3 mb-5">
-              <div className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center">
-                <span className="text-secondary-foreground font-display font-bold text-lg">
-                  A
-                </span>
-              </div>
-              <span className="font-display font-semibold text-lg">
-                AGR Foundation
-              </span>
+            <div className="mb-5">
+              <img 
+                src={agrLogo} 
+                alt="AGR Foundation" 
+                className="h-12 w-auto brightness-0 invert"
+              />
             </div>
             <p className="text-background/70 text-sm leading-relaxed mb-6">
               Dedicated to building sustainable communities through education, 

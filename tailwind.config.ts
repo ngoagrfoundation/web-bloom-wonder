@@ -53,6 +53,11 @@ export default {
         },
         cream: "hsl(var(--section-cream))",
         warm: "hsl(var(--section-warm))",
+        brand: {
+          primary: "#1860a1",
+          secondary: "#1e93f3",
+          dark: "#032751",
+        },
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
           foreground: "hsl(var(--sidebar-foreground))",
