@@ -1,4 +1,4 @@
-import Header from "@/components/Header";
+import { MobileLayout } from "@/components/mobile";
 import HeroSection from "@/components/HeroSection";
 import AboutSection from "@/components/AboutSection";
 import ProgramsSection from "@/components/ProgramsSection";
@@ -9,12 +9,10 @@ import GetInvolvedSection from "@/components/GetInvolvedSection";
 import NewsSection from "@/components/NewsSection";
 import GallerySection from "@/components/GallerySection";
 import ContactSection from "@/components/ContactSection";
-import Footer from "@/components/Footer";
 
 const Index = () => {
   return (
-    <div className="min-h-screen">
-      <Header />
+    <MobileLayout>
       <main>
         <HeroSection />
         <AboutSection />
@@ -27,8 +25,7 @@ const Index = () => {
         <GallerySection />
         <ContactSection />
       </main>
-      <Footer />
-    </div>
+    </MobileLayout>
   );
 };
 

@@ -1,8 +1,7 @@
 import { ReactNode } from "react";
 import { Link } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
-import Header from "./Header";
-import Footer from "./Footer";
+import { MobileLayout } from "./mobile";
 import AnimatedSection, { StaggerContainer, StaggerItem } from "./AnimatedSection";
 
 interface Initiative {
@@ -43,9 +42,8 @@ const FocusPageLayout = ({
   relatedCauses,
 }: FocusPageLayoutProps) => {
   return (
-    <div className="min-h-screen">
-      <Header />
-      <main className="pt-20">
+    <MobileLayout>
+      <main className="pt-14 md:pt-20">
         {/* Hero Section - Cleaner overlay */}
         <section className="relative h-[50vh] min-h-[400px]">
           <div className="absolute inset-0">

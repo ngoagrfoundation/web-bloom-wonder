@@ -1,7 +1,6 @@
 import { useParams, Link } from "react-router-dom";
 import { ArrowLeft, Calendar, User, Clock, Share2, Facebook, Twitter, Linkedin } from "lucide-react";
-import Header from "@/components/Header";
-import Footer from "@/components/Footer";
+import { MobileLayout } from "@/components/mobile";
 import AnimatedSection from "@/components/AnimatedSection";
 import { NewsArticle } from "@/components/NewsCard";
 import { sanitizeHTML, createShareUrl } from "@/lib/sanitize";
@@ -109,8 +108,7 @@ const NewsArticlePage = () => {
 
   if (!article) {
     return (
-      <div className="min-h-screen bg-background">
-        <Header />
+      <MobileLayout>
         <main className="pt-32 pb-20">
           <div className="container mx-auto px-4 text-center">
             <h1 className="text-3xl font-display font-bold text-foreground mb-4">
@@ -124,8 +122,7 @@ const NewsArticlePage = () => {
             </Link>
           </div>
         </main>
-        <Footer />
-      </div>
+      </MobileLayout>
     );
   }
 
@@ -141,9 +138,8 @@ const NewsArticlePage = () => {
   const currentUrl = window.location.href;
 
   return (
-    <div className="min-h-screen bg-background">
-      <Header />
-      <main className="pt-20">
+    <MobileLayout>
+      <main className="pt-14 md:pt-20">
         {/* Hero Image */}
         <div className="relative h-[40vh] md:h-[50vh] overflow-hidden">
           <img
@@ -266,8 +262,7 @@ const NewsArticlePage = () => {
           </div>
         </section>
       </main>
-      <Footer />
-    </div>
+    </MobileLayout>
   );
 };
 

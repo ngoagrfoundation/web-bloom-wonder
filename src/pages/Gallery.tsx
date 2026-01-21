@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import Header from "@/components/Header";
-import Footer from "@/components/Footer";
+import { MobileLayout } from "@/components/mobile";
 import GalleryLightbox, { GalleryImage } from "@/components/GalleryLightbox";
 import AnimatedSection, { StaggerContainer, StaggerItem } from "@/components/AnimatedSection";
 
@@ -138,9 +137,8 @@ const Gallery = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <Header />
-      <main className="pt-20">
+    <MobileLayout>
+      <main className="pt-14 md:pt-20">
         {/* Hero Section */}
         <section className="relative py-20">
           <div className="absolute inset-0">
@@ -167,7 +165,7 @@ const Gallery = () => {
         </section>
 
         {/* Category Filters */}
-        <section className="py-8 border-b border-border sticky top-16 bg-background/95 backdrop-blur-sm z-20">
+        <section className="py-8 border-b border-border sticky top-14 md:top-16 bg-background/95 backdrop-blur-sm z-20">
           <div className="container mx-auto px-4">
             <div className="flex items-center gap-2 overflow-x-auto pb-2 justify-center">
               {categories.map((category) => (
@@ -244,7 +242,6 @@ const Gallery = () => {
           </div>
         </section>
       </main>
-      <Footer />
 
       <GalleryLightbox
         images={filteredImages}
@@ -253,7 +250,7 @@ const Gallery = () => {
         onClose={() => setLightboxOpen(false)}
         onNavigate={setCurrentImageIndex}
       />
-    </div>
+    </MobileLayout>
   );
 };
 

@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { Search } from "lucide-react";
-import Header from "@/components/Header";
-import Footer from "@/components/Footer";
+import { MobileLayout } from "@/components/mobile";
 import NewsCard, { NewsArticle } from "@/components/NewsCard";
 import AnimatedSection, { StaggerContainer, StaggerItem } from "@/components/AnimatedSection";
 import { newsletterSchema } from "@/lib/validation";
@@ -179,9 +178,8 @@ const News = () => {
   const otherArticles = filteredNews.slice(1);
 
   return (
-    <div className="min-h-screen bg-background">
-      <Header />
-      <main className="pt-20">
+    <MobileLayout>
+      <main className="pt-14 md:pt-20">
         {/* Hero Section */}
         <section className="py-16 maroon-gradient">
           <div className="container mx-auto px-4">
@@ -267,8 +265,7 @@ const News = () => {
         {/* Newsletter CTA */}
         <NewsletterSection />
       </main>
-      <Footer />
-    </div>
+    </MobileLayout>
   );
 };
 

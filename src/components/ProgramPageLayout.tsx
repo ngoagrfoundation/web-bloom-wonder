@@ -1,8 +1,7 @@
 import { ReactNode } from "react";
 import { Link } from "react-router-dom";
 import { ArrowLeft, Heart } from "lucide-react";
-import Header from "./Header";
-import Footer from "./Footer";
+import { MobileLayout } from "./mobile";
 import AnimatedSection, { StaggerContainer, StaggerItem } from "./AnimatedSection";
 
 interface Activity {
@@ -36,9 +35,8 @@ const ProgramPageLayout = ({
   relatedFocus = [],
 }: ProgramPageLayoutProps) => {
   return (
-    <div className="min-h-screen bg-background">
-      <Header />
-      <main>
+    <MobileLayout>
+      <main className="pt-14 md:pt-0">
         {/* Hero Section */}
         <section className="relative h-[50vh] min-h-[400px] flex items-center">
           <div className="absolute inset-0">
