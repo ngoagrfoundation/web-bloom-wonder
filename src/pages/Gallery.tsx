@@ -142,8 +142,19 @@ const Gallery = () => {
       <Header />
       <main className="pt-20">
         {/* Hero Section */}
-        <section className="py-16 maroon-gradient">
-          <div className="container mx-auto px-4">
+        <section className="relative py-20">
+          <div className="absolute inset-0">
+            <img
+              src="https://images.unsplash.com/photo-1517486808906-6ca8b3f04846?w=1200"
+              alt="Gallery hero"
+              className="w-full h-full object-cover"
+              onError={(e) => {
+                e.currentTarget.src = "/placeholder.svg";
+              }}
+            />
+            <div className="absolute inset-0 bg-primary/85" />
+          </div>
+          <div className="relative container mx-auto px-4">
             <AnimatedSection className="text-center text-primary-foreground">
               <h1 className="text-4xl md:text-5xl font-display font-bold mb-4">
                 Photo Gallery
@@ -193,6 +204,9 @@ const Gallery = () => {
                       alt={image.alt}
                       className="w-full object-cover transition-transform duration-500 group-hover:scale-110"
                       loading="lazy"
+                      onError={(e) => {
+                        e.currentTarget.src = "/placeholder.svg";
+                      }}
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                     <div className="absolute bottom-0 left-0 right-0 p-4 text-white transform translate-y-full group-hover:translate-y-0 transition-transform duration-300">

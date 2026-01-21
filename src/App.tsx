@@ -19,6 +19,11 @@ import SkillDevelopment from "./pages/focus/SkillDevelopment";
 import RuralDevelopment from "./pages/focus/RuralDevelopment";
 import SocialWelfare from "./pages/focus/SocialWelfare";
 
+// Program Pages
+import Education from "./pages/programs/Education";
+import Healthcare from "./pages/programs/Healthcare";
+import Livelihood from "./pages/programs/Livelihood";
+
 // Cause Pages
 import LakeCleaning from "./pages/causes/LakeCleaning";
 import PhysicallyChallengedTreatment from "./pages/causes/PhysicallyChallengedTreatment";
@@ -42,6 +47,11 @@ const App = () => (
             <Route path="/news/:slug" element={<NewsArticle />} />
             <Route path="/gallery" element={<Gallery />} />
             <Route path="/donate" element={<Donate />} />
+            
+            {/* Program Routes */}
+            <Route path="/programs/education" element={<Education />} />
+            <Route path="/programs/healthcare" element={<Healthcare />} />
+            <Route path="/programs/livelihood" element={<Livelihood />} />
             
             {/* Focus Area Routes */}
             <Route path="/focus/womens-empowerment" element={<WomensEmpowerment />} />
