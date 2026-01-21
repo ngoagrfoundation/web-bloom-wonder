@@ -8,9 +8,6 @@ const LakeCleaning = () => {
       heroImage="https://images.unsplash.com/photo-1621451537084-482c73073a0f?w=1200&h=600&fit=crop"
       story="The ancient temple lake in our village has been a sacred site for generations, serving as a place for religious ceremonies, community gatherings, and providing water for the surrounding areas. However, years of neglect and pollution have degraded this precious water body. Accumulated waste, silt, and invasive plants have severely impacted the lake's ecosystem and its ability to serve the community."
       need="We need to undertake a comprehensive restoration project that includes removing accumulated waste and debris, desilting the lake bed, installing proper drainage systems, and planting native aquatic plants to restore the ecosystem. The project will also include building proper pathways and installing waste bins to prevent future pollution. This restoration will benefit over 2,000 families who depend on this water body for various purposes."
-      goal={50000}
-      raised={32000}
-      donors={45}
       fundUsage={[
         { item: "Waste Removal & Cleaning", percentage: 40 },
         { item: "Desilting & Restoration", percentage: 30 },
