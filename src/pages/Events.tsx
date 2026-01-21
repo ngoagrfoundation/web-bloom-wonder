@@ -1,8 +1,7 @@
 import { useState } from "react";
 import { Calendar, Grid, List, Filter } from "lucide-react";
 import { motion } from "framer-motion";
-import Header from "@/components/Header";
-import Footer from "@/components/Footer";
+import { MobileLayout } from "@/components/mobile";
 import EventCard, { Event } from "@/components/EventCard";
 import AnimatedSection, { StaggerContainer, StaggerItem } from "@/components/AnimatedSection";
 
@@ -98,9 +97,8 @@ const Events = () => {
   const upcomingEvents = filteredEvents.filter((event) => !event.isFeatured);
 
   return (
-    <div className="min-h-screen bg-background">
-      <Header />
-      <main className="pt-20">
+    <MobileLayout>
+      <main className="pt-14 md:pt-20">
         {/* Hero Section */}
         <section className="py-16 maroon-gradient">
           <div className="container mx-auto px-4">
@@ -245,8 +243,7 @@ const Events = () => {
           </div>
         </section>
       </main>
-      <Footer />
-    </div>
+    </MobileLayout>
   );
 };
 

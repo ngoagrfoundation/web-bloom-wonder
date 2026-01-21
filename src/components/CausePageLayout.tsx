@@ -2,8 +2,7 @@ import { ReactNode } from "react";
 import { Link } from "react-router-dom";
 import { ArrowLeft, Share2, Heart } from "lucide-react";
 import { motion } from "framer-motion";
-import Header from "./Header";
-import Footer from "./Footer";
+import { MobileLayout } from "./mobile";
 import AnimatedSection from "./AnimatedSection";
 
 interface FundUsage {
@@ -46,8 +45,8 @@ const CausePageLayout = ({
   };
 
   return (
-    <div className="min-h-screen">
-      <Header />
+    <MobileLayout>
+      <main className="pt-14 md:pt-20">
       <main className="pt-20">
         {/* Hero Section - Cleaner */}
         <section className="relative h-[50vh] min-h-[400px]">

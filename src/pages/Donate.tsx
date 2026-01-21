@@ -1,6 +1,5 @@
 import { Shield, Heart, Award, CheckCircle } from "lucide-react";
-import Header from "@/components/Header";
-import Footer from "@/components/Footer";
+import { MobileLayout } from "@/components/mobile";
 import DonationForm from "@/components/DonationForm";
 import AnimatedSection, { StaggerContainer, StaggerItem } from "@/components/AnimatedSection";
 
@@ -19,9 +18,8 @@ const trustBadges = [
 
 const Donate = () => {
   return (
-    <div className="min-h-screen bg-background">
-      <Header />
-      <main className="pt-20">
+    <MobileLayout>
+      <main className="pt-14 md:pt-20">
         {/* Hero Section */}
         <section className="py-16 maroon-gradient">
           <div className="container mx-auto px-4">
@@ -175,8 +173,7 @@ const Donate = () => {
           </div>
         </section>
       </main>
-      <Footer />
-    </div>
+    </MobileLayout>
   );
 };
 
