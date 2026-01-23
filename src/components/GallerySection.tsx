@@ -4,49 +4,52 @@ import { ArrowRight } from "lucide-react";
 import { motion } from "framer-motion";
 import GalleryLightbox, { GalleryImage } from "./GalleryLightbox";
 import AnimatedSection, { StaggerContainer, StaggerItem } from "./AnimatedSection";
+import bananaLeafWorkshop from "@/assets/gallery/banana-leaf-workshop.jpg";
+import biodegradableBag from "@/assets/gallery/biodegradable-bag.jpg";
+import bananaLeafLunch from "@/assets/gallery/banana-leaf-lunch.jpg";
 
 const featuredImages: GalleryImage[] = [
   {
     id: "1",
+    src: bananaLeafWorkshop,
+    alt: "Banana leaf packaging workshop",
+    category: "sustainability",
+    caption: "Women learning eco-friendly banana leaf packaging techniques",
+  },
+  {
+    id: "2",
+    src: biodegradableBag,
+    alt: "Biodegradable bag",
+    category: "sustainability",
+    caption: "Handcrafted biodegradable bags as plastic alternatives",
+  },
+  {
+    id: "3",
+    src: bananaLeafLunch,
+    alt: "Traditional lunch on banana leaves",
+    category: "sustainability",
+    caption: "Community meal served on fresh banana leaves - traditional and eco-friendly",
+  },
+  {
+    id: "4",
     src: "https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?w=800",
     alt: "Children in classroom",
     category: "education",
     caption: "Students engaged in interactive learning at our education center",
   },
   {
-    id: "2",
+    id: "5",
     src: "https://images.unsplash.com/photo-1559027615-cd4628902d4a?w=800",
     alt: "Health camp",
     category: "healthcare",
     caption: "Free health check-up camp in rural community",
   },
   {
-    id: "3",
+    id: "6",
     src: "https://images.unsplash.com/photo-1469571486292-0ba58a3f068b?w=800",
     alt: "Community gathering",
     category: "community",
     caption: "Community members participating in awareness program",
-  },
-  {
-    id: "4",
-    src: "https://images.unsplash.com/photo-1532629345422-7515f3d16bb6?w=800",
-    alt: "Volunteers helping",
-    category: "volunteers",
-    caption: "Dedicated volunteers distributing supplies",
-  },
-  {
-    id: "5",
-    src: "https://images.unsplash.com/photo-1559027615-cd4628902d4a?w=800",
-    alt: "Skill training",
-    category: "livelihood",
-    caption: "Women learning tailoring skills for economic independence",
-  },
-  {
-    id: "6",
-    src: "https://images.unsplash.com/photo-1517486808906-6ca8b3f04846?w=800",
-    alt: "Celebration event",
-    category: "events",
-    caption: "Annual foundation day celebration with beneficiaries",
   },
 ];
 
