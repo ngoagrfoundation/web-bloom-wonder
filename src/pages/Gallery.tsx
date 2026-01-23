@@ -3,9 +3,13 @@ import { motion } from "framer-motion";
 import { MobileLayout } from "@/components/mobile";
 import GalleryLightbox, { GalleryImage } from "@/components/GalleryLightbox";
 import AnimatedSection, { StaggerContainer, StaggerItem } from "@/components/AnimatedSection";
+import bananaLeafWorkshop from "@/assets/gallery/banana-leaf-workshop.jpg";
+import biodegradableBag from "@/assets/gallery/biodegradable-bag.jpg";
+import bananaLeafLunch from "@/assets/gallery/banana-leaf-lunch.jpg";
 
 const categories = [
   { id: "all", label: "All" },
+  { id: "sustainability", label: "Sustainability" },
   { id: "education", label: "Education" },
   { id: "healthcare", label: "Healthcare" },
   { id: "community", label: "Community" },
@@ -15,6 +19,27 @@ const categories = [
 ];
 
 const galleryImages: GalleryImage[] = [
+  {
+    id: "s1",
+    src: bananaLeafWorkshop,
+    alt: "Banana leaf packaging workshop",
+    category: "sustainability",
+    caption: "Women learning eco-friendly banana leaf packaging and wrapping techniques",
+  },
+  {
+    id: "s2",
+    src: biodegradableBag,
+    alt: "Biodegradable bag in hand",
+    category: "sustainability",
+    caption: "Handcrafted biodegradable bags - sustainable alternatives to plastic",
+  },
+  {
+    id: "s3",
+    src: bananaLeafLunch,
+    alt: "Traditional lunch on banana leaves",
+    category: "sustainability",
+    caption: "Community meal served on fresh banana leaves - eco-friendly and traditional",
+  },
   {
     id: "1",
     src: "https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?w=800",
