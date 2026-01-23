@@ -10,8 +10,8 @@ const slides = [
   {
     image: heroImage,
     alt: "Community volunteers working together",
-    title: "Empowering Communities,",
-    subtitle: "Transforming Lives",
+    title: "Our Motto is,",
+    subtitle: "Building a self-sustainable and eco-friendly society",
     description: "Dedicated to uplifting rural communities through education, healthcare, and sustainable livelihood programs across India.",
   },
   {
