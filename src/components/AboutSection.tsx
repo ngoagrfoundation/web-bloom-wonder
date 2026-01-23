@@ -73,11 +73,10 @@ const AboutSection = () => {
         {/* Quote - Cleaner card */}
         <div className="mt-24 bg-muted/50 rounded-2xl p-10 md:p-14 text-center max-w-3xl mx-auto">
           <blockquote className="font-display text-xl md:text-2xl text-foreground italic mb-6 leading-relaxed">
-            "We believe every person deserves the opportunity to thrive. Together, 
-            we're building a future where no community is left behind."
+            "We believe that true development means living in harmony with nature. Our mission is not just to support people but to create a future by building a self-sustainable and eco-friendly society."
           </blockquote>
           <cite className="text-primary font-medium not-italic">
-            — Akhil Gorantham Raju, Founder & Chairman
+            — Aleti Govardhan Raju, Founder & Chairman
           </cite>
         </div>
       </div>
