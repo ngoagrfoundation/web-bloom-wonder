@@ -1,4 +1,4 @@
-import { Building2, Handshake, Target, Users } from "lucide-react";
+import { Building2, Handshake, Target, Users, Shield, Clock } from "lucide-react";
 import AnimatedSection, { StaggerContainer, StaggerItem } from "./AnimatedSection";
 
 const benefits = [
@@ -68,27 +68,54 @@ const PartnerFormSection = () => {
             </div>
           </AnimatedSection>
 
-          {/* Google Form Embed */}
+          {/* Google Form Embed with Enhanced UI */}
           <AnimatedSection animation="slideLeft" delay={0.2}>
-            <div className="card-elevated overflow-hidden">
-              <iframe
-                src="YOUR_PARTNER_GOOGLE_FORM_EMBED_URL_HERE"
-                width="100%"
-                height="700"
-                frameBorder="0"
-                marginHeight={0}
-                marginWidth={0}
-                title="Partner with Us Form"
-                loading="lazy"
-                className="w-full"
-                style={{ minHeight: "700px" }}
-              >
-                Loading partnership form...
-              </iframe>
+            <div className="rounded-2xl overflow-hidden shadow-xl border border-border bg-background">
+              {/* Form Header */}
+              <div className="bg-gradient-to-r from-primary to-primary/80 px-6 py-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center">
+                    <Handshake className="w-5 h-5 text-primary-foreground" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-primary-foreground">Partnership Inquiry</h3>
+                    <p className="text-sm text-primary-foreground/80">Tell us about your organization</p>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Form Content */}
+              <div className="p-1 bg-muted/30">
+                <iframe
+                  src="https://docs.google.com/forms/d/e/1FAIpQLSc8vaQ3MZVN4xorvudwjJ-219bLC-5sXRTrfOU7kJ34AGc8qw/viewform?embedded=true"
+                  width="100%"
+                  height="600"
+                  frameBorder="0"
+                  marginHeight={0}
+                  marginWidth={0}
+                  title="Partner with Us Form"
+                  loading="lazy"
+                  className="w-full bg-background rounded-lg"
+                  style={{ minHeight: "600px" }}
+                >
+                  Loading partnership form...
+                </iframe>
+              </div>
+              
+              {/* Form Footer */}
+              <div className="px-6 py-4 bg-muted/50 border-t border-border">
+                <div className="flex flex-wrap items-center justify-between gap-4">
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <Shield className="w-4 h-4 text-primary" />
+                    <span>Secure submission via Google Forms</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <Clock className="w-4 h-4 text-primary" />
+                    <span>Response within 48 hours</span>
+                  </div>
+                </div>
+              </div>
             </div>
-            <p className="text-center text-sm text-muted-foreground mt-4">
-              We'll respond to partnership inquiries within 48 hours.
-            </p>
           </AnimatedSection>
         </div>
       </div>
