@@ -1,164 +1,185 @@
 
 
-## Google Forms Integration Plan
+## Google Forms Update and New Forms Plan
 
 ### Overview
 
-This plan will integrate Google Forms into your website to collect data that automatically saves to Google Sheets. You'll need to create the Google Forms first, then I'll embed them into the website.
+This plan will:
+1. Update Contact Form and Volunteer Form with your real Google Form embed URLs
+2. Remove all banana leaf-related content from the website
+3. Add two new Google Form sections: "Partner with Us" and "Report a Challenge"
 
 ---
 
-### Step 1: Create Your Google Forms (You Need to Do This First)
+### Step 1: Update Google Form URLs
 
-Before I can embed the forms, you need to create them in Google Forms:
+#### A. Update Contact Form
+**File:** `src/components/ContactSection.tsx`
 
-#### Form 1: Contact Form
-Create a Google Form with these fields:
-- Name (Short answer, Required)
-- Email (Short answer, Required)
-- Phone Number (Short answer, Optional)
-- Message (Paragraph, Required)
+Replace the placeholder URL with your actual Contact Form URL:
+```
+FROM: YOUR_CONTACT_GOOGLE_FORM_EMBED_URL_HERE
+TO: https://docs.google.com/forms/d/e/1FAIpQLScFud-Iu30I2-TAkcmOsgyk0EA8UNViTIJ7OrBquMiUtvp4gg/viewform?embedded=true
+```
 
-#### Form 2: Volunteer Registration Form
-Create a Google Form with these fields:
-- Full Name (Short answer, Required)
+#### B. Update Volunteer Form
+**File:** `src/components/VolunteerFormSection.tsx`
+
+Replace the placeholder URL with your actual Volunteer Form URL:
+```
+FROM: YOUR_VOLUNTEER_GOOGLE_FORM_EMBED_URL_HERE
+TO: https://docs.google.com/forms/d/e/1FAIpQLSeAOB76FS8FHLh-IdC2EcTkYS-SP7b1aUgcN7Lxz9ic9YXowQ/viewform?embedded=true
+```
+
+---
+
+### Step 2: Remove All Banana Leaf Content
+
+#### A. Delete Banana Leaf Request Section
+**File to DELETE:** `src/components/BananaLeafRequestSection.tsx`
+
+#### B. Update Environmental Safety Page
+**File:** `src/pages/focus/EnvironmentalSafety.tsx`
+
+- Remove import of `BananaLeafRequestSection`
+- Remove the `<BananaLeafRequestSection />` component from the page
+- Update content to remove banana leaf-specific references:
+  - Change "Banana Leaf Distribution" initiative to "Sustainable Alternatives Program"
+  - Update stats to remove banana leaf count
+  - Update description text to focus on general eco-friendly practices
+
+#### C. Update Sustainability Section
+**File:** `src/components/SustainabilitySection.tsx`
+
+- Rename "Banana Leaf Initiatives" to "Sustainable Materials" or similar
+- Update description to focus on general eco-friendly alternatives
+
+#### D. Update Volunteer Form Section
+**File:** `src/components/VolunteerFormSection.tsx`
+
+- Remove "Banana Leaf Distribution" from the initiatives list
+- Keep other initiatives: Eco-Packaging Training, Tree Plantation, Lake Cleaning, Zero Waste Workshops
+
+#### E. Update Testimonials Section
+**File:** `src/components/TestimonialsSection.tsx`
+
+- Remove the banana leaf testimonial from Lakshmi Prasad
+- Keep the eco-packaging training testimonial from Venkata Rao (since you still want eco-packaging training)
+
+#### F. Update Gallery Section
+**File:** `src/components/GallerySection.tsx`
+
+- Remove banana leaf related images (banana-leaf-workshop, banana-leaf-lunch)
+- Keep biodegradable bag image
+- Replace removed images with other sustainability/community images
+
+#### G. Update Gallery Page
+**File:** `src/pages/Gallery.tsx`
+
+- Remove banana leaf related images from the gallery
+- Keep biodegradable bag and other sustainability images
+
+---
+
+### Step 3: Create New Form Sections
+
+Before I implement these, you'll need to create two more Google Forms:
+
+#### Google Form: Partner with Us
+Create with these suggested fields:
+- Organization Name (Short answer, Required)
+- Contact Person Name (Short answer, Required)
 - Email (Short answer, Required)
 - Phone Number (Short answer, Required)
-- Age (Short answer, Optional)
-- Location/Village (Short answer, Required)
-- Which initiatives interest you? (Checkboxes - Banana Leaf Distribution, Eco-Packaging Training, Tree Plantation, Lake Cleaning, Zero Waste Workshops)
-- Previous volunteer experience (Paragraph, Optional)
-- Availability (Checkboxes - Weekdays, Weekends, Flexible)
+- Organization Type (Dropdown - Corporate, NGO, Government, Educational Institution, Other)
+- Partnership Interest (Checkboxes - Funding, Volunteering, Resource Sharing, Joint Programs, Other)
+- Message/Proposal (Paragraph, Optional)
 
-#### Form 3: Request Banana Leaves Form
-Create a Google Form with these fields:
+#### Google Form: Report a Challenge
+Create with these suggested fields:
 - Your Name (Short answer, Required)
 - Phone Number (Short answer, Required)
 - Email (Short answer, Optional)
-- Event Type (Dropdown - Wedding, Birthday, Festival, Religious Function, Other)
-- Number of Banana Leaves Required (Short answer, Required)
-- Event Date (Date picker, Required)
-- Delivery Address (Paragraph, Required)
-- Additional Notes (Paragraph, Optional)
+- Location/Village (Short answer, Required)
+- Challenge Type (Dropdown - Healthcare Access, Education, Livelihood, Environment, Infrastructure, Other)
+- Describe the Challenge (Paragraph, Required)
+- How many people are affected? (Short answer, Optional)
+- Any additional information (Paragraph, Optional)
 
-**How to get the embed link:**
-1. Create your form in Google Forms
-2. Click the "Send" button
-3. Click the embed icon (looks like < >)
-4. Copy the iframe code or the URL inside it
+#### A. Create Partner Form Section
+**New File:** `src/components/PartnerFormSection.tsx`
+
+- Section with id="partner" for smooth scrolling
+- Title: "Partner with Us"
+- Description about collaboration opportunities
+- Google Form iframe embed with placeholder URL
+- Styled consistently with other form sections
+
+#### B. Create Report Challenge Form Section
+**New File:** `src/components/ReportChallengeSection.tsx`
+
+- Section with id="report-challenge" for smooth scrolling
+- Title: "Report a Challenge"
+- Description encouraging community members to report issues
+- Google Form iframe embed with placeholder URL
+- Styled consistently with other form sections
 
 ---
 
-### Step 2: What I Will Build
+### Step 4: Update Get Involved Section Links
 
-#### A. Update Contact Section
-**File:** `src/components/ContactSection.tsx`
-
-- Remove the existing custom React form
-- Add a Google Form iframe embed with proper styling
-- Keep the contact information (address, phone, email) and social links
-- Keep the Google Maps embed
-- Add responsive sizing for the form iframe
-
-#### B. Create New Volunteer Registration Section
-**File:** `src/components/VolunteerFormSection.tsx` (new file)
-
-- Create a new section component for volunteer registration
-- Include a Google Form iframe embed
-- Add descriptive text about volunteering opportunities
-- Style consistently with the rest of the website
-
-#### C. Create Banana Leaf Request Section
-**File:** `src/components/BananaLeafRequestSection.tsx` (new file)
-
-- Create a dedicated section for banana leaf requests
-- Include a Google Form iframe embed
-- Add information about the banana leaf distribution program
-- Include FAQ about delivery, availability, and quantities
-
-#### D. Update Environmental Safety Page
-**File:** `src/pages/focus/EnvironmentalSafety.tsx`
-
-- Add the Banana Leaf Request form section to this page
-- This is the most logical place since it relates to eco-friendly initiatives
-
-#### E. Update Get Involved Section
 **File:** `src/components/GetInvolvedSection.tsx`
 
-- Update the "Volunteer" button to link to the new volunteer form section
-- Add smooth scrolling to the volunteer form
+Update the button links to point to the new form sections:
+- "Partner with Us" button: Change from `#contact` to `#partner`
+- "Report a Challenge" button: Change from `#contact` to `#report-challenge`
 
-#### F. Update Homepage
+---
+
+### Step 5: Add New Sections to Homepage
+
 **File:** `src/pages/Index.tsx`
 
-- Add the VolunteerFormSection before or after the Contact section
-- Ensure proper section ordering
+- Import `PartnerFormSection` and `ReportChallengeSection`
+- Add sections to the page (after VolunteerFormSection, before ContactSection)
 
 ---
 
-### Step 3: Technical Implementation Details
-
-#### Google Form Iframe Structure
-```text
-+------------------------------------------+
-|  Section Container (styled background)   |
-|  +------------------------------------+  |
-|  |  Section Title & Description       |  |
-|  +------------------------------------+  |
-|  |                                    |  |
-|  |  Google Form Embed (iframe)        |  |
-|  |  - Responsive width                |  |
-|  |  - Min height: 600-800px           |  |
-|  |  - Rounded corners                 |  |
-|  |  - Shadow styling                  |  |
-|  |                                    |  |
-|  +------------------------------------+  |
-+------------------------------------------+
-```
-
-#### Iframe Configuration
-- Width: 100% (responsive)
-- Height: Dynamic based on form length (600-900px)
-- Border: None
-- Loading: Lazy for performance
-- Sandbox: allow-scripts, allow-same-origin, allow-forms
-
----
-
-### Step 4: Files to Create/Modify
+### Files Summary
 
 | File | Action | Description |
 |------|--------|-------------|
-| `src/components/ContactSection.tsx` | Modify | Replace custom form with Google Form iframe |
-| `src/components/VolunteerFormSection.tsx` | Create | New section for volunteer registration Google Form |
-| `src/components/BananaLeafRequestSection.tsx` | Create | New section for banana leaf request Google Form |
-| `src/pages/focus/EnvironmentalSafety.tsx` | Modify | Add banana leaf request form section |
-| `src/components/GetInvolvedSection.tsx` | Modify | Update volunteer button link |
-| `src/pages/Index.tsx` | Modify | Add volunteer form section |
-| `src/components/FocusPageLayout.tsx` | Modify | Add optional children prop support for custom sections |
+| `src/components/ContactSection.tsx` | Modify | Update Google Form embed URL |
+| `src/components/VolunteerFormSection.tsx` | Modify | Update Google Form URL + remove banana leaf initiative |
+| `src/components/BananaLeafRequestSection.tsx` | Delete | Remove entire file |
+| `src/pages/focus/EnvironmentalSafety.tsx` | Modify | Remove banana leaf section and references |
+| `src/components/SustainabilitySection.tsx` | Modify | Update banana leaf initiative name/description |
+| `src/components/TestimonialsSection.tsx` | Modify | Remove banana leaf testimonial |
+| `src/components/GallerySection.tsx` | Modify | Remove banana leaf images |
+| `src/pages/Gallery.tsx` | Modify | Remove banana leaf images |
+| `src/components/PartnerFormSection.tsx` | Create | New Partner with Us form section |
+| `src/components/ReportChallengeSection.tsx` | Create | New Report a Challenge form section |
+| `src/components/GetInvolvedSection.tsx` | Modify | Update button links to new sections |
+| `src/pages/Index.tsx` | Modify | Add new form sections |
 
 ---
 
-### Step 5: Placeholder URLs
+### What You Need to Do
 
-I will use placeholder URLs like `YOUR_GOOGLE_FORM_EMBED_URL_HERE` in the code. After implementation, you will need to replace these with your actual Google Form embed URLs.
+1. **Approve this plan**
+2. **Create two new Google Forms:**
+   - Partner with Us form
+   - Report a Challenge form
+3. **Provide the embed URLs** for these forms (or I'll use placeholders that you can replace later)
 
 ---
 
 ### What You Get After Implementation
 
-1. **Contact Section** - Google Form embedded, all responses go to your Google Sheets
-2. **Volunteer Registration** - New section on homepage with Google Form
-3. **Banana Leaf Request** - Form on Environmental Safety page for community requests
-4. **All data automatically saved** - Every submission goes directly to Google Sheets linked to each form
-
----
-
-### Next Steps After Approval
-
-1. Approve this plan
-2. I will implement the changes with placeholder URLs
-3. You create your 3 Google Forms
-4. You provide me the embed URLs (or replace them yourself in the code)
-5. Test the forms on your website
+1. Contact Form with your real embed URL (working)
+2. Volunteer Form with your real embed URL (working)
+3. All banana leaf content removed from the website
+4. New "Partner with Us" section with Google Form
+5. New "Report a Challenge" section with Google Form
+6. Updated Get Involved section with working links to all forms
 
