@@ -1,98 +1,23 @@
-import { useState } from "react";
 import { MapPin, Phone, Mail, Facebook, Twitter, Instagram } from "lucide-react";
-import { contactFormSchema, type ContactFormData } from "@/lib/validation";
-import { useFormSecurity } from "@/hooks/useFormSecurity";
-import { toast } from "sonner";
+import AnimatedSection from "./AnimatedSection";
 
 const ContactSection = () => {
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    message: "",
-  });
-  const [errors, setErrors] = useState<Partial<Record<keyof ContactFormData, string>>>({});
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const {
-    honeypotProps,
-    validateSubmission,
-    recordSubmission,
-    isCooldown,
-    cooldownRemaining,
-    checkContentSecurity,
-  } = useFormSecurity({ minSubmitTimeSeconds: 2, cooldownMs: 30000 });
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setErrors({});
-
-    // Security validation
-    if (!validateSubmission()) {
-      toast.error("Please wait before submitting again");
-      return;
-    }
-
-    // Content security check
-    if (!checkContentSecurity(formData.message)) {
-      toast.error("Your message contains invalid content");
-      return;
-    }
-
-    // Schema validation
-    const result = contactFormSchema.safeParse(formData);
-    if (!result.success) {
-      const fieldErrors: Partial<Record<keyof ContactFormData, string>> = {};
-      result.error.errors.forEach((err) => {
-        const field = err.path[0] as keyof ContactFormData;
-        fieldErrors[field] = err.message;
-      });
-      setErrors(fieldErrors);
-      return;
-    }
-
-    setIsSubmitting(true);
-    
-    try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      
-      recordSubmission();
-      toast.success("Thank you for your message! We'll get back to you soon.");
-      setFormData({ name: "", email: "", message: "" });
-    } catch {
-      toast.error("Failed to send message. Please try again.");
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => {
-    const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
-    // Clear error when user starts typing
-    if (errors[name as keyof ContactFormData]) {
-      setErrors({ ...errors, [name]: undefined });
-    }
-  };
-
   return (
     <section id="contact" className="py-20 bg-background">
       <div className="container mx-auto px-4">
         {/* Section Header */}
-        <div className="text-center mb-16">
+        <AnimatedSection animation="fadeUp" className="text-center mb-16">
           <h2 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-4">
             Contact Us
           </h2>
           <p className="text-muted-foreground max-w-2xl mx-auto">
             Have questions or want to get involved? Reach out to us.
           </p>
-        </div>
+        </AnimatedSection>
 
         <div className="grid lg:grid-cols-2 gap-12 max-w-6xl mx-auto">
           {/* Contact Info */}
-          <div className="space-y-8">
+          <AnimatedSection animation="slideRight" className="space-y-8">
             <div className="flex items-start gap-4">
               <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
                 <MapPin className="w-5 h-5 text-primary" />
@@ -162,109 +87,34 @@ const ContactSection = () => {
                 </a>
               </div>
             </div>
-          </div>
+          </AnimatedSection>
 
-          {/* Contact Form */}
-          <div className="card-elevated p-8">
-            <form onSubmit={handleSubmit} className="space-y-6">
-              {/* Honeypot field - hidden from users */}
-              <input {...honeypotProps} />
-
-              <div>
-                <label
-                  htmlFor="name"
-                  className="block text-sm font-medium text-foreground mb-2"
-                >
-                  Your Name
-                </label>
-                <input
-                  type="text"
-                  id="name"
-                  name="name"
-                  value={formData.name}
-                  onChange={handleChange}
-                  placeholder="Enter your name"
-                  required
-                  maxLength={100}
-                  className={`w-full px-4 py-3 rounded-lg border bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring ${
-                    errors.name ? "border-destructive" : "border-input"
-                  }`}
-                />
-                {errors.name && (
-                  <p className="mt-1 text-sm text-destructive">{errors.name}</p>
-                )}
-              </div>
-
-              <div>
-                <label
-                  htmlFor="email"
-                  className="block text-sm font-medium text-foreground mb-2"
-                >
-                  Your Email
-                </label>
-                <input
-                  type="email"
-                  id="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  placeholder="Enter your email"
-                  required
-                  maxLength={255}
-                  className={`w-full px-4 py-3 rounded-lg border bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring ${
-                    errors.email ? "border-destructive" : "border-input"
-                  }`}
-                />
-                {errors.email && (
-                  <p className="mt-1 text-sm text-destructive">{errors.email}</p>
-                )}
-              </div>
-
-              <div>
-                <label
-                  htmlFor="message"
-                  className="block text-sm font-medium text-foreground mb-2"
-                >
-                  Message
-                </label>
-                <textarea
-                  id="message"
-                  name="message"
-                  value={formData.message}
-                  onChange={handleChange}
-                  placeholder="Tell us how we can help..."
-                  rows={5}
-                  required
-                  maxLength={1000}
-                  className={`w-full px-4 py-3 rounded-lg border bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring resize-none ${
-                    errors.message ? "border-destructive" : "border-input"
-                  }`}
-                />
-                {errors.message && (
-                  <p className="mt-1 text-sm text-destructive">{errors.message}</p>
-                )}
-                <p className="mt-1 text-xs text-muted-foreground text-right">
-                  {formData.message.length}/1000
-                </p>
-              </div>
-
-              <button
-                type="submit"
-                disabled={isSubmitting || isCooldown}
-                className="btn-primary w-full disabled:opacity-50 disabled:cursor-not-allowed"
+          {/* Google Form Embed */}
+          <AnimatedSection animation="slideLeft" delay={0.2}>
+            <div className="card-elevated overflow-hidden">
+              <iframe
+                src="YOUR_CONTACT_GOOGLE_FORM_EMBED_URL_HERE"
+                width="100%"
+                height="600"
+                frameBorder="0"
+                marginHeight={0}
+                marginWidth={0}
+                title="Contact Form"
+                loading="lazy"
+                className="w-full"
+                style={{ minHeight: "600px" }}
               >
-                {isSubmitting
-                  ? "Sending..."
-                  : isCooldown
-                  ? `Please wait ${cooldownRemaining}s`
-                  : "Send Message"}
-              </button>
-            </form>
-          </div>
+                Loading contact form...
+              </iframe>
+            </div>
+            <p className="text-center text-sm text-muted-foreground mt-4">
+              Your message is securely submitted via Google Forms.
+            </p>
+          </AnimatedSection>
         </div>
 
         {/* Map Section */}
-        <div className="mt-16">
+        <AnimatedSection animation="fadeUp" delay={0.3} className="mt-16">
           <h3 className="font-display text-2xl font-semibold text-foreground text-center mb-8">
             Our Location
           </h3>
@@ -281,7 +131,7 @@ const ContactSection = () => {
               sandbox="allow-scripts allow-same-origin"
             />
           </div>
-        </div>
+        </AnimatedSection>
       </div>
     </section>
   );

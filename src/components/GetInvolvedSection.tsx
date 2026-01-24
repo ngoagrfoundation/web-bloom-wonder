@@ -14,7 +14,7 @@ const involvementOptions = [
     description:
       "Give your time and skills to make a difference. Join our volunteer network.",
     buttonText: "Volunteer Now",
-    buttonHref: "#contact",
+    buttonHref: "#volunteer",
   },
   {
     icon: Users,

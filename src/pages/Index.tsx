@@ -9,6 +9,7 @@ import TestimonialsSection from "@/components/TestimonialsSection";
 import GetInvolvedSection from "@/components/GetInvolvedSection";
 import NewsSection from "@/components/NewsSection";
 import GallerySection from "@/components/GallerySection";
+import VolunteerFormSection from "@/components/VolunteerFormSection";
 import ContactSection from "@/components/ContactSection";
 
 const Index = () => {
@@ -23,6 +24,7 @@ const Index = () => {
         <ImpactSection />
         <TestimonialsSection />
         <GetInvolvedSection />
+        <VolunteerFormSection />
         <NewsSection />
         <GallerySection />
         <ContactSection />
