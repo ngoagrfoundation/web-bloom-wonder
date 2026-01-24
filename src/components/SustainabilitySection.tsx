@@ -4,8 +4,8 @@ import AnimatedSection, { StaggerContainer, StaggerItem } from "./AnimatedSectio
 const initiatives = [
   {
     icon: Leaf,
-    title: "Banana Leaf Initiatives",
-    description: "Promoting traditional banana leaf usage for meals and events to reduce plastic waste.",
+    title: "Sustainable Materials",
+    description: "Promoting biodegradable and eco-friendly materials as alternatives to plastic waste.",
   },
   {
     icon: Recycle,

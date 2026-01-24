@@ -3,9 +3,7 @@ import { motion } from "framer-motion";
 import { MobileLayout } from "@/components/mobile";
 import GalleryLightbox, { GalleryImage } from "@/components/GalleryLightbox";
 import AnimatedSection, { StaggerContainer, StaggerItem } from "@/components/AnimatedSection";
-import bananaLeafWorkshop from "@/assets/gallery/banana-leaf-workshop.jpg";
 import biodegradableBag from "@/assets/gallery/biodegradable-bag.jpg";
-import bananaLeafLunch from "@/assets/gallery/banana-leaf-lunch.jpg";
 
 const categories = [
   { id: "all", label: "All" },
@@ -21,24 +19,24 @@ const categories = [
 const galleryImages: GalleryImage[] = [
   {
     id: "s1",
-    src: bananaLeafWorkshop,
-    alt: "Banana leaf packaging workshop",
-    category: "sustainability",
-    caption: "Women learning eco-friendly banana leaf packaging and wrapping techniques",
-  },
-  {
-    id: "s2",
     src: biodegradableBag,
     alt: "Biodegradable bag in hand",
     category: "sustainability",
     caption: "Handcrafted biodegradable bags - sustainable alternatives to plastic",
   },
   {
-    id: "s3",
-    src: bananaLeafLunch,
-    alt: "Traditional lunch on banana leaves",
+    id: "s2",
+    src: "https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?w=800",
+    alt: "Tree plantation drive",
     category: "sustainability",
-    caption: "Community meal served on fresh banana leaves - eco-friendly and traditional",
+    caption: "Community tree plantation drive to increase green cover",
+  },
+  {
+    id: "s3",
+    src: "https://images.unsplash.com/photo-1618477461853-cf6ed80faba5?w=800",
+    alt: "Eco-friendly packaging workshop",
+    category: "sustainability",
+    caption: "Training session on eco-friendly packaging techniques",
   },
   {
     id: "1",

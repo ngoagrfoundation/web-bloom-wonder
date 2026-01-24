@@ -4,12 +4,6 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 const testimonials = [
   {
     quote:
-      "Thanks for giving banana leaves for our function at home so that we had a great lunch in the banana leaves. It was a wonderful eco-friendly experience!",
-    name: "Lakshmi Prasad",
-    role: "Community Member",
-  },
-  {
-    quote:
       "Thanks for giving training of eco-friendly packaging and wrapping. Now our entire family uses sustainable alternatives instead of plastic.",
     name: "Venkata Rao",
     role: "Eco-Training Participant",

@@ -22,7 +22,7 @@ const involvementOptions = [
     description:
       "Collaborate with us to amplify impact. Corporate and NGO partnerships welcome.",
     buttonText: "Become a Partner",
-    buttonHref: "#contact",
+    buttonHref: "#partner",
   },
   {
     icon: GraduationCap,
@@ -38,7 +38,7 @@ const involvementOptions = [
     description:
       "Know a community in need? Report issues and help us reach more people.",
     buttonText: "Report Now",
-    buttonHref: "#contact",
+    buttonHref: "#report-challenge",
   },
   {
     icon: Heart,

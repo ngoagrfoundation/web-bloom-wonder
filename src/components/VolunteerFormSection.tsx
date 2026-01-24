@@ -1,12 +1,12 @@
-import { Users, Leaf, TreePine, Droplets, Recycle } from "lucide-react";
+import { Users, TreePine, Droplets, Recycle, Sparkles } from "lucide-react";
 import AnimatedSection, { StaggerContainer, StaggerItem } from "./AnimatedSection";
 
 const initiatives = [
-  { icon: Leaf, label: "Banana Leaf Distribution" },
   { icon: Recycle, label: "Eco-Packaging Training" },
   { icon: TreePine, label: "Tree Plantation" },
   { icon: Droplets, label: "Lake Cleaning" },
-  { icon: Users, label: "Zero Waste Workshops" },
+  { icon: Sparkles, label: "Zero Waste Workshops" },
+  { icon: Users, label: "Community Outreach" },
 ];
 
 const VolunteerFormSection = () => {
@@ -40,7 +40,7 @@ const VolunteerFormSection = () => {
           <div className="max-w-3xl mx-auto">
             <div className="card-elevated overflow-hidden">
               <iframe
-                src="YOUR_VOLUNTEER_GOOGLE_FORM_EMBED_URL_HERE"
+                src="https://docs.google.com/forms/d/e/1FAIpQLSeAOB76FS8FHLh-IdC2EcTkYS-SP7b1aUgcN7Lxz9ic9YXowQ/viewform?embedded=true"
                 width="100%"
                 height="800"
                 frameBorder="0"
