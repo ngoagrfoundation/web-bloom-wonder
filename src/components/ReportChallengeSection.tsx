@@ -1,4 +1,4 @@
-import { AlertTriangle, MapPin, Heart, Shield } from "lucide-react";
+import { AlertTriangle, MapPin, Heart, Shield, Lock, Clock } from "lucide-react";
 import AnimatedSection, { StaggerContainer, StaggerItem } from "./AnimatedSection";
 
 const challengeTypes = [
@@ -60,7 +60,10 @@ const ReportChallengeSection = () => {
             </div>
 
             <div className="p-6 bg-background rounded-xl border border-border">
-              <h4 className="font-semibold text-foreground mb-2">Your Identity is Protected</h4>
+              <div className="flex items-center gap-2 mb-2">
+                <Lock className="w-4 h-4 text-primary" />
+                <h4 className="font-semibold text-foreground">Your Identity is Protected</h4>
+              </div>
               <p className="text-sm text-muted-foreground">
                 All reports are treated confidentially. You can choose to remain anonymous 
                 if you prefer. Our priority is helping those in need.
@@ -68,23 +71,53 @@ const ReportChallengeSection = () => {
             </div>
           </AnimatedSection>
 
-          {/* Google Form Embed */}
+          {/* Google Form Embed with Enhanced UI */}
           <AnimatedSection animation="slideLeft" delay={0.2}>
-            <div className="card-elevated overflow-hidden">
-              <iframe
-                src="YOUR_REPORT_CHALLENGE_GOOGLE_FORM_EMBED_URL_HERE"
-                width="100%"
-                height="700"
-                frameBorder="0"
-                marginHeight={0}
-                marginWidth={0}
-                title="Report a Challenge Form"
-                loading="lazy"
-                className="w-full"
-                style={{ minHeight: "700px" }}
-              >
-                Loading report form...
-              </iframe>
+            <div className="rounded-2xl overflow-hidden shadow-xl border border-border bg-background">
+              {/* Form Header */}
+              <div className="bg-gradient-to-r from-destructive/90 to-destructive/70 px-6 py-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center">
+                    <AlertTriangle className="w-5 h-5 text-destructive-foreground" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-destructive-foreground">Report a Challenge</h3>
+                    <p className="text-sm text-destructive-foreground/80">Help us reach those in need</p>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Form Content */}
+              <div className="p-1 bg-muted/30">
+                <iframe
+                  src="https://docs.google.com/forms/d/e/1FAIpQLSfjgBXHkWtoDDJM08fRki32X4uBhXY6uXgMo7_a63aoMLIiZw/viewform?embedded=true"
+                  width="100%"
+                  height="600"
+                  frameBorder="0"
+                  marginHeight={0}
+                  marginWidth={0}
+                  title="Report a Challenge Form"
+                  loading="lazy"
+                  className="w-full bg-background rounded-lg"
+                  style={{ minHeight: "600px" }}
+                >
+                  Loading report form...
+                </iframe>
+              </div>
+              
+              {/* Form Footer */}
+              <div className="px-6 py-4 bg-muted/50 border-t border-border">
+                <div className="flex flex-wrap items-center justify-between gap-4">
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <Lock className="w-4 h-4 text-primary" />
+                    <span>Your privacy is protected</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <Clock className="w-4 h-4 text-primary" />
+                    <span>Reviewed within 24-48 hours</span>
+                  </div>
+                </div>
+              </div>
             </div>
             <p className="text-center text-sm text-muted-foreground mt-4">
               Thank you for being a voice for your community.
