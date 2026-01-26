@@ -1,5 +1,6 @@
-import { MapPin, Phone, Mail, Facebook, Twitter, Instagram, Shield, Send } from "lucide-react";
+import { MapPin, Phone, Mail, Facebook, Twitter, Instagram } from "lucide-react";
 import AnimatedSection from "./AnimatedSection";
+import ContactForm from "./forms/ContactForm";
 
 const ContactSection = () => {
   return (
@@ -89,48 +90,9 @@ const ContactSection = () => {
             </div>
           </AnimatedSection>
 
-          {/* Google Form Embed with Enhanced UI */}
+          {/* Custom Contact Form */}
           <AnimatedSection animation="slideLeft" delay={0.2}>
-            <div className="rounded-2xl overflow-hidden shadow-xl border border-border bg-background">
-              {/* Form Header */}
-              <div className="bg-gradient-to-r from-primary to-primary/80 px-6 py-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center">
-                    <Send className="w-5 h-5 text-primary-foreground" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-primary-foreground">Send us a Message</h3>
-                    <p className="text-sm text-primary-foreground/80">We'd love to hear from you</p>
-                  </div>
-                </div>
-              </div>
-              
-              {/* Form Content */}
-              <div className="p-1 bg-muted/30">
-                <iframe
-                  src="https://docs.google.com/forms/d/e/1FAIpQLScFud-Iu30I2-TAkcmOsgyk0EA8UNViTIJ7OrBquMiUtvp4gg/viewform?embedded=true"
-                  width="100%"
-                  height="500"
-                  frameBorder="0"
-                  marginHeight={0}
-                  marginWidth={0}
-                  title="Contact Form"
-                  loading="lazy"
-                  className="w-full bg-background rounded-lg"
-                  style={{ minHeight: "500px" }}
-                >
-                  Loading contact form...
-                </iframe>
-              </div>
-              
-              {/* Form Footer */}
-              <div className="px-6 py-4 bg-muted/50 border-t border-border">
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <Shield className="w-4 h-4 text-primary" />
-                  <span>Your message is securely submitted via Google Forms</span>
-                </div>
-              </div>
-            </div>
+            <ContactForm />
           </AnimatedSection>
         </div>
 

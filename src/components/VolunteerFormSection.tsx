@@ -1,5 +1,6 @@
-import { Users, TreePine, Droplets, Recycle, Sparkles, Heart, Clock, Shield, Calendar } from "lucide-react";
+import { Users, TreePine, Droplets, Recycle, Sparkles, Heart, Clock, Calendar } from "lucide-react";
 import AnimatedSection, { StaggerContainer, StaggerItem } from "./AnimatedSection";
+import VolunteerForm from "./forms/VolunteerForm";
 
 const initiatives = [
   { icon: Recycle, label: "Eco-Packaging Training" },
@@ -83,54 +84,9 @@ const VolunteerFormSection = () => {
             </div>
           </AnimatedSection>
 
-          {/* Google Form Embed with Enhanced UI */}
+          {/* Custom Volunteer Form */}
           <AnimatedSection animation="slideLeft" delay={0.2}>
-            <div className="rounded-2xl overflow-hidden shadow-xl border border-border bg-background">
-              {/* Form Header */}
-              <div className="bg-gradient-to-r from-primary to-primary/80 px-6 py-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center">
-                    <Heart className="w-5 h-5 text-primary-foreground" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-primary-foreground">Register as a Volunteer</h3>
-                    <p className="text-sm text-primary-foreground/80">Start making a difference today</p>
-                  </div>
-                </div>
-              </div>
-              
-              {/* Form Content */}
-              <div className="p-1 bg-muted/30">
-                <iframe
-                  src="https://docs.google.com/forms/d/e/1FAIpQLSeAOB76FS8FHLh-IdC2EcTkYS-SP7b1aUgcN7Lxz9ic9YXowQ/viewform?embedded=true"
-                  width="100%"
-                  height="650"
-                  frameBorder="0"
-                  marginHeight={0}
-                  marginWidth={0}
-                  title="Volunteer Registration Form"
-                  loading="lazy"
-                  className="w-full bg-background rounded-lg"
-                  style={{ minHeight: "650px" }}
-                >
-                  Loading volunteer registration form...
-                </iframe>
-              </div>
-              
-              {/* Form Footer */}
-              <div className="px-6 py-4 bg-muted/50 border-t border-border">
-                <div className="flex flex-wrap items-center justify-between gap-4">
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <Shield className="w-4 h-4 text-primary" />
-                    <span>Secure submission via Google Forms</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <Clock className="w-4 h-4 text-primary" />
-                    <span>We'll contact you within 48 hours</span>
-                  </div>
-                </div>
-              </div>
-            </div>
+            <VolunteerForm />
           </AnimatedSection>
         </div>
       </div>
