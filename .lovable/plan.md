@@ -1,130 +1,117 @@
 
 
-## Fix Google Sheets Integration + Move Forms to Get Involved Modals
+## Fix Google Sheets Form Submission - CORS & Field Name Issues
 
-### Problem Summary
+### Root Cause Analysis
 
-1. **Data not saving to Google Sheets**: Network requests show Status: 0 (failed). Root cause is incorrect fetch configuration that triggers CORS preflight requests.
+After reviewing the code and network logs, I found **two issues**:
 
-2. **Form sections need to be moved**: The Volunteer, Partner, and Report Challenge form sections should be removed from the landing page and instead open as modals when clicking cards in the "Get Involved" section.
+**Issue 1: CORS Error**
+The network requests show "Error: Failed to fetch" which is a CORS error. The current fetch configuration removed `mode: "no-cors"` but Google Apps Script doesn't properly support CORS for cross-origin POST requests. 
 
----
+The fix is to add `mode: "no-cors"` back, which will make the request work but won't allow us to read the response (that's fine - we assume success if no error is thrown).
 
-### Part 1: Fix Google Sheets Integration
-
-The current fetch configuration in `useGoogleSheetForm.ts` is:
+**Issue 2: Field Name Mismatch - Partner Form**
+The Partner form sends `organizationName` but the Google Apps Script expects `organization`:
 
 ```javascript
-fetch(scriptUrl, {
-  method: "POST",
-  mode: "no-cors",
-  headers: { "Content-Type": "application/json" },
-  body: JSON.stringify(data),
-});
+// Google Apps Script expects:
+data.organization || ""
+
+// React form sends:
+organizationName
 ```
 
-**The Problems:**
-1. `Content-Type: application/json` triggers a CORS preflight `OPTIONS` request
-2. Google Apps Script cannot handle `OPTIONS` requests
-3. Missing `redirect: "follow"` to handle Google's URL redirect
-
-**The Fix:**
-Change to:
-```javascript
-fetch(scriptUrl, {
-  method: "POST",
-  redirect: "follow",
-  headers: { "Content-Type": "text/plain;charset=utf-8" },
-  body: JSON.stringify(data),
-});
-```
-
-**File to modify:** `src/hooks/useGoogleSheetForm.ts`
-
 ---
 
-### Part 2: Remove Form Sections from Landing Page
-
-**File to modify:** `src/pages/Index.tsx`
-
-Remove these imports and components:
-- `VolunteerFormSection`
-- `PartnerFormSection`
-- `ReportChallengeSection`
-
-The landing page will go from 14 sections to 11 sections.
-
----
-
-### Part 3: Update Get Involved Section with Modal Forms
-
-**File to modify:** `src/components/GetInvolvedSection.tsx`
-
-Transform the Get Involved section to:
-1. Make cards clickable to open modal dialogs
-2. Import the Dialog component from shadcn/ui
-3. Import the three form components (VolunteerForm, PartnerForm, ReportChallengeForm)
-4. Add state management to track which modal is open
-5. Render the appropriate form inside each modal
-
-**Card Behavior:**
-| Card | Current Behavior | New Behavior |
-|------|-----------------|--------------|
-| Volunteer | Scrolls to #volunteer section | Opens Volunteer form modal |
-| Partner with Us | Scrolls to #partner section | Opens Partner form modal |
-| Adopt a Student | Scrolls to #contact section | Keeps scrolling to contact |
-| Report a Challenge | Scrolls to #report-challenge section | Opens Report Challenge form modal |
-| Donate | Links to /donate page | Keeps linking to /donate |
-
----
-
-### Technical Implementation Details
+### Solution
 
 #### File 1: `src/hooks/useGoogleSheetForm.ts`
-- Line 64-70: Update fetch configuration
-- Remove `mode: "no-cors"`
-- Change `Content-Type` to `text/plain;charset=utf-8`
-- Add `redirect: "follow"`
 
-#### File 2: `src/pages/Index.tsx`
-- Remove imports for VolunteerFormSection, PartnerFormSection, ReportChallengeSection
-- Remove corresponding JSX elements from the page
+Add `mode: "no-cors"` back to the fetch configuration:
 
-#### File 3: `src/components/GetInvolvedSection.tsx`
-- Add useState for modal state: `activeModal: 'volunteer' | 'partner' | 'report' | null`
-- Import Dialog, DialogContent, DialogTitle from `@/components/ui/dialog`
-- Import VolunteerForm, PartnerForm, ReportChallengeForm
-- Import ScrollArea for scrollable modal content
-- Update card click handlers to open appropriate modal
-- Add three Dialog components with the respective forms
+```typescript
+await fetch(scriptUrl, {
+  method: "POST",
+  mode: "no-cors",  // Required for cross-origin Google Apps Script
+  redirect: "follow",
+  headers: {
+    "Content-Type": "text/plain;charset=utf-8",
+  },
+  body: JSON.stringify(data),
+});
+```
+
+**Note:** With `mode: "no-cors"`, the response is "opaque" and we can't check the status. The current code already handles this by assuming success if no exception is thrown.
+
+#### File 2: `src/components/forms/PartnerForm.tsx`
+
+Update the `onSubmit` function to send `organization` instead of `organizationName`:
+
+```typescript
+const onSubmit = async (data: PartnerFormData) => {
+  const orgTypeLabel = organizationTypes.find(t => t.id === data.organizationType)?.label || data.organizationType;
+  await submitForm({
+    organization: data.organizationName,  // Changed from organizationName
+    contactPerson: data.contactPerson,
+    email: data.email,
+    phone: data.phone,
+    organizationType: orgTypeLabel,
+    partnershipInterest: data.partnershipInterest.map(id => 
+      partnershipInterests.find(p => p.id === id)?.label || id
+    ),  // Send as array, script will handle
+    message: data.message || "",
+  });
+};
+```
 
 ---
 
-### Modal Design
+### Technical Details
 
-The modals will:
-- Use the existing shadcn Dialog component with larger width (`max-w-2xl`)
-- Include ScrollArea for forms that exceed viewport height
-- Keep the existing form styling (headers, footers, validation)
-- Close automatically on successful submission (optional enhancement)
+**Why `mode: "no-cors"` is needed:**
+- Google Apps Script web apps redirect POST requests to a different URL
+- The browser blocks the redirect response due to CORS policy
+- With `mode: "no-cors"`, the request goes through but the response is opaque
+- Since we can't read the response anyway, this is acceptable
+
+**Field mappings to verify (from your Google Apps Scripts):**
+
+| Form | React Sends | Script Expects | Status |
+|------|-------------|----------------|--------|
+| **Contact** | name, email, message | name, email, phone, message | Missing phone field |
+| **Volunteer** | fullName, email, phone, location, initiatives, availability, experience | fullName, email, phone, location, initiatives, availability, experience | OK |
+| **Partner** | organizationName → organization, contactPerson, email, phone, organizationType, partnershipInterest, message | organization, contactPerson, email, phone, organizationType, partnershipInterest, message | Fix needed |
+| **Challenge** | name, phone, email, location, challengeType, description, peopleAffected | name, phone, email, location, challengeType, description, peopleAffected | OK |
+
+**Contact Form Note:** Your Google Apps Script expects a `phone` field but the Contact form only has name, email, and message. The script handles this with `data.phone || ""` so it's fine.
 
 ---
 
-### Files Summary
+### Files to Modify
 
-| File | Action | Changes |
-|------|--------|---------|
-| `src/hooks/useGoogleSheetForm.ts` | Modify | Fix fetch configuration for Google Apps Script |
-| `src/pages/Index.tsx` | Modify | Remove 3 form sections |
-| `src/components/GetInvolvedSection.tsx` | Modify | Add modal dialogs for 3 forms |
+| File | Changes |
+|------|---------|
+| `src/hooks/useGoogleSheetForm.ts` | Add `mode: "no-cors"` to fetch options |
+| `src/components/forms/PartnerForm.tsx` | Change `organizationName` to `organization` in submitForm |
 
 ---
 
-### Expected Result
+### Expected Result After Fix
 
-1. Form submissions will successfully save to Google Sheets
-2. Landing page will be cleaner with fewer sections
-3. Get Involved cards will open modal dialogs with the forms
-4. Better user experience - users stay on the page while filling forms
-5. Contact form section remains on the landing page (unchanged)
+1. Form submissions will successfully reach Google Apps Script
+2. Data will be appended to your Google Sheets
+3. Users will see success messages after submission
+4. Cooldown and security features will continue working
+
+---
+
+### Testing Recommendation
+
+After the fix, test each form:
+
+1. **Contact Form**: Fill name, email, message → Check Google Sheet
+2. **Volunteer Form**: Fill all fields → Check Google Sheet  
+3. **Partner Form**: Fill all fields → Check Google Sheet
+4. **Report Challenge Form**: Fill all fields → Check Google Sheet
 
