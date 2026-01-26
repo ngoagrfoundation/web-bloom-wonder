@@ -29,7 +29,11 @@ const challengeTypes = [
   { id: "other", label: "Other" },
 ];
 
-const ReportChallengeForm = () => {
+interface ReportChallengeFormProps {
+  onSuccess?: () => void;
+}
+
+const ReportChallengeForm = ({ onSuccess: onSuccessCallback }: ReportChallengeFormProps) => {
   const [showSuccess, setShowSuccess] = useState(false);
 
   const { submitForm, isSubmitting, security } = useGoogleSheetForm({
@@ -37,6 +41,7 @@ const ReportChallengeForm = () => {
     onSuccess: () => {
       setShowSuccess(true);
       reset();
+      onSuccessCallback?.();
     },
   });
 
