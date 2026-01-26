@@ -1,5 +1,6 @@
-import { AlertTriangle, MapPin, Heart, Shield, Lock, Clock } from "lucide-react";
+import { AlertTriangle, MapPin, Heart, Shield, Lock } from "lucide-react";
 import AnimatedSection, { StaggerContainer, StaggerItem } from "./AnimatedSection";
+import ReportChallengeForm from "./forms/ReportChallengeForm";
 
 const challengeTypes = [
   { icon: Heart, label: "Healthcare Access" },
@@ -71,54 +72,9 @@ const ReportChallengeSection = () => {
             </div>
           </AnimatedSection>
 
-          {/* Google Form Embed with Enhanced UI */}
+          {/* Custom Report Challenge Form */}
           <AnimatedSection animation="slideLeft" delay={0.2}>
-            <div className="rounded-2xl overflow-hidden shadow-xl border border-border bg-background">
-              {/* Form Header */}
-              <div className="bg-gradient-to-r from-destructive/90 to-destructive/70 px-6 py-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center">
-                    <AlertTriangle className="w-5 h-5 text-destructive-foreground" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-destructive-foreground">Report a Challenge</h3>
-                    <p className="text-sm text-destructive-foreground/80">Help us reach those in need</p>
-                  </div>
-                </div>
-              </div>
-              
-              {/* Form Content */}
-              <div className="p-1 bg-muted/30">
-                <iframe
-                  src="https://docs.google.com/forms/d/e/1FAIpQLSfjgBXHkWtoDDJM08fRki32X4uBhXY6uXgMo7_a63aoMLIiZw/viewform?embedded=true"
-                  width="100%"
-                  height="600"
-                  frameBorder="0"
-                  marginHeight={0}
-                  marginWidth={0}
-                  title="Report a Challenge Form"
-                  loading="lazy"
-                  className="w-full bg-background rounded-lg"
-                  style={{ minHeight: "600px" }}
-                >
-                  Loading report form...
-                </iframe>
-              </div>
-              
-              {/* Form Footer */}
-              <div className="px-6 py-4 bg-muted/50 border-t border-border">
-                <div className="flex flex-wrap items-center justify-between gap-4">
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <Lock className="w-4 h-4 text-primary" />
-                    <span>Your privacy is protected</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <Clock className="w-4 h-4 text-primary" />
-                    <span>Reviewed within 24-48 hours</span>
-                  </div>
-                </div>
-              </div>
-            </div>
+            <ReportChallengeForm />
             <p className="text-center text-sm text-muted-foreground mt-4">
               Thank you for being a voice for your community.
             </p>
