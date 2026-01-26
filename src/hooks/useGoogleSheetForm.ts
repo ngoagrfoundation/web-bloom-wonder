@@ -63,6 +63,7 @@ export const useGoogleSheetForm = (options: UseGoogleSheetFormOptions): UseGoogl
     try {
       await fetch(scriptUrl, {
         method: "POST",
+        mode: "no-cors",
         redirect: "follow",
         headers: {
           "Content-Type": "text/plain;charset=utf-8",
