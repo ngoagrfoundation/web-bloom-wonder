@@ -27,7 +27,11 @@ const availabilityOptions = [
   { id: "special-campaigns", label: "Special Campaigns" },
 ];
 
-const VolunteerForm = () => {
+interface VolunteerFormProps {
+  onSuccess?: () => void;
+}
+
+const VolunteerForm = ({ onSuccess: onSuccessCallback }: VolunteerFormProps) => {
   const [showSuccess, setShowSuccess] = useState(false);
 
   const { submitForm, isSubmitting, security } = useGoogleSheetForm({
@@ -35,6 +39,7 @@ const VolunteerForm = () => {
     onSuccess: () => {
       setShowSuccess(true);
       reset();
+      onSuccessCallback?.();
     },
   });
 

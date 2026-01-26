@@ -37,7 +37,11 @@ const partnershipInterests = [
   { id: "awareness", label: "Awareness Campaigns" },
 ];
 
-const PartnerForm = () => {
+interface PartnerFormProps {
+  onSuccess?: () => void;
+}
+
+const PartnerForm = ({ onSuccess: onSuccessCallback }: PartnerFormProps) => {
   const [showSuccess, setShowSuccess] = useState(false);
 
   const { submitForm, isSubmitting, security } = useGoogleSheetForm({
@@ -45,6 +49,7 @@ const PartnerForm = () => {
     onSuccess: () => {
       setShowSuccess(true);
       reset();
+      onSuccessCallback?.();
     },
   });
 

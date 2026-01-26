@@ -61,11 +61,11 @@ export const useGoogleSheetForm = (options: UseGoogleSheetFormOptions): UseGoogl
     setError(null);
 
     try {
-      const response = await fetch(scriptUrl, {
+      await fetch(scriptUrl, {
         method: "POST",
-        mode: "no-cors", // Google Apps Script requires no-cors
+        redirect: "follow",
         headers: {
-          "Content-Type": "application/json",
+          "Content-Type": "text/plain;charset=utf-8",
         },
         body: JSON.stringify(data),
       });
