@@ -75,11 +75,15 @@ const PartnerForm = ({ onSuccess: onSuccessCallback }: PartnerFormProps) => {
   const onSubmit = async (data: PartnerFormData) => {
     const orgTypeLabel = organizationTypes.find(t => t.id === data.organizationType)?.label || data.organizationType;
     await submitForm({
-      ...data,
+      organization: data.organizationName,
+      contactPerson: data.contactPerson,
+      email: data.email,
+      phone: data.phone,
       organizationType: orgTypeLabel,
       partnershipInterest: data.partnershipInterest.map(id => 
         partnershipInterests.find(p => p.id === id)?.label || id
-      ).join(", "),
+      ),
+      message: data.message || "",
     });
   };
 
