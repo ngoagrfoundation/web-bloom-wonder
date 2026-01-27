@@ -1,117 +1,195 @@
 
 
-## Fix Google Sheets Form Submission - CORS & Field Name Issues
+## Fix Volunteer Form + Add Phone to Contact + Create Adopt a Student Form
 
-### Root Cause Analysis
+### Problem 1: Volunteer Form Data Not Saving
 
-After reviewing the code and network logs, I found **two issues**:
-
-**Issue 1: CORS Error**
-The network requests show "Error: Failed to fetch" which is a CORS error. The current fetch configuration removed `mode: "no-cors"` but Google Apps Script doesn't properly support CORS for cross-origin POST requests. 
-
-The fix is to add `mode: "no-cors"` back, which will make the request work but won't allow us to read the response (that's fine - we assume success if no error is thrown).
-
-**Issue 2: Field Name Mismatch - Partner Form**
-The Partner form sends `organizationName` but the Google Apps Script expects `organization`:
-
+**Root Cause Found:**
+The Volunteer form pre-joins arrays to strings before sending:
 ```javascript
-// Google Apps Script expects:
-data.organization || ""
-
-// React form sends:
-organizationName
-```
-
----
-
-### Solution
-
-#### File 1: `src/hooks/useGoogleSheetForm.ts`
-
-Add `mode: "no-cors"` back to the fetch configuration:
-
-```typescript
-await fetch(scriptUrl, {
-  method: "POST",
-  mode: "no-cors",  // Required for cross-origin Google Apps Script
-  redirect: "follow",
-  headers: {
-    "Content-Type": "text/plain;charset=utf-8",
-  },
-  body: JSON.stringify(data),
+// Current code (line 66-70 in VolunteerForm.tsx)
+await submitForm({
+  ...data,
+  initiatives: data.initiatives.join(", "),    // Sends "eco-packaging, tree-plantation"
+  availability: data.availability.join(", "),  // Sends "weekends, monthly-events"
 });
 ```
 
-**Note:** With `mode: "no-cors"`, the response is "opaque" and we can't check the status. The current code already handles this by assuming success if no exception is thrown.
+But the Google Apps Script expects arrays and joins them itself:
+```javascript
+(data.initiatives || []).join(", ")   // Expects ["eco-packaging", "tree-plantation"]
+```
 
-#### File 2: `src/components/forms/PartnerForm.tsx`
+When you call `.join()` on a string, JavaScript returns the string unchanged, but the data type mismatch causes issues in Google Apps Script.
 
-Update the `onSubmit` function to send `organization` instead of `organizationName`:
+**Solution:** Send labels directly (as the Partner form does), and send arrays instead of pre-joined strings.
 
-```typescript
-const onSubmit = async (data: PartnerFormData) => {
-  const orgTypeLabel = organizationTypes.find(t => t.id === data.organizationType)?.label || data.organizationType;
+---
+
+### Problem 2: Contact Form Missing Phone Field
+
+The Contact form currently has: Name, Email, Message
+Your Google Apps Script expects: Name, Email, Phone, Message
+
+Need to add phone field to the form and update the validation schema.
+
+---
+
+### Problem 3: Adopt a Student Form Needed
+
+Create a new form for the "Adopt a Student" option in Get Involved section.
+
+---
+
+### Implementation Plan
+
+#### Step 1: Fix Volunteer Form (`src/components/forms/VolunteerForm.tsx`)
+
+Change the `onSubmit` function to:
+1. Send arrays directly (not pre-joined strings)
+2. Send labels instead of IDs (for readability in Google Sheets)
+
+```javascript
+const onSubmit = async (data: VolunteerFormData) => {
   await submitForm({
-    organization: data.organizationName,  // Changed from organizationName
-    contactPerson: data.contactPerson,
+    fullName: data.fullName,
     email: data.email,
     phone: data.phone,
-    organizationType: orgTypeLabel,
-    partnershipInterest: data.partnershipInterest.map(id => 
-      partnershipInterests.find(p => p.id === id)?.label || id
-    ),  // Send as array, script will handle
-    message: data.message || "",
+    location: data.location,
+    initiatives: data.initiatives.map(id => 
+      initiatives.find(i => i.id === id)?.label || id
+    ),  // Send array of labels
+    availability: data.availability.map(id => 
+      availabilityOptions.find(a => a.id === id)?.label || id
+    ),  // Send array of labels
+    experience: data.experience || "",
   });
 };
 ```
 
 ---
 
-### Technical Details
+#### Step 2: Add Phone Field to Contact Form
 
-**Why `mode: "no-cors"` is needed:**
-- Google Apps Script web apps redirect POST requests to a different URL
-- The browser blocks the redirect response due to CORS policy
-- With `mode: "no-cors"`, the request goes through but the response is opaque
-- Since we can't read the response anyway, this is acceptable
+**File: `src/lib/validation.ts`**
+Update the contact form schema to include phone:
+```javascript
+export const contactFormSchema = z.object({
+  name: z....,
+  email: z....,
+  phone: z
+    .string()
+    .trim()
+    .regex(/^[6-9]\d{9}$/, "Please enter a valid 10-digit Indian phone number")
+    .optional()
+    .or(z.literal("")),
+  message: z....,
+});
+```
 
-**Field mappings to verify (from your Google Apps Scripts):**
-
-| Form | React Sends | Script Expects | Status |
-|------|-------------|----------------|--------|
-| **Contact** | name, email, message | name, email, phone, message | Missing phone field |
-| **Volunteer** | fullName, email, phone, location, initiatives, availability, experience | fullName, email, phone, location, initiatives, availability, experience | OK |
-| **Partner** | organizationName → organization, contactPerson, email, phone, organizationType, partnershipInterest, message | organization, contactPerson, email, phone, organizationType, partnershipInterest, message | Fix needed |
-| **Challenge** | name, phone, email, location, challengeType, description, peopleAffected | name, phone, email, location, challengeType, description, peopleAffected | OK |
-
-**Contact Form Note:** Your Google Apps Script expects a `phone` field but the Contact form only has name, email, and message. The script handles this with `data.phone || ""` so it's fine.
-
----
-
-### Files to Modify
-
-| File | Changes |
-|------|---------|
-| `src/hooks/useGoogleSheetForm.ts` | Add `mode: "no-cors"` to fetch options |
-| `src/components/forms/PartnerForm.tsx` | Change `organizationName` to `organization` in submitForm |
+**File: `src/components/forms/ContactForm.tsx`**
+- Add phone to default values
+- Add phone input field between Email and Message
 
 ---
 
-### Expected Result After Fix
+#### Step 3: Create Adopt a Student Form
 
-1. Form submissions will successfully reach Google Apps Script
-2. Data will be appended to your Google Sheets
-3. Users will see success messages after submission
-4. Cooldown and security features will continue working
+**New File: `src/components/forms/AdoptStudentForm.tsx`**
+
+Form fields:
+- Sponsor Name (required)
+- Email (required)
+- Phone (required)
+- City (required)
+- Preferred Grade Level (dropdown: Primary, Middle, High School, Any)
+- Duration of Sponsorship (dropdown: 1 Year, 2 Years, 3 Years, Until Graduation)
+- Message (optional)
+
+**File: `src/lib/validation.ts`**
+Add new schema:
+```javascript
+export const adoptStudentFormSchema = z.object({
+  sponsorName: z.string().trim().min(2).max(100),
+  email: z.string().trim().email().max(255),
+  phone: z.string().trim().regex(/^[6-9]\d{9}$/),
+  city: z.string().trim().min(2).max(100),
+  gradeLevel: z.string().min(1, "Please select a grade level"),
+  duration: z.string().min(1, "Please select sponsorship duration"),
+  message: z.string().trim().max(1000).optional().or(z.literal("")),
+});
+```
+
+**File: `src/components/GetInvolvedSection.tsx`**
+Update "Adopt a Student" card to open modal with form.
 
 ---
 
-### Testing Recommendation
+### Google Apps Script for Adopt a Student
 
-After the fix, test each form:
+**Column Headers for Google Sheet:**
+| A | B | C | D | E | F | G | H |
+|---|---|---|---|---|---|---|---|
+| Timestamp | Sponsor Name | Email | Phone | City | Grade Level | Duration | Message |
 
-1. **Contact Form**: Fill name, email, message → Check Google Sheet
-2. **Volunteer Form**: Fill all fields → Check Google Sheet  
-3. **Partner Form**: Fill all fields → Check Google Sheet
-4. **Report Challenge Form**: Fill all fields → Check Google Sheet
+**Google Apps Script Code:**
+```javascript
+function doPost(e) {
+  try {
+    const sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+    const data = JSON.parse(e.postData.contents);
+    
+    sheet.appendRow([
+      new Date(),
+      data.sponsorName || "",
+      data.email || "",
+      data.phone || "",
+      data.city || "",
+      data.gradeLevel || "",
+      data.duration || "",
+      data.message || ""
+    ]);
+    
+    return ContentService
+      .createTextOutput(JSON.stringify({ success: true }))
+      .setMimeType(ContentService.MimeType.JSON);
+      
+  } catch (err) {
+    return ContentService
+      .createTextOutput(JSON.stringify({ success: false, error: err.message }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+}
 
+function doGet() {
+  return ContentService
+    .createTextOutput(JSON.stringify({ status: "ready" }))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+```
+
+---
+
+### Files to Modify/Create
+
+| File | Action | Changes |
+|------|--------|---------|
+| `src/components/forms/VolunteerForm.tsx` | Modify | Fix `onSubmit` to send arrays with labels |
+| `src/lib/validation.ts` | Modify | Add phone to contact schema, add adopt student schema |
+| `src/components/forms/ContactForm.tsx` | Modify | Add phone input field |
+| `src/components/forms/AdoptStudentForm.tsx` | Create | New form component |
+| `src/components/GetInvolvedSection.tsx` | Modify | Add Adopt Student modal |
+
+---
+
+### After Implementation
+
+You'll need to:
+1. Create a new Google Sheet for "Adopt a Student"
+2. Set up the columns: Timestamp, Sponsor Name, Email, Phone, City, Grade Level, Duration, Message
+3. Deploy the Google Apps Script as a Web App
+4. Provide me the URL so I can add it to the form
+
+
+Here is the URL of "Adopt a Student":
+https://script.google.com/macros/s/AKfycbze9LbMP1Ce3AirPUbDPLp1ZGusY6SgmvZ57hcOOxYSAvKabL2EULALHuK_peKL7k8r/exec
