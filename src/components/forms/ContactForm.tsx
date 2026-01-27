@@ -32,6 +32,7 @@ const ContactForm = () => {
     defaultValues: {
       name: "",
       email: "",
+      phone: "",
       message: "",
     },
   });
@@ -116,6 +117,22 @@ const ContactForm = () => {
           />
           {errors.email && (
             <p className="text-sm text-destructive">{errors.email.message}</p>
+          )}
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="phone" className="text-foreground">
+            Phone Number
+          </Label>
+          <Input
+            id="phone"
+            type="tel"
+            placeholder="9876543210"
+            {...register("phone")}
+            className={errors.phone ? "border-destructive" : ""}
+          />
+          {errors.phone && (
+            <p className="text-sm text-destructive">{errors.phone.message}</p>
           )}
         </div>
 
