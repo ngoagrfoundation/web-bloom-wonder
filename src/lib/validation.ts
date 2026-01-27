@@ -13,6 +13,12 @@ export const contactFormSchema = z.object({
     .trim()
     .email("Please enter a valid email address")
     .max(255, "Email must be less than 255 characters"),
+  phone: z
+    .string()
+    .trim()
+    .regex(/^[6-9]\d{9}$/, "Please enter a valid 10-digit Indian phone number")
+    .optional()
+    .or(z.literal("")),
   message: z
     .string()
     .trim()
@@ -175,6 +181,41 @@ export const reportChallengeFormSchema = z.object({
     .or(z.literal("")),
 });
 
+// Adopt Student Form Schema
+export const adoptStudentFormSchema = z.object({
+  sponsorName: z
+    .string()
+    .trim()
+    .min(2, "Name must be at least 2 characters")
+    .max(100, "Name must be less than 100 characters"),
+  email: z
+    .string()
+    .trim()
+    .email("Please enter a valid email address")
+    .max(255, "Email must be less than 255 characters"),
+  phone: z
+    .string()
+    .trim()
+    .regex(/^[6-9]\d{9}$/, "Please enter a valid 10-digit Indian phone number"),
+  city: z
+    .string()
+    .trim()
+    .min(2, "City must be at least 2 characters")
+    .max(100, "City must be less than 100 characters"),
+  gradeLevel: z
+    .string()
+    .min(1, "Please select a grade level"),
+  duration: z
+    .string()
+    .min(1, "Please select sponsorship duration"),
+  message: z
+    .string()
+    .trim()
+    .max(1000, "Message must be less than 1000 characters")
+    .optional()
+    .or(z.literal("")),
+});
+
 // Type exports
 export type ContactFormData = z.infer<typeof contactFormSchema>;
 export type DonationFormData = z.infer<typeof donationFormSchema>;
@@ -182,3 +223,4 @@ export type NewsletterData = z.infer<typeof newsletterSchema>;
 export type VolunteerFormData = z.infer<typeof volunteerFormSchema>;
 export type PartnerFormData = z.infer<typeof partnerFormSchema>;
 export type ReportChallengeFormData = z.infer<typeof reportChallengeFormSchema>;
+export type AdoptStudentFormData = z.infer<typeof adoptStudentFormSchema>;

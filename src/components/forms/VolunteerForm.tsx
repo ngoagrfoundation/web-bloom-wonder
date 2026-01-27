@@ -64,9 +64,17 @@ const VolunteerForm = ({ onSuccess: onSuccessCallback }: VolunteerFormProps) => 
 
   const onSubmit = async (data: VolunteerFormData) => {
     await submitForm({
-      ...data,
-      initiatives: data.initiatives.join(", "),
-      availability: data.availability.join(", "),
+      fullName: data.fullName,
+      email: data.email,
+      phone: data.phone,
+      location: data.location,
+      initiatives: data.initiatives.map(id => 
+        initiatives.find(i => i.id === id)?.label || id
+      ),
+      availability: data.availability.map(id => 
+        availabilityOptions.find(a => a.id === id)?.label || id
+      ),
+      experience: data.experience || "",
     });
   };
 

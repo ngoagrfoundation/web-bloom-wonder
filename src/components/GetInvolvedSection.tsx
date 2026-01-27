@@ -17,8 +17,9 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import VolunteerForm from "@/components/forms/VolunteerForm";
 import PartnerForm from "@/components/forms/PartnerForm";
 import ReportChallengeForm from "@/components/forms/ReportChallengeForm";
+import AdoptStudentForm from "@/components/forms/AdoptStudentForm";
 
-type ModalType = "volunteer" | "partner" | "report" | null;
+type ModalType = "volunteer" | "partner" | "report" | "adopt" | null;
 
 const involvementOptions = [
   {
@@ -43,7 +44,7 @@ const involvementOptions = [
     description:
       "Sponsor a child's education and be a part of their journey towards success.",
     buttonText: "Sponsor Now",
-    href: "#contact",
+    modalType: "adopt" as ModalType,
   },
   {
     icon: AlertTriangle,
@@ -179,6 +180,18 @@ const GetInvolvedSection = () => {
           </DialogHeader>
           <ScrollArea className="max-h-[90vh]">
             <ReportChallengeForm onSuccess={closeModal} />
+          </ScrollArea>
+        </DialogContent>
+      </Dialog>
+
+      {/* Adopt a Student Modal */}
+      <Dialog open={activeModal === "adopt"} onOpenChange={(open) => !open && closeModal()}>
+        <DialogContent className="max-w-2xl max-h-[90vh] p-0">
+          <DialogHeader className="sr-only">
+            <DialogTitle>Adopt a Student</DialogTitle>
+          </DialogHeader>
+          <ScrollArea className="max-h-[90vh]">
+            <AdoptStudentForm onSuccess={closeModal} />
           </ScrollArea>
         </DialogContent>
       </Dialog>
