@@ -1,9 +1,10 @@
 import { useState } from "react";
-import { Heart, Gift, Users, Check } from "lucide-react";
+import { Heart, Gift, Users, Check, Loader2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { z } from "zod";
 import { useFormSecurity } from "@/hooks/useFormSecurity";
 import { toast } from "sonner";
+import { loadRazorpayScript, RAZORPAY_KEY_ID, RAZORPAY_CONFIG } from "@/lib/razorpay";
 
 const donationAmounts = [
   { amount: 500, label: "₹500", impact: "Provide school supplies for 1 child" },
@@ -52,6 +53,7 @@ const DonationForm = () => {
   const [selectedAmount, setSelectedAmount] = useState<number | null>(1000);
   const [customAmount, setCustomAmount] = useState("");
   const [step, setStep] = useState(1);
+  const [isProcessing, setIsProcessing] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -89,32 +91,109 @@ const DonationForm = () => {
     return true;
   };
 
+  const resetForm = () => {
+    setStep(1);
+    setFormData({
+      name: "",
+      email: "",
+      phone: "",
+      panNumber: "",
+      anonymous: false,
+      dedicateDonation: false,
+      dedicateTo: "",
+      dedicateMessage: "",
+    });
+    setSelectedAmount(1000);
+    setCustomAmount("");
+    setErrors({});
+  };
+
+  const handlePayment = async () => {
+    if (!currentAmount || currentAmount < 100) {
+      toast.error("Minimum donation amount is ₹100");
+      return;
+    }
+
+    if (!validateSubmission()) {
+      toast.error("Please wait before submitting again");
+      return;
+    }
+
+    setIsProcessing(true);
+
+    try {
+      const scriptLoaded = await loadRazorpayScript();
+      if (!scriptLoaded) {
+        toast.error("Failed to load payment gateway. Please try again.");
+        setIsProcessing(false);
+        return;
+      }
+
+      const options = {
+        key: RAZORPAY_KEY_ID,
+        amount: currentAmount * 100, // Razorpay expects amount in paise
+        currency: RAZORPAY_CONFIG.currency,
+        name: RAZORPAY_CONFIG.name,
+        description: `${donationType.charAt(0).toUpperCase() + donationType.slice(1)} Donation`,
+        image: RAZORPAY_CONFIG.image,
+        prefill: {
+          name: formData.name,
+          email: formData.email,
+          contact: formData.phone || undefined,
+        },
+        notes: {
+          donation_type: donationType,
+          pan_number: formData.panNumber || "Not provided",
+          anonymous: formData.anonymous ? "Yes" : "No",
+          dedicated_to: formData.dedicateTo || "Not dedicated",
+          dedication_message: formData.dedicateMessage || "",
+        },
+        theme: RAZORPAY_CONFIG.theme,
+        handler: (response: { razorpay_payment_id: string }) => {
+          // Payment successful
+          recordSubmission();
+          toast.success(
+            `Thank you for your generous donation! Payment ID: ${response.razorpay_payment_id.slice(0, 12)}...`
+          );
+          resetForm();
+          setIsProcessing(false);
+        },
+        modal: {
+          ondismiss: () => {
+            setIsProcessing(false);
+          },
+          escape: true,
+          animation: true,
+        },
+      };
+
+      const razorpay = new window.Razorpay(options);
+      
+      razorpay.on("payment.failed", (response) => {
+        toast.error(`Payment failed: ${response.error.description}`);
+        setIsProcessing(false);
+      });
+
+      razorpay.open();
+    } catch (error) {
+      console.error("Payment error:", error);
+      toast.error("An error occurred. Please try again.");
+      setIsProcessing(false);
+    }
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (step === 2) {
       if (!validateStep2()) return;
     }
-    
+
     if (step < 3) {
       setStep(step + 1);
     } else {
-      // Final submission security check
-      if (!validateSubmission()) {
-        toast.error("Please wait before submitting again");
-        return;
-      }
-
-      // Amount validation
-      if (!currentAmount || currentAmount < 100) {
-        toast.error("Minimum donation amount is ₹100");
-        return;
-      }
-
-      recordSubmission();
-      toast.success(
-        "Thank you for your generous donation! Our team will contact you shortly to complete the payment process."
-      );
+      // Final step - initiate payment
+      handlePayment();
     }
   };
 
@@ -418,6 +497,13 @@ const DonationForm = () => {
                   )}
                 </div>
               </div>
+
+              {/* Payment Info */}
+              <div className="p-4 bg-muted/30 rounded-lg border border-border">
+                <p className="text-sm text-muted-foreground text-center">
+                  🔒 Secure payment powered by Razorpay. You'll be redirected to complete payment via UPI, Card, Net Banking, or Wallet.
+                </p>
+              </div>
             </motion.div>
           )}
         </AnimatePresence>
@@ -428,21 +514,31 @@ const DonationForm = () => {
             <button
               type="button"
               onClick={() => setStep(step - 1)}
-              className="flex-1 btn-outline"
+              disabled={isProcessing}
+              className="flex-1 btn-outline disabled:opacity-50"
             >
               Back
             </button>
           )}
           <button
             type="submit"
-            disabled={!currentAmount || currentAmount < 100 || isCooldown}
-            className="flex-1 btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
+            disabled={!currentAmount || currentAmount < 100 || isCooldown || isProcessing}
+            className="flex-1 btn-primary disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           >
-            {step === 3
-              ? isCooldown
-                ? `Please wait ${cooldownRemaining}s`
-                : "Complete Donation"
-              : "Continue"}
+            {isProcessing ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" />
+                Processing...
+              </>
+            ) : step === 3 ? (
+              isCooldown ? (
+                `Please wait ${cooldownRemaining}s`
+              ) : (
+                "Complete Donation"
+              )
+            ) : (
+              "Continue"
+            )}
           </button>
         </div>
       </form>
