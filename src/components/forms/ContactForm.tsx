@@ -127,7 +127,7 @@ const ContactForm = () => {
           <Input
             id="phone"
             type="tel"
-            placeholder="9876543210"
+            placeholder="99999 99999"
             {...register("phone")}
             className={errors.phone ? "border-destructive" : ""}
           />

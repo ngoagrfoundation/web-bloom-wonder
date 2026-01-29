@@ -1,9 +1,33 @@
 import { Heart } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import agrLogo from "@/assets/agr-logo.svg";
 
 const Footer = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
   const currentYear = new Date().getFullYear();
+
+  const handleLinkClick = (href: string, e: React.MouseEvent) => {
+    if (href.includes('#')) {
+      e.preventDefault();
+      const hash = href.split('#')[1];
+      
+      if (location.pathname !== '/') {
+        navigate('/');
+        setTimeout(() => {
+          const element = document.getElementById(hash);
+          if (element) {
+            element.scrollIntoView({ behavior: 'smooth' });
+          }
+        }, 100);
+      } else {
+        const element = document.getElementById(hash);
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth' });
+        }
+      }
+    }
+  };
 
   const footerLinks = [
     {
@@ -67,12 +91,22 @@ const Footer = () => {
               <ul className="space-y-3">
                 {section.links.map((link) => (
                   <li key={link.label}>
-                    <Link
-                      to={link.href}
-                      className="text-background/60 hover:text-background transition-colors text-sm"
-                    >
-                      {link.label}
-                    </Link>
+                    {link.href.includes('#') ? (
+                      <a
+                        href={link.href}
+                        onClick={(e) => handleLinkClick(link.href, e)}
+                        className="text-background/60 hover:text-background transition-colors text-sm cursor-pointer"
+                      >
+                        {link.label}
+                      </a>
+                    ) : (
+                      <Link
+                        to={link.href}
+                        className="text-background/60 hover:text-background transition-colors text-sm"
+                      >
+                        {link.label}
+                      </Link>
+                    )}
                   </li>
                 ))}
               </ul>

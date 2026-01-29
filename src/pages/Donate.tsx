@@ -21,8 +21,13 @@ const Donate = () => {
     <MobileLayout>
       <main className="pt-14 md:pt-20">
         {/* Hero Section */}
-        <section className="py-16 maroon-gradient">
-          <div className="container mx-auto px-4">
+        <section className="py-16 relative overflow-hidden">
+          <div 
+            className="absolute inset-0 bg-cover bg-center"
+            style={{ backgroundImage: "url('https://images.unsplash.com/photo-1532629345422-7515f3d16bb6?w=1200')" }}
+          />
+          <div className="absolute inset-0 bg-primary/85" />
+          <div className="container mx-auto px-4 relative z-10">
             <AnimatedSection className="text-center text-primary-foreground">
               <Heart className="w-16 h-16 mx-auto mb-6 opacity-80" />
               <h1 className="text-4xl md:text-5xl font-display font-bold mb-4">
