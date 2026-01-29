@@ -26,11 +26,11 @@ const ContactSection = () => {
               <div>
                 <h3 className="font-semibold text-foreground mb-1">Our Office</h3>
                 <p className="text-muted-foreground text-sm">
-                  Near SRR Public School, Salur Paleti Road,
+                  Near JNTU Metro Station, Sardar Patel Nagar,
                   <br />
-                  Bheemili, Visakhapatnam, Andhra Pradesh,
+                  Dharma Reddy Colony Phase II, Kukatpally Housing Board Colony,
                   <br />
-                  India - 531162
+                  Kukatpally, Hyderabad, Telangana 500085
                 </p>
               </div>
             </div>
@@ -41,7 +41,7 @@ const ContactSection = () => {
               </div>
               <div>
                 <h3 className="font-semibold text-foreground mb-1">Phone Number</h3>
-                <p className="text-muted-foreground text-sm">+91 9123456789</p>
+                <p className="text-muted-foreground text-sm">+91 7036555699</p>
               </div>
             </div>
 
@@ -51,7 +51,7 @@ const ContactSection = () => {
               </div>
               <div>
                 <h3 className="font-semibold text-foreground mb-1">Email Address</h3>
-                <p className="text-muted-foreground text-sm">info@agrfoundation.org</p>
+                <p className="text-muted-foreground text-sm">info@agrfoundation.ngo</p>
               </div>
             </div>
 
@@ -103,7 +103,7 @@ const ContactSection = () => {
           </h3>
           <div className="rounded-2xl overflow-hidden shadow-lg h-80">
             <iframe
-              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d30417.04889927721!2d83.39934839762826!3d17.843449287455974!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3a39583c3f109c1b%3A0x8bfd1fc5a1d43cf7!2sBheemunipatnam%2C%20Andhra%20Pradesh!5e0!3m2!1sen!2sin!4v1705577124539!5m2!1sen!2sin"
+              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d7610.3844234599765!2d78.38406581679982!3d17.49833566522362!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bcb91003137a339%3A0x46d7bebcb13df32f!2sAGR%20FOUNDATION!5e0!3m2!1sen!2sin!4v1754285070405!5m2!1sen!2sin"
               width="100%"
               height="100%"
               style={{ border: 0 }}
