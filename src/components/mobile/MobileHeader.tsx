@@ -70,20 +70,20 @@ const MobileHeader = () => {
   };
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-md border-b border-border">
-      <div className="flex items-center justify-between h-14 px-4">
-        {/* Logo */}
-        <Link to="/" className="flex items-center" onClick={() => setIsMenuOpen(false)}>
+    <header className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-md border-b border-border overflow-x-hidden">
+      <div className="flex items-center justify-between h-14 min-h-14 px-3 sm:px-4 w-full max-w-full">
+        {/* Logo - responsive sizing */}
+        <Link to="/" className="flex items-center flex-shrink-0" onClick={() => setIsMenuOpen(false)}>
           <img 
             src={agrLogo} 
             alt="AGR Foundation" 
-            className="h-10 w-auto"
+            className="h-8 sm:h-10 w-auto max-w-[120px] sm:max-w-none"
           />
         </Link>
 
-        {/* Menu Button */}
+        {/* Menu Button - prevent shrinking */}
         <button
-          className="p-2 text-foreground hover:bg-muted rounded-lg transition-colors"
+          className="p-2 text-foreground hover:bg-muted rounded-lg transition-colors flex-shrink-0"
           onClick={() => setIsMenuOpen(!isMenuOpen)}
           aria-label="Toggle menu"
         >

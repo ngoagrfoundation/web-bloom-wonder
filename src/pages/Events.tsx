@@ -100,8 +100,13 @@ const Events = () => {
     <MobileLayout>
       <main className="pt-14 md:pt-20">
         {/* Hero Section */}
-        <section className="py-16 maroon-gradient">
-          <div className="container mx-auto px-4">
+        <section className="py-16 relative overflow-hidden">
+          <div 
+            className="absolute inset-0 bg-cover bg-center"
+            style={{ backgroundImage: "url('https://images.unsplash.com/photo-1559027615-cd4628902d4a?w=1200')" }}
+          />
+          <div className="absolute inset-0 bg-primary/85" />
+          <div className="container mx-auto px-4 relative z-10">
             <AnimatedSection className="text-center text-primary-foreground">
               <h1 className="text-4xl md:text-5xl font-display font-bold mb-4">
                 Upcoming Events
