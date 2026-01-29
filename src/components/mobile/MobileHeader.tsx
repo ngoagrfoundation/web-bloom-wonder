@@ -70,7 +70,7 @@ const MobileHeader = () => {
   };
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-md border-b border-border overflow-x-hidden">
+    <header className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-md border-b border-border">
       <div className="flex items-center justify-between h-14 min-h-14 px-3 sm:px-4 w-full max-w-full">
         {/* Logo - responsive sizing */}
         <Link to="/" className="flex items-center flex-shrink-0" onClick={() => setIsMenuOpen(false)}>
