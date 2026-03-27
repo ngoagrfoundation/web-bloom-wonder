@@ -1,4 +1,4 @@
-import { Leaf, Recycle, TreePine, Droplets, Sun, Wind } from "lucide-react";
+import { Leaf, Recycle, TreePine, Droplets, Sun, Wind, Flame, RefreshCw } from "lucide-react";
 import AnimatedSection, { StaggerContainer, StaggerItem } from "./AnimatedSection";
 
 const initiatives = [
