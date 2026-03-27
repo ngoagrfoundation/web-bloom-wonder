@@ -23,6 +23,9 @@ import SocialWelfare from "./pages/focus/SocialWelfare";
 import Education from "./pages/programs/Education";
 import Healthcare from "./pages/programs/Healthcare";
 import Livelihood from "./pages/programs/Livelihood";
+import DentalTreatment from "./pages/programs/DentalTreatment";
+import LearningSanskrit from "./pages/programs/LearningSanskrit";
+import FoodDistribution from "./pages/programs/FoodDistribution";
 
 // Cause Pages
 import LakeCleaning from "./pages/causes/LakeCleaning";
