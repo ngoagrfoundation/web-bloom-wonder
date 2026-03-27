@@ -24,9 +24,16 @@ const LearningSanskrit = () => {
       ]}
     >
       {/* Course Details Section */}
-      <section className="py-16 bg-background">
+      <section className="py-16 bg-gradient-to-b from-primary/5 to-secondary/5">
         <div className="container mx-auto px-4">
           <div className="max-w-3xl mx-auto">
+            {/* Decorative Divider */}
+            <div className="flex items-center justify-center gap-3 mb-8">
+              <div className="h-px w-16 bg-primary/30" />
+              <span className="text-primary text-2xl">🙏</span>
+              <div className="h-px w-16 bg-primary/30" />
+            </div>
+
             <h2 className="text-2xl md:text-3xl font-display font-bold text-foreground mb-6 text-center">
               Course Details: Speak Sanskrit in Just 21 Days!
             </h2>
@@ -35,19 +42,19 @@ const LearningSanskrit = () => {
             </p>
 
             <div className="grid sm:grid-cols-2 gap-6 mb-8">
-              <div className="card-elevated p-6">
+              <div className="card-elevated p-6 border-l-4 border-l-primary">
                 <p className="text-primary font-bold">Eligibility</p>
                 <p className="text-muted-foreground mt-1">No Age Limit — From kids to seniors, everyone is welcome!</p>
               </div>
-              <div className="card-elevated p-6">
+              <div className="card-elevated p-6 border-l-4 border-l-primary">
                 <p className="text-primary font-bold">Fee</p>
                 <p className="text-muted-foreground mt-1">Completely FREE</p>
               </div>
-              <div className="card-elevated p-6">
+              <div className="card-elevated p-6 border-l-4 border-l-primary">
                 <p className="text-primary font-bold">Platform</p>
                 <p className="text-muted-foreground mt-1">Live via Zoom</p>
               </div>
-              <div className="card-elevated p-6">
+              <div className="card-elevated p-6 border-l-4 border-l-primary">
                 <p className="text-primary font-bold">Flexible Batch Timings</p>
                 <ul className="text-muted-foreground mt-1 space-y-1 text-sm">
                   <li>• Early Morning: 5:00 AM – 6:30 AM</li>
@@ -57,8 +64,15 @@ const LearningSanskrit = () => {
               </div>
             </div>
 
+            {/* Decorative Divider */}
+            <div className="flex items-center justify-center gap-3 my-10">
+              <div className="h-px w-12 bg-primary/30" />
+              <span className="text-primary text-xl">☸</span>
+              <div className="h-px w-12 bg-primary/30" />
+            </div>
+
             {/* Bhagavad Gita Section */}
-            <div className="bg-muted/50 rounded-xl p-8 mb-8 text-center">
+            <div className="bg-gradient-to-b from-primary/10 to-secondary/10 rounded-2xl p-8 mb-8 text-center border border-primary/20">
               <h3 className="text-xl font-display font-semibold text-foreground mb-3">
                 🙏 Invite the Divine: Bhagavad Gita Parayanam
               </h3>
@@ -70,8 +84,15 @@ const LearningSanskrit = () => {
               </p>
             </div>
 
+            {/* Decorative Divider */}
+            <div className="flex items-center justify-center gap-3 my-10">
+              <div className="h-px w-12 bg-primary/30" />
+              <span className="text-primary text-xl">🪷</span>
+              <div className="h-px w-12 bg-primary/30" />
+            </div>
+
             {/* Registration CTA */}
-            <div className="text-center">
+            <div className="text-center bg-primary/5 rounded-2xl p-8 border border-primary/15">
               <h3 className="text-xl font-display font-semibold text-foreground mb-4">
                 Join the Movement – Register Now
               </h3>
