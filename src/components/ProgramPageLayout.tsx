@@ -166,6 +166,9 @@ const ProgramPageLayout = ({
           </section>
         )}
 
+        {/* Children (custom content) */}
+        {children}
+
         {/* CTA Section */}
         <section className="py-16 section-cream">
           <div className="container mx-auto px-4">

@@ -1,8 +1,11 @@
 import { Link } from "react-router-dom";
-import { GraduationCap, HeartPulse, Briefcase, ArrowRight } from "lucide-react";
+import { GraduationCap, HeartPulse, Briefcase, ArrowRight, Stethoscope, BookOpen, HandHeart } from "lucide-react";
 import educationImage from "@/assets/education-program.jpg";
 import healthcareImage from "@/assets/healthcare-program.jpg";
 import livelihoodImage from "@/assets/livelihood-program.jpg";
+import dentalImage from "@/assets/generated/programs/dental-treatment.jpg";
+import sanskritImage from "@/assets/generated/programs/learning-sanskrit.jpg";
+import foodImage from "@/assets/generated/programs/food-distribution.jpg";
 
 const programs = [
   {
@@ -28,6 +31,30 @@ const programs = [
       "Empowering women and youth through skill development, vocational training, and self-help groups for sustainable income generation.",
     image: livelihoodImage,
     link: "/programs/livelihood",
+  },
+  {
+    icon: Stethoscope,
+    title: "Free Dental Treatment",
+    description:
+      "Monthly free dental clinic providing comprehensive dental care including check-ups, cleaning, fillings, root canals, and extractions.",
+    image: dentalImage,
+    link: "/programs/dental-treatment",
+  },
+  {
+    icon: BookOpen,
+    title: "Learning Sanskrit",
+    description:
+      "Free 21-day Sanskrit classes via Zoom — rediscover your roots, improve cognitive function, and unlock the wisdom of the Vedas.",
+    image: sanskritImage,
+    link: "/programs/learning-sanskrit",
+  },
+  {
+    icon: HandHeart,
+    title: "Annadanam (Food Distribution)",
+    description:
+      "Serving nourishment and sharing hope — identifying and feeding those in need across Hyderabad with fresh, nutritious meals.",
+    image: foodImage,
+    link: "/programs/food-distribution",
   },
 ];
 
@@ -59,6 +86,7 @@ const ProgramsSection = () => {
                   src={program.image}
                   alt={program.title}
                   className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                  loading="lazy"
                 />
                 <div className="absolute bottom-4 left-4">
                   <div className="w-11 h-11 rounded-full bg-card flex items-center justify-center shadow-md">

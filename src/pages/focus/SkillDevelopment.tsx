@@ -5,17 +5,17 @@ const SkillDevelopment = () => {
   return (
     <FocusPageLayout
       title="Skill Development"
-      tagline="Building capabilities for sustainable livelihoods through vocational training and modern skill programs."
+      tagline="Empowering Hands, Sustaining Lives — Bridging Tradition with Modern Opportunity."
       heroImage={skillDevImg}
-      overview="Our skill development programs are designed to equip youth and adults with practical skills that lead to employment and entrepreneurship opportunities. We focus on both traditional crafts and modern technology skills, ensuring our beneficiaries are prepared for the evolving job market while preserving valuable cultural heritage."
-      whyItMatters="In today's rapidly changing economy, having marketable skills is crucial for securing livelihoods. Skill development not only provides income opportunities but also builds confidence, dignity, and self-reliance. By training individuals, we help break the cycle of poverty and create pathways to prosperity."
+      overview="At AGR Foundation, our Skill Development initiative is built on a single mission: to make every individual self-reliant. We don't just provide training; we revive dying arts and traditional occupations (Kula Vruthi), transforming them into sustainable livelihoods that help people stand on their own feet."
+      whyItMatters="Our goal is to build a society where every individual has the skills to thrive, the resources to grow, and the dignity of standing on their own feet. We don't just teach a skill; we build a bridge to the market — from Skill Identification, recognizing natural talents and traditional crafts, to Professional Training with tools, quality standards, and business knowledge needed to compete."
       initiatives={[
-        { title: "Computer Training", description: "Basic to advanced computer skills including MS Office, internet usage, and digital literacy for the modern workplace." },
-        { title: "Tailoring & Fashion Design", description: "Comprehensive training in garment making, fashion design, and entrepreneurship for starting clothing businesses." },
-        { title: "Handicrafts & Artisan Skills", description: "Preserving traditional crafts while creating economic opportunities through training in pottery, weaving, and more." },
-        { title: "Mobile Phone Repair", description: "Technical training in smartphone repair and maintenance, a high-demand skill in today's digital age." },
-        { title: "Beauty & Wellness", description: "Professional beauty, haircare, and wellness training for careers in the growing personal care industry." },
-        { title: "Entrepreneurship Support", description: "Business planning, marketing, and financial management training to help skilled individuals start their own ventures." },
+        { title: "Modern Earthenware", description: "Training potters to create aesthetic and functional clay cookware, providing natural, healthy products for society while creating stable business opportunities for the Kummari community." },
+        { title: "Natural Leaf-Craft", description: "Teaching the art of making Vistarakulu (leaf plates) and utility items from palm and silver oak leaves, turning agricultural waste into a profitable, plastic-free business." },
+        { title: "Panchagavya Enterprises", description: "Empowering workers to utilize cow dung and urine to create organic incense sticks (Agarbatti), natural fertilizers, and floor cleaners, creating a circular economy around Goshalas." },
+        { title: "Drone Pilot Training", description: "Training rural youth to become certified Drone Pilots. By using drones to spray organic fertilizers, we ensure precision, save time, and protect our environment and honey bees from chemical exposure." },
+        { title: "Value-Added Farming Skills", description: "Training in specialized techniques like Sprouted Garlic production and Apiculture (Beekeeping), ensuring farmers have multiple streams of income and produce high-quality, medicinal-grade honey." },
+        { title: "Authentic Millet Production", description: "Supporting village women in the large-scale production of unadulterated Jonna Rotte (Sorghum flatbreads), providing employment while ensuring urban families access pure, chemical-free, nutritious food." },
       ]}
       stats={[
         { value: "1,000+", label: "Youth Trained" },
@@ -25,7 +25,7 @@ const SkillDevelopment = () => {
       ]}
       relatedCauses={[
         { title: "Women's Empowerment", link: "/focus/womens-empowerment" },
-        { title: "Treatment Support for Students", link: "/causes/physically-challenged-treatment" },
+        { title: "Rural Development", link: "/focus/rural-development" },
       ]}
     />
   );

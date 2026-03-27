@@ -55,6 +55,9 @@ const App = () => (
             <Route path="/programs/education" element={<Education />} />
             <Route path="/programs/healthcare" element={<Healthcare />} />
             <Route path="/programs/livelihood" element={<Livelihood />} />
+            <Route path="/programs/dental-treatment" element={<DentalTreatment />} />
+            <Route path="/programs/learning-sanskrit" element={<LearningSanskrit />} />
+            <Route path="/programs/food-distribution" element={<FoodDistribution />} />
             
             {/* Focus Area Routes */}
             <Route path="/focus/womens-empowerment" element={<WomensEmpowerment />} />
