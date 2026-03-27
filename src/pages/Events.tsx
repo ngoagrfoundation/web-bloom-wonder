@@ -195,7 +195,7 @@ const Events = () => {
               >
                 {featuredEvents.map((event) => (
                   <StaggerItem key={event.id}>
-                    <EventCard event={event} />
+                    <EventCard event={event} onRegister={() => setShowVolunteerModal(true)} />
                   </StaggerItem>
                 ))}
               </StaggerContainer>
