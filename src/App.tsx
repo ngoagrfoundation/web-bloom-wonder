@@ -23,6 +23,9 @@ import SocialWelfare from "./pages/focus/SocialWelfare";
 import Education from "./pages/programs/Education";
 import Healthcare from "./pages/programs/Healthcare";
 import Livelihood from "./pages/programs/Livelihood";
+import DentalTreatment from "./pages/programs/DentalTreatment";
+import LearningSanskrit from "./pages/programs/LearningSanskrit";
+import FoodDistribution from "./pages/programs/FoodDistribution";
 
 // Cause Pages
 import LakeCleaning from "./pages/causes/LakeCleaning";
@@ -52,6 +55,9 @@ const App = () => (
             <Route path="/programs/education" element={<Education />} />
             <Route path="/programs/healthcare" element={<Healthcare />} />
             <Route path="/programs/livelihood" element={<Livelihood />} />
+            <Route path="/programs/dental-treatment" element={<DentalTreatment />} />
+            <Route path="/programs/learning-sanskrit" element={<LearningSanskrit />} />
+            <Route path="/programs/food-distribution" element={<FoodDistribution />} />
             
             {/* Focus Area Routes */}
             <Route path="/focus/womens-empowerment" element={<WomensEmpowerment />} />

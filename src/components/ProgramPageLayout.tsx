@@ -33,6 +33,7 @@ const ProgramPageLayout = ({
   activities,
   stats,
   relatedFocus = [],
+  children,
 }: ProgramPageLayoutProps) => {
   return (
     <MobileLayout>
@@ -164,6 +165,9 @@ const ProgramPageLayout = ({
             </div>
           </section>
         )}
+
+        {/* Children (custom content) */}
+        {children}
 
         {/* CTA Section */}
         <section className="py-16 section-cream">

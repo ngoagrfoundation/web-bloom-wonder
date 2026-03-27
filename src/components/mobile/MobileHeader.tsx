@@ -29,6 +29,9 @@ const MobileHeader = () => {
     { label: "Education", href: "/programs/education" },
     { label: "Healthcare", href: "/programs/healthcare" },
     { label: "Livelihood", href: "/programs/livelihood" },
+    { label: "Dental Treatment", href: "/programs/dental-treatment" },
+    { label: "Learning Sanskrit", href: "/programs/learning-sanskrit" },
+    { label: "Food Distribution", href: "/programs/food-distribution" },
   ];
 
   const navLinks = [

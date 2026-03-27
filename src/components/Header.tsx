@@ -31,11 +31,20 @@ const Header = () => {
     { label: "Wheelchair for an Elderly Person", href: "/causes/wheelchair-elderly" },
   ];
 
+  const programs = [
+    { label: "Education", href: "/programs/education" },
+    { label: "Healthcare", href: "/programs/healthcare" },
+    { label: "Livelihood", href: "/programs/livelihood" },
+    { label: "Dental Treatment", href: "/programs/dental-treatment" },
+    { label: "Learning Sanskrit", href: "/programs/learning-sanskrit" },
+    { label: "Food Distribution", href: "/programs/food-distribution" },
+  ];
+
   const navLinks = [
     { label: "Home", href: "/" },
     { label: "About", href: "/#about" },
     { label: "Our Focus", dropdown: focusAreas },
-    { label: "Programs", href: "/#programs" },
+    { label: "Programs", dropdown: programs },
     { label: "Causes", dropdown: causes },
     { label: "Events", href: "/events" },
     { label: "News", href: "/news" },

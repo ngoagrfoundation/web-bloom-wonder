@@ -42,10 +42,10 @@ const Footer = () => {
     {
       title: "Programs",
       links: [
-        { label: "Education", href: "/#programs" },
-        { label: "Healthcare", href: "/#programs" },
-        { label: "Livelihood", href: "/#programs" },
-        { label: "Community Development", href: "/#programs" },
+        { label: "Education", href: "/programs/education" },
+        { label: "Healthcare", href: "/programs/healthcare" },
+        { label: "Dental Treatment", href: "/programs/dental-treatment" },
+        { label: "Food Distribution", href: "/programs/food-distribution" },
       ],
     },
     {
