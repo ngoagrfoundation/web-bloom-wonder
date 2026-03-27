@@ -68,7 +68,7 @@ const events: Event[] = [
     description: "Distribution of school supplies and uniforms to underprivileged children for the new academic year.",
     date: "2026-03-10",
     time: "10:00 AM - 2:00 PM",
-    location: "AGR Foundation Office, Bandra",
+    location: "AGR Foundation Office, Kukatpally, Hyderabad",
     category: "education",
     image: schoolSupplies,
     attendees: 100,
