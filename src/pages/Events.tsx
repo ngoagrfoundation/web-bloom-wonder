@@ -22,7 +22,7 @@ const events: Event[] = [
     description: "Free health check-ups including eye tests, dental care, and general consultation for the entire community.",
     date: "2026-02-15",
     time: "9:00 AM - 5:00 PM",
-    location: "AGR Community Center, Sector 12, Mumbai",
+    location: "AGR Community Center, Kukatpally, Hyderabad",
     category: "health-camp",
     image: healthCamp,
     attendees: 150,
