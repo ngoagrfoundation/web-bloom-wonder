@@ -1,175 +1,80 @@
 
 
-## Razorpay Payment Gateway Integration (Client-Side Only)
+## Update About Section, Add 3 New Program Pages, Update 2 Existing Pages
 
 ### Overview
 
-This plan integrates Razorpay payment gateway directly into the donation form without requiring any backend/database. Users will be able to pay using UPI, cards, net banking, and wallets.
+6 changes across the site:
+1. **Update About Us** section with new content (5 core pillars, new vision)
+2. **Create Dental Treatment** program page + add to Programs menu
+3. **Create Learning Sanskrit** program page + add to Programs menu
+4. **Update Rural Development** page with detailed new content
+5. **Create Annadanam (Food Distribution)** program page + add to Programs menu
+6. **Update Skill Development** page with detailed new content
+
+### Structural Change: Programs Menu
+
+Currently, the desktop Header has "Programs" as a simple hash link (`/#programs`). It needs to become a **dropdown menu** (like "Our Focus" and "Causes") with items:
+- Education
+- Healthcare
+- Livelihood
+- Dental Treatment *(new)*
+- Learning Sanskrit *(new)*
+- Food Distribution *(new)*
+
+The mobile header already has Programs as a dropdown -- just needs the 3 new items added.
 
 ---
 
-### Security Note
+### Files to Create
 
-The Razorpay **API Key** (starting with `rzp_live_`) is a **public key** and is safe to use in frontend code - this is how Razorpay is designed to work. The **Secret Key** should never be stored in code and is only needed for server-side operations (which we're not using in this client-side integration).
+| File | Purpose |
+|------|---------|
+| `src/pages/programs/DentalTreatment.tsx` | Dental Treatment page using `ProgramPageLayout` |
+| `src/pages/programs/LearningSanskrit.tsx` | Learning Sanskrit page using `ProgramPageLayout` |
+| `src/pages/programs/FoodDistribution.tsx` | Annadanam page using `ProgramPageLayout` |
 
----
+Each page will use the existing `ProgramPageLayout` component with the content provided. For sections that need richer content (like Sanskrit's "Why Learn" details, Rural Development's sub-sections, etc.), I'll use the `children` prop or the `activities` array to capture the key information.
 
-### How It Works
+**Note**: These pages need hero images. I'll generate 3 AI images:
+- `src/assets/generated/programs/dental-treatment.jpg` - Free dental camp in India
+- `src/assets/generated/programs/learning-sanskrit.jpg` - Sanskrit class/Vedic learning
+- `src/assets/generated/programs/food-distribution.jpg` - Annadanam/food serving to needy
 
-```text
-+------------------+     +-------------------+     +------------------+
-|   User fills     | --> |  Razorpay Checkout| --> |  Payment Success |
-|   donation form  |     |  Modal Opens      |     |  Toast & Reset   |
-+------------------+     +-------------------+     +------------------+
-                              |
-                              v
-                    +-------------------+
-                    | UPI, Cards, Net   |
-                    | Banking, Wallets  |
-                    +-------------------+
-```
+### Files to Modify
 
----
-
-### Implementation Details
-
-#### Step 1: Create Razorpay Utility File
-
-**New File: `src/lib/razorpay.ts`**
-
-This file handles:
-- Dynamic loading of Razorpay checkout script
-- Storing the public API key
-
-```typescript
-export const loadRazorpayScript = (): Promise<boolean> => {
-  return new Promise((resolve) => {
-    if (document.getElementById('razorpay-script')) {
-      resolve(true);
-      return;
-    }
-    const script = document.createElement('script');
-    script.id = 'razorpay-script';
-    script.src = 'https://checkout.razorpay.com/v1/checkout.js';
-    script.onload = () => resolve(true);
-    script.onerror = () => resolve(false);
-    document.body.appendChild(script);
-  });
-};
-
-// Public API Key (safe to use in frontend)
-export const RAZORPAY_KEY_ID = 'rzp_live_S9ZfJn3TTaXZ9G';
-```
+| File | Change |
+|------|--------|
+| `src/components/AboutSection.tsx` | Replace content with new story, 5 core pillars, and vision |
+| `src/components/Header.tsx` | Change "Programs" from hash link to dropdown with 6 items |
+| `src/components/mobile/MobileHeader.tsx` | Add 3 new programs to existing dropdown |
+| `src/App.tsx` | Add 3 new routes: `/programs/dental-treatment`, `/programs/learning-sanskrit`, `/programs/food-distribution` |
+| `src/pages/focus/RuralDevelopment.tsx` | Replace content with detailed new content (3 sections, philosophy) |
+| `src/pages/focus/SkillDevelopment.tsx` | Replace content with detailed new content (3 sections, model) |
+| `src/components/ProgramsSection.tsx` | Add the 3 new programs to the homepage grid |
+| `src/components/Footer.tsx` | Update Programs links to include new pages |
 
 ---
 
-#### Step 2: Create TypeScript Declarations
+### Content Details
 
-**New File: `src/types/razorpay.d.ts`**
+**1. About Section** - Replace "Our Mission" bullet list with "Our Core Pillars" (Social Welfare, Women's Empowerment, Environmental Safety, Skill Development, Rural Development) with descriptions. Add "Our Vision" block replacing the current quote.
 
-Provides type safety for Razorpay's JavaScript SDK:
+**2. Dental Treatment Page** - Activities: Check-ups, Cleaning, Fillings, RCT, Extractions, Oral Hygiene Education. Stats: Monthly on 28th, 10AM-5PM, Hyderabad. Include registration CTA linking to external form. "Prior registration mandatory" note.
 
-```typescript
-interface RazorpayOptions {
-  key: string;
-  amount: number;
-  currency: string;
-  name: string;
-  description?: string;
-  image?: string;
-  prefill?: { name?: string; email?: string; contact?: string };
-  notes?: Record<string, string>;
-  theme?: { color?: string };
-  handler?: (response: RazorpayResponse) => void;
-  modal?: { ondismiss?: () => void };
-}
+**3. Learning Sanskrit Page** - Activities: Mind benefits, Children's benefits, Couples harmony, Vedic access. Course details: 21 days, free, Zoom. 3 batch timings. Bhagavad Gita Parayanam invitation. WhatsApp registration CTA.
 
-interface RazorpayResponse {
-  razorpay_payment_id: string;
-  razorpay_order_id?: string;
-  razorpay_signature?: string;
-}
+**4. Rural Development** - 3 main sections as initiatives: Sustainable Agriculture (garlic, apiculture, drones), Village-to-Market (community markets, millet hubs, waste-to-wealth), Environmental Restoration (pond restoration, plastic-free, spiritual hubs). Stats: 100+ Farmers, 20+ Women, 5000+ Plastic Bags Replaced.
 
-declare global {
-  interface Window {
-    Razorpay: new (options: RazorpayOptions) => RazorpayInstance;
-  }
-}
-```
+**5. Annadanam Page** - Activities: Need-based selection, flexible distribution, quality & dignity. Donation tiers (₹500, ₹2500, ₹5000+). WhatsApp coordinator link. Celebrate special days messaging.
 
----
-
-#### Step 3: Update DonationForm Component
-
-**File: `src/components/DonationForm.tsx`**
-
-Key changes:
-
-1. **Add imports** for Razorpay utilities and Loader icon
-2. **Add `isProcessing` state** to show loading during payment
-3. **Create `handlePayment` function** that:
-   - Loads the Razorpay script
-   - Opens the checkout modal with donation details
-   - Handles success/failure callbacks
-4. **Update submit handler** to call `handlePayment` on step 3
-5. **Update button** to show loading state
-
-**Payment Flow:**
-- Amount is converted to paise (multiply by 100)
-- Donor details are prefilled in the modal
-- On success: Show toast, reset form to step 1
-- On failure: Show error toast
-
-**Checkout Configuration:**
-- Currency: INR
-- Theme color: #800000 (maroon to match branding)
-- Prefill: Name, email, phone from form
-- Notes: Donation type, PAN, anonymous flag, dedication
-
----
-
-### Files Summary
-
-| File | Action | Purpose |
-|------|--------|---------|
-| `src/lib/razorpay.ts` | Create | Script loader and API key |
-| `src/types/razorpay.d.ts` | Create | TypeScript declarations |
-| `src/components/DonationForm.tsx` | Modify | Integrate payment checkout |
-
----
-
-### User Experience After Implementation
-
-1. User selects donation type (One-Time, Monthly, Sponsor)
-2. User selects or enters amount
-3. User fills personal details
-4. User reviews summary and clicks "Complete Donation"
-5. **Razorpay modal opens** with all payment options:
-   - UPI (Google Pay, PhonePe, Paytm, etc.)
-   - Credit/Debit Cards
-   - Net Banking (all major banks)
-   - Wallets
-6. After successful payment:
-   - Success toast appears
-   - Form resets to step 1
-   - User receives confirmation email from Razorpay
-
----
-
-### Payment Options Available
-
-- Google Pay, PhonePe, Paytm UPI
-- Visa, Mastercard, RuPay cards
-- 50+ banks for net banking
-- Paytm, Amazon Pay, PhonePe wallets
-- EMI options (if enabled in your Razorpay dashboard)
+**6. Skill Development** - 3 sections as initiatives: Heritage Crafts (earthenware, leaf-craft, Panchagavya), Tech-Enabled Future (drone pilot, value-added farming), Women's Livelihood (millet production, health & income). "Skill to Market" model.
 
 ---
 
 ### Technical Notes
 
-- No backend required - payments go directly to your Razorpay account
-- Payment records are available in your Razorpay Dashboard
-- Razorpay handles all payment security (PCI-DSS compliant)
-- 80G receipts can be generated using donation notes captured
+- The `ProgramPageLayout` accepts `title`, `tagline`, `heroImage`, `overview`, `activities[]`, `stats[]`, `relatedFocus[]`, and `children` -- sufficient for all 3 new pages
+- For pages needing richer content (registration CTAs, special sections), I'll use the `children` prop to add custom content below the standard layout
+- The `FocusPageLayout` used by Rural Development and Skill Development accepts `overview`, `whyItMatters`, `initiatives[]`, `stats[]`, `relatedCauses[]` -- I'll map the detailed sub-sections into the initiatives array
 
