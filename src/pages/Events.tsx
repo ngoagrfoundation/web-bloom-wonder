@@ -98,7 +98,7 @@ const categories = [
 const Events = () => {
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [selectedCategory, setSelectedCategory] = useState("all");
-
+  const [showVolunteerModal, setShowVolunteerModal] = useState(false);
   const filteredEvents = selectedCategory === "all"
     ? events
     : events.filter((event) => event.category === selectedCategory);
