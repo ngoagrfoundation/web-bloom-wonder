@@ -18,6 +18,9 @@ const initiatives = [
   { id: "lake-cleaning", label: "Lake Cleaning" },
   { id: "zero-waste", label: "Zero Waste Workshops" },
   { id: "community-outreach", label: "Community Outreach" },
+  { id: "food-distribution", label: "Food Distribution" },
+  { id: "other-distribution", label: "Other Items Distribution" },
+  { id: "teach-what-you-love", label: "Teach What You Love" },
 ];
 
 const availabilityOptions = [

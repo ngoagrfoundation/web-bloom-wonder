@@ -182,7 +182,7 @@ const AdoptStudentForm = ({ onSuccess: onSuccessCallback }: AdoptStudentFormProp
             <Input
               id="phone"
               type="tel"
-              placeholder="9876543210"
+              placeholder="9999999999"
               {...register("phone")}
               className={errors.phone ? "border-destructive" : ""}
             />

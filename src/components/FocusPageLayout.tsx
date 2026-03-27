@@ -231,8 +231,8 @@ const FocusPageLayout = ({
 
         {/* Volunteer Modal */}
         <Dialog open={showVolunteerModal} onOpenChange={(open) => !open && setShowVolunteerModal(false)}>
-          <DialogContent className="max-w-2xl max-h-[90vh]">
-            <DialogHeader>
+          <DialogContent className="max-w-2xl max-h-[90vh] p-0">
+            <DialogHeader className="sr-only">
               <DialogTitle>Register as a Volunteer</DialogTitle>
             </DialogHeader>
             <ScrollArea className="max-h-[70vh]">

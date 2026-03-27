@@ -25,7 +25,7 @@ const allNews: NewsArticle[] = [
       <p>The foundation has partnered with over 50 local businesses that have committed to hiring our graduates, providing them with immediate employment opportunities upon completion of the program.</p>
       
       <h2>Looking Ahead</h2>
-      <p>With this batch, AGR Foundation has now trained over 1,500 students since the program's inception in 2018. We're expanding our training centers to three new locations next year, aiming to reach even more aspiring individuals.</p>
+      <p>With this batch, AGR Foundation has now trained over 1,500 students since the program's inception in 2025. We're expanding our training centers to three new locations next year, aiming to reach even more aspiring individuals.</p>
       
       <p>We invite community members and businesses to support this initiative. Whether through donations, volunteering, or providing internship opportunities, every contribution helps transform lives.</p>
     `,
