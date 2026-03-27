@@ -33,6 +33,7 @@ const ProgramPageLayout = ({
   activities,
   stats,
   relatedFocus = [],
+  children,
 }: ProgramPageLayoutProps) => {
   return (
     <MobileLayout>
