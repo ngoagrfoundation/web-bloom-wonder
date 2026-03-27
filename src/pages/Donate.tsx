@@ -136,7 +136,7 @@ const Donate = () => {
                 "Donating to AGR Foundation has been one of the most rewarding experiences. Seeing the direct impact of my contribution on children's education is truly fulfilling."
               </blockquote>
               <cite className="text-muted-foreground not-italic">
-                — Rajesh Kumar, Monthly Donor since 2020
+                — Rajesh Kumar
               </cite>
             </AnimatedSection>
           </div>

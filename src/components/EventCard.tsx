@@ -106,7 +106,7 @@ const EventCard = ({ event, onRegister }: EventCardProps) => {
           )}
         </div>
 
-        <button className="w-full mt-6 btn-primary text-sm">
+        <button className="w-full mt-6 btn-primary text-sm" onClick={onRegister}>
           Register Now
         </button>
       </div>
