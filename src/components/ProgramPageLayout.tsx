@@ -88,7 +88,7 @@ const ProgramPageLayout = ({
         {/* Overview Section */}
         <section className="py-16 bg-background">
           <div className="container mx-auto px-4">
-            <div className="max-w-3xl mx-auto">
+            <div className="max-w-5xl mx-auto">
               <AnimatedSection>
                 <h2 className="text-2xl md:text-3xl font-display font-bold text-foreground mb-6">
                   About This Program
