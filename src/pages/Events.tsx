@@ -79,7 +79,7 @@ const events: Event[] = [
     description: "Special program focused on health issues affecting seniors with free consultations and medicine distribution.",
     date: "2026-03-15",
     time: "9:00 AM - 1:00 PM",
-    location: "Community Hall, Dadar",
+    location: "Community Hall, KPHB, Hyderabad",
     category: "health-camp",
     image: elderlyCare,
     attendees: 80,
