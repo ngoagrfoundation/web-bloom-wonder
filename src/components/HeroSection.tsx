@@ -95,7 +95,7 @@ const HeroSection = () => {
                   <h1 className="font-display text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold text-white leading-tight">
                     {slide.title}
                     <br />
-                    <span className="text-secondary">{slide.subtitle}</span>
+                    <span className="text-white">{slide.subtitle}</span>
                   </h1>
                   <p className="text-white/90 text-base md:text-lg lg:text-xl max-w-lg leading-relaxed mt-4 md:mt-6">
                     {slide.description}
