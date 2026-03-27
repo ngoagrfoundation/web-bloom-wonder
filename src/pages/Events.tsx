@@ -56,7 +56,7 @@ const events: Event[] = [
     description: "An evening of celebration, performances, and giving. All proceeds support our education initiatives.",
     date: "2026-03-05",
     time: "6:00 PM - 10:00 PM",
-    location: "Grand Ballroom, Taj Hotel, Mumbai",
+    location: "Grand Ballroom, Taj Hotel, Hyderabad",
     category: "fundraiser",
     image: fundraiserGala,
     attendees: 300,
