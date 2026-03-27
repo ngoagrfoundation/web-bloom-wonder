@@ -82,8 +82,8 @@ const HeroSection = () => {
                 className="absolute inset-0 w-full h-full object-cover"
               />
               
-              {/* 40% Dark Overlay */}
-              <div className="absolute inset-0 bg-black/40" />
+              {/* Brand Gradient Overlay */}
+              <div className="absolute inset-0 bg-gradient-to-r from-primary/90 via-primary/70 to-transparent" />
               
               {/* Overlaid Text Content */}
               <div className="relative z-10 container mx-auto px-4 h-full flex items-center">
