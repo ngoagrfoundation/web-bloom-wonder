@@ -34,7 +34,7 @@ const events: Event[] = [
     description: "Learn essential skills for financial independence including tailoring, computer basics, and entrepreneurship.",
     date: "2026-02-20",
     time: "10:00 AM - 4:00 PM",
-    location: "Skill Development Center, Andheri East",
+    location: "Skill Development Center, Kukatpally, Hyderabad",
     category: "workshop",
     image: tailoringTraining,
     attendees: 45,
