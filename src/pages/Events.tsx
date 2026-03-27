@@ -45,7 +45,7 @@ const events: Event[] = [
     description: "Join us in making our neighborhood cleaner and greener. Equipment and refreshments will be provided.",
     date: "2026-02-25",
     time: "7:00 AM - 12:00 PM",
-    location: "Various locations across Mumbai",
+    location: "Various locations across Hyderabad",
     category: "community",
     image: cleanupDrive,
     attendees: 200,
