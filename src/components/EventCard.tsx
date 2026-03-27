@@ -16,6 +16,7 @@ export interface Event {
 
 interface EventCardProps {
   event: Event;
+  onRegister?: () => void;
 }
 
 const categoryColors: Record<Event["category"], string> = {
