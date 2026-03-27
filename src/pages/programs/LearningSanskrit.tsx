@@ -22,10 +22,6 @@ const LearningSanskrit = () => {
         { value: "3", label: "Batch Timings" },
         { value: "No", label: "Age Limit" },
       ]}
-      relatedFocus={[
-        { title: "Social Welfare", link: "/focus/social-welfare" },
-        { title: "Skill Development", link: "/focus/skill-development" },
-      ]}
     >
       {/* Course Details Section */}
       <section className="py-16 bg-background">

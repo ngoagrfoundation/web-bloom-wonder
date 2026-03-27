@@ -23,10 +23,6 @@ const FoodDistribution = () => {
         { value: "20+", label: "Areas Covered" },
         { value: "100+", label: "Volunteers" },
       ]}
-      relatedFocus={[
-        { title: "Social Welfare", link: "/focus/social-welfare" },
-        { title: "Rural Development", link: "/focus/rural-development" },
-      ]}
     >
       {/* Donation Tiers Section */}
       <section className="py-16 bg-background">

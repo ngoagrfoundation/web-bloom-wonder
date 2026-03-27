@@ -1,8 +1,12 @@
-import { ReactNode } from "react";
+import { ReactNode, useState, useRef } from "react";
 import { Link } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 import { MobileLayout } from "./mobile";
 import AnimatedSection, { StaggerContainer, StaggerItem } from "./AnimatedSection";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
+import { ScrollArea } from "./ui/scroll-area";
+import VolunteerForm from "./forms/VolunteerForm";
+import DonationForm from "./DonationForm";
 
 interface Initiative {
   title: string;
@@ -41,10 +45,21 @@ const FocusPageLayout = ({
   stats,
   relatedCauses,
 }: FocusPageLayoutProps) => {
+  const [showVolunteerModal, setShowVolunteerModal] = useState(false);
+  const [showDonation, setShowDonation] = useState(false);
+  const donateRef = useRef<HTMLDivElement>(null);
+
+  const handleDonateClick = () => {
+    setShowDonation(true);
+    setTimeout(() => {
+      donateRef.current?.scrollIntoView({ behavior: "smooth" });
+    }, 100);
+  };
+
   return (
     <MobileLayout>
       <main className="pt-14 md:pt-20">
-        {/* Hero Section - Cleaner overlay */}
+        {/* Hero Section */}
         <section className="relative h-[50vh] min-h-[400px]">
           <div className="absolute inset-0">
             <img
@@ -128,7 +143,7 @@ const FocusPageLayout = ({
           </div>
         </section>
 
-        {/* Impact Stats - Cleaner design */}
+        {/* Impact Stats */}
         <section className="py-20 bg-primary text-primary-foreground">
           <div className="container mx-auto px-4">
             <AnimatedSection animation="fadeUp" className="text-center mb-12">
@@ -189,16 +204,42 @@ const FocusPageLayout = ({
                 make a difference in the lives of those who need it most.
               </p>
               <div className="flex flex-wrap justify-center gap-4">
-                <Link to="/donate" className="btn-primary">
+                <button onClick={handleDonateClick} className="btn-primary">
                   Donate Now
-                </Link>
-                <Link to="/#contact" className="btn-outline">
+                </button>
+                <button onClick={() => setShowVolunteerModal(true)} className="btn-outline">
                   Get Involved
-                </Link>
+                </button>
               </div>
             </AnimatedSection>
           </div>
         </section>
+
+        {/* Inline Donation Section */}
+        {showDonation && (
+          <section ref={donateRef} id="donate-section" className="py-16 bg-background">
+            <div className="container mx-auto px-4">
+              <div className="max-w-2xl mx-auto">
+                <h2 className="text-2xl md:text-3xl font-display font-bold text-foreground mb-8 text-center">
+                  Make a Donation
+                </h2>
+                <DonationForm />
+              </div>
+            </div>
+          </section>
+        )}
+
+        {/* Volunteer Modal */}
+        <Dialog open={showVolunteerModal} onOpenChange={(open) => !open && setShowVolunteerModal(false)}>
+          <DialogContent className="max-w-2xl max-h-[90vh]">
+            <DialogHeader>
+              <DialogTitle>Register as a Volunteer</DialogTitle>
+            </DialogHeader>
+            <ScrollArea className="max-h-[70vh]">
+              <VolunteerForm onSuccess={() => setShowVolunteerModal(false)} />
+            </ScrollArea>
+          </DialogContent>
+        </Dialog>
       </main>
     </MobileLayout>
   );
