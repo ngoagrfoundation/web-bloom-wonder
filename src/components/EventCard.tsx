@@ -35,7 +35,7 @@ const categoryLabels: Record<Event["category"], string> = {
   education: "Education Program",
 };
 
-const EventCard = ({ event }: EventCardProps) => {
+const EventCard = ({ event, onRegister }: EventCardProps) => {
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr);
     return {
