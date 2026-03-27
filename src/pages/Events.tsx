@@ -253,6 +253,18 @@ const Events = () => {
             </AnimatedSection>
           </div>
         </section>
+
+        {/* Volunteer Registration Modal */}
+        <Dialog open={showVolunteerModal} onOpenChange={setShowVolunteerModal}>
+          <DialogContent className="max-w-2xl max-h-[90vh] p-0">
+            <DialogHeader className="sr-only">
+              <DialogTitle>Register as a Volunteer</DialogTitle>
+            </DialogHeader>
+            <ScrollArea className="max-h-[85vh]">
+              <VolunteerForm onSuccess={() => setShowVolunteerModal(false)} />
+            </ScrollArea>
+          </DialogContent>
+        </Dialog>
       </main>
     </MobileLayout>
   );
