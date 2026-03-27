@@ -18,14 +18,10 @@ const DentalTreatment = () => {
         { title: "Oral Hygiene Education", description: "Tips on maintaining a lifelong healthy smile through proper brushing, flossing, and dietary habits." },
       ]}
       stats={[
-        { value: "28th", label: "Every Month" },
-        { value: "10AM–5PM", label: "Clinic Hours" },
-        { value: "100%", label: "Free Treatment" },
         { value: "500+", label: "Patients Treated" },
-      ]}
-      relatedFocus={[
-        { title: "Social Welfare", link: "/focus/social-welfare" },
-        { title: "Rural Development", link: "/focus/rural-development" },
+        { value: "100%", label: "Free Treatment" },
+        { value: "12+", label: "Monthly Camps" },
+        { value: "6", label: "Services Offered" },
       ]}
     >
       {/* Registration CTA */}
