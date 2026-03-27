@@ -16,6 +16,7 @@ export interface Event {
 
 interface EventCardProps {
   event: Event;
+  onRegister?: () => void;
 }
 
 const categoryColors: Record<Event["category"], string> = {
@@ -34,7 +35,7 @@ const categoryLabels: Record<Event["category"], string> = {
   education: "Education Program",
 };
 
-const EventCard = ({ event }: EventCardProps) => {
+const EventCard = ({ event, onRegister }: EventCardProps) => {
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr);
     return {
@@ -105,7 +106,7 @@ const EventCard = ({ event }: EventCardProps) => {
           )}
         </div>
 
-        <button className="w-full mt-6 btn-primary text-sm">
+        <button className="w-full mt-6 btn-primary text-sm" onClick={onRegister}>
           Register Now
         </button>
       </div>

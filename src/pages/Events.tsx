@@ -4,6 +4,9 @@ import { motion } from "framer-motion";
 import { MobileLayout } from "@/components/mobile";
 import EventCard, { Event } from "@/components/EventCard";
 import AnimatedSection, { StaggerContainer, StaggerItem } from "@/components/AnimatedSection";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import VolunteerForm from "@/components/forms/VolunteerForm";
 import healthCamp from "@/assets/generated/healthcare/health-camp.jpg";
 import tailoringTraining from "@/assets/generated/livelihood/tailoring-training.jpg";
 import cleanupDrive from "@/assets/generated/sustainability/cleanup-drive.jpg";
@@ -19,7 +22,7 @@ const events: Event[] = [
     description: "Free health check-ups including eye tests, dental care, and general consultation for the entire community.",
     date: "2026-02-15",
     time: "9:00 AM - 5:00 PM",
-    location: "AGR Community Center, Sector 12, Mumbai",
+    location: "AGR Community Center, Kukatpally, Hyderabad",
     category: "health-camp",
     image: healthCamp,
     attendees: 150,
@@ -31,7 +34,7 @@ const events: Event[] = [
     description: "Learn essential skills for financial independence including tailoring, computer basics, and entrepreneurship.",
     date: "2026-02-20",
     time: "10:00 AM - 4:00 PM",
-    location: "Skill Development Center, Andheri East",
+    location: "Skill Development Center, Kukatpally, Hyderabad",
     category: "workshop",
     image: tailoringTraining,
     attendees: 45,
@@ -42,7 +45,7 @@ const events: Event[] = [
     description: "Join us in making our neighborhood cleaner and greener. Equipment and refreshments will be provided.",
     date: "2026-02-25",
     time: "7:00 AM - 12:00 PM",
-    location: "Various locations across Mumbai",
+    location: "Various locations across Hyderabad",
     category: "community",
     image: cleanupDrive,
     attendees: 200,
@@ -53,7 +56,7 @@ const events: Event[] = [
     description: "An evening of celebration, performances, and giving. All proceeds support our education initiatives.",
     date: "2026-03-05",
     time: "6:00 PM - 10:00 PM",
-    location: "Grand Ballroom, Taj Hotel, Mumbai",
+    location: "Grand Ballroom, Taj Hotel, Hyderabad",
     category: "fundraiser",
     image: fundraiserGala,
     attendees: 300,
@@ -65,7 +68,7 @@ const events: Event[] = [
     description: "Distribution of school supplies and uniforms to underprivileged children for the new academic year.",
     date: "2026-03-10",
     time: "10:00 AM - 2:00 PM",
-    location: "AGR Foundation Office, Bandra",
+    location: "AGR Foundation Office, Kukatpally, Hyderabad",
     category: "education",
     image: schoolSupplies,
     attendees: 100,
@@ -76,7 +79,7 @@ const events: Event[] = [
     description: "Special program focused on health issues affecting seniors with free consultations and medicine distribution.",
     date: "2026-03-15",
     time: "9:00 AM - 1:00 PM",
-    location: "Community Hall, Dadar",
+    location: "Community Hall, KPHB, Hyderabad",
     category: "health-camp",
     image: elderlyCare,
     attendees: 80,
@@ -95,7 +98,7 @@ const categories = [
 const Events = () => {
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [selectedCategory, setSelectedCategory] = useState("all");
-
+  const [showVolunteerModal, setShowVolunteerModal] = useState(false);
   const filteredEvents = selectedCategory === "all"
     ? events
     : events.filter((event) => event.category === selectedCategory);
@@ -192,7 +195,7 @@ const Events = () => {
               >
                 {featuredEvents.map((event) => (
                   <StaggerItem key={event.id}>
-                    <EventCard event={event} />
+                    <EventCard event={event} onRegister={() => setShowVolunteerModal(true)} />
                   </StaggerItem>
                 ))}
               </StaggerContainer>
@@ -217,7 +220,7 @@ const Events = () => {
               >
                 {upcomingEvents.map((event) => (
                   <StaggerItem key={event.id}>
-                    <EventCard event={event} />
+                    <EventCard event={event} onRegister={() => setShowVolunteerModal(true)} />
                   </StaggerItem>
                 ))}
               </StaggerContainer>
@@ -250,6 +253,18 @@ const Events = () => {
             </AnimatedSection>
           </div>
         </section>
+
+        {/* Volunteer Registration Modal */}
+        <Dialog open={showVolunteerModal} onOpenChange={setShowVolunteerModal}>
+          <DialogContent className="max-w-2xl max-h-[90vh] p-0">
+            <DialogHeader className="sr-only">
+              <DialogTitle>Register as a Volunteer</DialogTitle>
+            </DialogHeader>
+            <ScrollArea className="max-h-[85vh]">
+              <VolunteerForm onSuccess={() => setShowVolunteerModal(false)} />
+            </ScrollArea>
+          </DialogContent>
+        </Dialog>
       </main>
     </MobileLayout>
   );
