@@ -1,83 +1,124 @@
 
 
-## Fix Font, Impact Section, Dental Stats, Related Focus, CTA Buttons
-
-### 6 Changes
+## 9 Fixes: Placeholders, Sanskrit Page, Headings, Layout Width, Initiatives, Hero Styling, Slider Links, Year, Sustainability
 
 ---
 
-### 1. Change font family to Poppins
+### 1. Replace phone placeholder `9876543210` with `9999999999`
 
-**Files**: `index.html`, `tailwind.config.ts`, `src/index.css`
+**Files**: `src/components/forms/VolunteerForm.tsx`, `src/components/forms/ReportChallengeForm.tsx`, `src/components/forms/PartnerForm.tsx`, `src/components/forms/AdoptStudentForm.tsx`
 
-- Add Google Fonts import for Poppins (weights 300-700) in `index.html`, replacing Playfair Display + Source Sans 3
-- Update `tailwind.config.ts` `fontFamily.sans` to `['Poppins', ...]` and `fontFamily.display` to `['Poppins', ...]`
-- Update `src/index.css` Google Fonts `@import` URL to Poppins
+Change `placeholder="9876543210"` to `placeholder="9999999999"` in all 4 files.
 
 ---
 
-### 2. Fix "Our Impact" section visibility in ProgramPageLayout
+### 2. Devotional look for Learning Sanskrit page
+
+**File**: `src/pages/programs/LearningSanskrit.tsx`
+
+Add devotional styling using existing branding colors:
+- Wrap the Bhagavad Gita section in a warm gradient (`bg-gradient-to-b from-primary/10 to-secondary/10`) with a decorative Om symbol or lotus emoji accent
+- Add a saffron/warm-toned decorative border to course detail cards
+- Style the "Join the Movement" CTA section with a warm background and subtle border styling
+- Add a decorative divider between sections using a traditional pattern (CSS border with primary color)
+- Keep all colors within existing palette (primary, secondary, muted)
+
+---
+
+### 3. Remove duplicate "Register as a Volunteer" heading in popups
+
+**Files**: `src/components/ProgramPageLayout.tsx`, `src/components/FocusPageLayout.tsx`
+
+The `DialogTitle` shows "Register as a Volunteer" visibly, but the `VolunteerForm` component already has its own styled header with the same text. Fix by making the `DialogHeader` screen-reader-only (same pattern used in `GetInvolvedSection.tsx`):
+
+```tsx
+<DialogHeader className="sr-only">
+  <DialogTitle>Register as a Volunteer</DialogTitle>
+</DialogHeader>
+```
+
+Also remove padding from `DialogContent` (`p-0`) so the form fills edge-to-edge.
+
+---
+
+### 4. Increase "About This Program" section width
 
 **File**: `src/components/ProgramPageLayout.tsx`
 
-The Impact section uses `maroon-gradient` class which is never defined in CSS. Replace with `bg-primary text-primary-foreground` (same pattern used in `FocusPageLayout.tsx` line 132).
+Change `max-w-3xl` to `max-w-5xl` on the overview container (line 91) so the text spans wider and looks balanced.
+
+Also check `FocusPageLayout.tsx` for similar narrow content — update its overview section width if needed.
 
 ---
 
-### 3. Fix Dental Treatment page duplicate stats
+### 5. Add new initiative options to Volunteer Form
 
-**File**: `src/pages/programs/DentalTreatment.tsx`
+**File**: `src/components/forms/VolunteerForm.tsx`
 
-The `stats` array contains `{ value: "28th", label: "Every Month" }` and `{ value: "10AM–5PM", label: "Clinic Hours" }` which duplicates the "When & Where" section below. Replace those stats with meaningful impact numbers:
-- `500+` Patients Treated
-- `100%` Free Treatment
-- `12+` Monthly Camps
-- `6` Services Offered
-
----
-
-### 4. Remove Related Focus Areas from recently added pages
-
-**Files**: `src/pages/programs/DentalTreatment.tsx`, `src/pages/programs/LearningSanskrit.tsx`, `src/pages/programs/FoodDistribution.tsx`
-
-Remove the `relatedFocus` prop from all three pages. The `ProgramPageLayout` already conditionally renders this section only when `relatedFocus.length > 0`, so passing an empty array (or omitting it) will hide it.
+Add 3 new items to the `initiatives` array:
+- `{ id: "food-distribution", label: "Food Distribution" }`
+- `{ id: "other-distribution", label: "Other Items Distribution" }`
+- `{ id: "teach-what-you-love", label: "Teach What You Love" }`
 
 ---
 
-### 5. "Get Involved" button opens Volunteer Registration popup
+### 6. Apply inner-page banner text styling to home page slider
 
-**Files**: `src/components/ProgramPageLayout.tsx`, `src/components/FocusPageLayout.tsx`
+**File**: `src/components/HeroSection.tsx`
 
-Currently "Get Involved" links to `/#contact`. Change it to open a `VolunteerForm` modal dialog inline:
-- Import `Dialog`, `DialogContent`, `DialogHeader`, `DialogTitle`, `ScrollArea` and `VolunteerForm`
-- Add state `const [showVolunteerModal, setShowVolunteerModal] = useState(false)`
-- Replace the `<Link>` / `<a>` with a `<button>` that sets `showVolunteerModal(true)`
-- Add a `<Dialog>` with `<VolunteerForm onSuccess={() => setShowVolunteerModal(false)} />` at the end of the section
+Currently the home slider uses `bg-black/40` overlay. Inner pages use `bg-gradient-to-r from-primary/90 via-primary/70 to-transparent`. Apply the same gradient overlay to home slider for consistent branding:
+
+Replace `<div className="absolute inset-0 bg-black/40" />` with `<div className="absolute inset-0 bg-gradient-to-r from-primary/90 via-primary/70 to-transparent" />`
 
 ---
 
-### 6. "Donate Now" button scrolls to inline donation section on same page
+### 7. Update "Learn More" links per slide
 
-**Files**: `src/components/ProgramPageLayout.tsx`, `src/components/FocusPageLayout.tsx`
+**File**: `src/components/HeroSection.tsx`
 
-Instead of linking to `/donate`, embed a `DonationForm` component within each layout that is hidden by default and revealed when clicking "Donate Now":
-- Add state `const [showDonation, setShowDonation] = useState(false)`
-- Add a `<section id="donate-section">` with `<DonationForm />` that renders conditionally (or always renders and scrolls into view)
-- Replace `<Link to="/donate">` with a button that sets `showDonation(true)` and scrolls to `#donate-section` using `scrollIntoView`
-- Import `DonationForm` component
+Add a `link` field to each slide data object:
+- Slide 1 (Volunteers/Motto): `/#about`
+- Slide 2 (Education): `/programs/education`
+- Slide 3 (Healthcare): `/programs/healthcare`
+- Slide 4 (Skill Development): `/focus/skill-development`
+
+Replace the hardcoded `href="#about"` with `slide.link`.
+
+---
+
+### 8. Change year from 2018 to 2025
+
+**Files**:
+- `src/components/Footer.tsx` line 81: Change "Making a difference since 2018" to "Making a difference since 2025"
+- `src/pages/NewsArticle.tsx` line 28: Change "inception in 2018" to "inception in 2025"
+
+---
+
+### 9. Add Wind Turbine Energy and Bio-gas to Sustainability section
+
+**File**: `src/components/SustainabilitySection.tsx`
+
+Add 2 new entries to the `initiatives` array:
+- `{ icon: Wind, title: "Wind Turbine Energy", description: "Harnessing wind power through turbine installations to provide clean, renewable electricity to rural communities." }`
+- `{ icon: Flame, title: "Bio-gas Energy", description: "Promoting bio-gas plants that convert organic waste into sustainable cooking fuel and electricity, reducing dependence on fossil fuels." }`
+
+Import `Flame` from lucide-react. Note: the existing "Zero Waste Living" already uses the `Wind` icon — rename that to use `Recycle` or `RefreshCw` to avoid icon duplication, or keep `Wind` for both since they're different concepts.
 
 ---
 
 ### Files Summary
 
-| File | Change |
-|------|--------|
-| `index.html` | Add Poppins font link |
-| `src/index.css` | Update Google Fonts import to Poppins |
-| `tailwind.config.ts` | Update font families to Poppins |
-| `src/components/ProgramPageLayout.tsx` | Fix impact bg, add volunteer modal + inline donation |
-| `src/components/FocusPageLayout.tsx` | Add volunteer modal + inline donation |
-| `src/pages/programs/DentalTreatment.tsx` | Fix stats, remove relatedFocus |
-| `src/pages/programs/LearningSanskrit.tsx` | Remove relatedFocus |
-| `src/pages/programs/FoodDistribution.tsx` | Remove relatedFocus |
+| File | Changes |
+|------|---------|
+| `src/components/forms/VolunteerForm.tsx` | Fix placeholder, add 3 initiatives |
+| `src/components/forms/ReportChallengeForm.tsx` | Fix placeholder |
+| `src/components/forms/PartnerForm.tsx` | Fix placeholder |
+| `src/components/forms/AdoptStudentForm.tsx` | Fix placeholder |
+| `src/pages/programs/LearningSanskrit.tsx` | Add devotional styling |
+| `src/components/ProgramPageLayout.tsx` | Fix dialog heading, widen overview |
+| `src/components/FocusPageLayout.tsx` | Fix dialog heading |
+| `src/components/HeroSection.tsx` | Apply brand overlay, per-slide links |
+| `src/components/Footer.tsx` | 2018 → 2025 |
+| `src/pages/NewsArticle.tsx` | 2018 → 2025 |
+| `src/components/SustainabilitySection.tsx` | Add Wind Turbine + Bio-gas |
 
