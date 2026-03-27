@@ -13,6 +13,7 @@ const slides = [
     title: "Our Motto is,",
     subtitle: "Building a self-sustainable and eco-friendly society",
     description: "Dedicated to uplifting rural communities through education, healthcare, and sustainable livelihood programs across India.",
+    link: "/#about",
   },
   {
     image: educationImage,
@@ -20,6 +21,7 @@ const slides = [
     title: "Education for All,",
     subtitle: "Building Futures",
     description: "Providing quality education and learning resources to underserved children, empowering the next generation with knowledge.",
+    link: "/programs/education",
   },
   {
     image: healthcareImage,
@@ -27,6 +29,7 @@ const slides = [
     title: "Healthcare Access,",
     subtitle: "Saving Lives",
     description: "Bringing essential healthcare services and medical support to remote villages where access is limited.",
+    link: "/programs/healthcare",
   },
   {
     image: livelihoodImage,
@@ -34,6 +37,7 @@ const slides = [
     title: "Skill Development,",
     subtitle: "Creating Opportunities",
     description: "Training and supporting individuals with vocational skills to build sustainable livelihoods and self-reliance.",
+    link: "/focus/skill-development",
   },
 ];
 
