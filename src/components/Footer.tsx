@@ -78,7 +78,7 @@ const Footer = () => {
             </p>
             <div className="flex items-center gap-2 text-secondary text-sm">
               <Heart className="w-4 h-4 fill-current" />
-              <span>Making a difference since 2018</span>
+              <span>Making a difference since 2025</span>
             </div>
           </div>
 

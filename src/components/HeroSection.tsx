@@ -13,6 +13,7 @@ const slides = [
     title: "Our Motto is,",
     subtitle: "Building a self-sustainable and eco-friendly society",
     description: "Dedicated to uplifting rural communities through education, healthcare, and sustainable livelihood programs across India.",
+    link: "/#about",
   },
   {
     image: educationImage,
@@ -20,6 +21,7 @@ const slides = [
     title: "Education for All,",
     subtitle: "Building Futures",
     description: "Providing quality education and learning resources to underserved children, empowering the next generation with knowledge.",
+    link: "/programs/education",
   },
   {
     image: healthcareImage,
@@ -27,6 +29,7 @@ const slides = [
     title: "Healthcare Access,",
     subtitle: "Saving Lives",
     description: "Bringing essential healthcare services and medical support to remote villages where access is limited.",
+    link: "/programs/healthcare",
   },
   {
     image: livelihoodImage,
@@ -34,6 +37,7 @@ const slides = [
     title: "Skill Development,",
     subtitle: "Creating Opportunities",
     description: "Training and supporting individuals with vocational skills to build sustainable livelihoods and self-reliance.",
+    link: "/focus/skill-development",
   },
 ];
 
@@ -82,8 +86,8 @@ const HeroSection = () => {
                 className="absolute inset-0 w-full h-full object-cover"
               />
               
-              {/* 40% Dark Overlay */}
-              <div className="absolute inset-0 bg-black/40" />
+              {/* Brand Gradient Overlay */}
+              <div className="absolute inset-0 bg-gradient-to-r from-primary/90 via-primary/70 to-transparent" />
               
               {/* Overlaid Text Content */}
               <div className="relative z-10 container mx-auto px-4 h-full flex items-center">
@@ -98,7 +102,7 @@ const HeroSection = () => {
                   </p>
                   <div className="flex flex-col sm:flex-row gap-4 mt-6 md:mt-8">
                     <a 
-                      href="#about" 
+                      href={slide.link} 
                       className="bg-primary text-primary-foreground hover:bg-primary/90 transition-all duration-200 px-6 py-3 rounded-lg font-medium text-center"
                     >
                       Learn More

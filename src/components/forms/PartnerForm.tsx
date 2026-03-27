@@ -218,7 +218,7 @@ const PartnerForm = ({ onSuccess: onSuccessCallback }: PartnerFormProps) => {
             <Input
               id="partnerPhone"
               type="tel"
-              placeholder="9876543210"
+              placeholder="9999999999"
               {...register("phone")}
               className={errors.phone ? "border-destructive" : ""}
             />

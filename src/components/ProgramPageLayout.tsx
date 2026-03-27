@@ -88,7 +88,7 @@ const ProgramPageLayout = ({
         {/* Overview Section */}
         <section className="py-16 bg-background">
           <div className="container mx-auto px-4">
-            <div className="max-w-3xl mx-auto">
+            <div className="max-w-5xl mx-auto">
               <AnimatedSection>
                 <h2 className="text-2xl md:text-3xl font-display font-bold text-foreground mb-6">
                   About This Program
@@ -223,8 +223,8 @@ const ProgramPageLayout = ({
 
         {/* Volunteer Modal */}
         <Dialog open={showVolunteerModal} onOpenChange={(open) => !open && setShowVolunteerModal(false)}>
-          <DialogContent className="max-w-2xl max-h-[90vh]">
-            <DialogHeader>
+          <DialogContent className="max-w-2xl max-h-[90vh] p-0">
+            <DialogHeader className="sr-only">
               <DialogTitle>Register as a Volunteer</DialogTitle>
             </DialogHeader>
             <ScrollArea className="max-h-[70vh]">

@@ -1,4 +1,4 @@
-import { Leaf, Recycle, TreePine, Droplets, Sun, Wind } from "lucide-react";
+import { Leaf, Recycle, TreePine, Droplets, Sun, Wind, Flame, RefreshCw } from "lucide-react";
 import AnimatedSection, { StaggerContainer, StaggerItem } from "./AnimatedSection";
 
 const initiatives = [
@@ -28,9 +28,19 @@ const initiatives = [
     description: "Encouraging renewable energy solutions in rural communities for sustainable living.",
   },
   {
-    icon: Wind,
+    icon: RefreshCw,
     title: "Zero Waste Living",
     description: "Teaching waste reduction practices and promoting a circular economy lifestyle.",
+  },
+  {
+    icon: Wind,
+    title: "Wind Turbine Energy",
+    description: "Harnessing wind power through turbine installations to provide clean, renewable electricity to rural communities.",
+  },
+  {
+    icon: Flame,
+    title: "Bio-gas Energy",
+    description: "Promoting bio-gas plants that convert organic waste into sustainable cooking fuel and electricity, reducing dependence on fossil fuels.",
   },
 ];
 

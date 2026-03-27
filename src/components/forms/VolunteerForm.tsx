@@ -18,6 +18,9 @@ const initiatives = [
   { id: "lake-cleaning", label: "Lake Cleaning" },
   { id: "zero-waste", label: "Zero Waste Workshops" },
   { id: "community-outreach", label: "Community Outreach" },
+  { id: "food-distribution", label: "Food Distribution" },
+  { id: "other-distribution", label: "Other Items Distribution" },
+  { id: "teach-what-you-love", label: "Teach What You Love" },
 ];
 
 const availabilityOptions = [
@@ -167,7 +170,7 @@ const VolunteerForm = ({ onSuccess: onSuccessCallback }: VolunteerFormProps) => 
             <Input
               id="phone"
               type="tel"
-              placeholder="9876543210"
+              placeholder="9999999999"
               {...register("phone")}
               className={errors.phone ? "border-destructive" : ""}
             />

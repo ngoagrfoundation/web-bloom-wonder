@@ -143,7 +143,7 @@ const ReportChallengeForm = ({ onSuccess: onSuccessCallback }: ReportChallengeFo
             <Input
               id="reportPhone"
               type="tel"
-              placeholder="9876543210"
+              placeholder="9999999999"
               {...register("phone")}
               className={errors.phone ? "border-destructive" : ""}
             />
