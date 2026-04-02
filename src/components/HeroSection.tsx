@@ -124,6 +124,9 @@ const HeroSection = () => {
       return;
     }
     setSanskritSubmitting(true);
+    import("@/lib/api").then(({ submitFormToAPI }) => {
+      submitFormToAPI("sanskrit_registration", sanskritForm).catch(() => {});
+    });
     setTimeout(() => {
       toast.success("Registration successful! We will contact you shortly.");
       setSanskritForm({ name: "", address: "", age: "", batch: "", mobile: "" });
@@ -143,6 +146,9 @@ const HeroSection = () => {
       return;
     }
     setDentalSubmitting(true);
+    import("@/lib/api").then(({ submitFormToAPI }) => {
+      submitFormToAPI("dental_registration", dentalForm).catch(() => {});
+    });
     setTimeout(() => {
       toast.success("Registration successful! We will contact you with appointment details.");
       setDentalForm({ name: "", mobile: "", address: "", problem: "" });

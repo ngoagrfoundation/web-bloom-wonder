@@ -155,6 +155,21 @@ const DonationForm = () => {
           toast.success(
             `Thank you for your generous donation! Payment ID: ${response.razorpay_payment_id.slice(0, 12)}...`
           );
+
+          // Record donation to PHP/MySQL API (fire-and-forget)
+          import("@/lib/api").then(({ recordDonationToAPI }) => {
+            recordDonationToAPI({
+              razorpay_payment_id: response.razorpay_payment_id,
+              donor_name: formData.name,
+              donor_email: formData.email,
+              donor_phone: formData.phone,
+              amount: currentAmount!,
+              donation_type: donationType,
+              pan_number: formData.panNumber || "",
+              status: "success",
+            }).catch(() => {});
+          });
+
           resetForm();
           setIsProcessing(false);
         },
