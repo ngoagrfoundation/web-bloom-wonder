@@ -1,106 +1,166 @@
 
 
-## Enhanced Admin Dashboard + Dynamic Content on Public Pages
+## Admin Dashboard Complete Enhancement
 
-### What This Does
-
-1. **Admin-managed content flows to the public site**: Events, gallery images, and news created in the admin panel will automatically appear on the landing page, Events page, Gallery page, and News page.
-2. **News management in admin**: Add a full News/Articles manager (CRUD) to the admin dashboard — currently missing.
-3. **Dashboard enhancements**: Better stats, recent activity feed, quick action cards.
-4. **Public pages load dynamic content**: Events, Gallery, and News pages fetch from the database first, falling back to static data if the API is unavailable (for preview/offline).
+### Overview
+Six major improvements: (1) gallery category filtering with custom categories, (2) event registration form, (3) database browser in admin, (4) existing static content seeding info, (5) image upload support for events/news, and (6) overall admin polish.
 
 ---
 
-### New PHP Endpoint Needed
+### 1. Gallery Manager — Category Folders + "Others" Custom Category
 
-**`public/api/admin/news.php`** — CRUD for news articles (GET/POST/PUT/DELETE). Also needs a **public read** endpoint: `public/api/news.php` (no auth required, GET only) so the landing page can fetch news without admin session.
+**File: `src/pages/admin/GalleryManager.tsx`**
+- Add category filter tabs at the top to browse images by category (like folders)
+- Add "others" to the category list with a custom name input that appears when "others" is selected
+- Show image count per category
+- Add bulk select/delete
+- Add drag-to-reorder (sort_order) support
 
-Similarly, update `public/api/admin/events.php` and `public/api/admin/gallery.php` to allow **public GET** (unauthenticated reads) — or create separate `public/api/events.php` and `public/api/gallery.php` public endpoints.
+**File: `public/api/admin/gallery.php`**
+- Add `?category=xxx` filter support on GET
+
+---
+
+### 2. Event Registration Form (replaces Volunteer modal)
+
+**New file: `src/components/forms/EventRegistrationForm.tsx`**
+- Fields: Full Name, Email, Phone, Number of Participants, Event Category (pre-filled from event), Special Requirements (textarea)
+- Pre-fills event title and category from the clicked event
+- Generic enough for all event types, with "Others" option for category
 
 **New SQL table** (run in phpMyAdmin):
 ```sql
-CREATE TABLE IF NOT EXISTS news_articles (
+CREATE TABLE IF NOT EXISTS event_registrations (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    slug VARCHAR(255) UNIQUE NOT NULL,
-    title VARCHAR(255) NOT NULL,
-    excerpt TEXT,
-    content LONGTEXT,
-    image VARCHAR(500),
-    author VARCHAR(100) DEFAULT 'AGR Foundation',
-    category VARCHAR(50) DEFAULT 'announcement',
-    read_time INT DEFAULT 3,
-    is_published TINYINT(1) DEFAULT 1,
-    published_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    event_title VARCHAR(255) NOT NULL,
+    event_category VARCHAR(50),
+    full_name VARCHAR(100) NOT NULL,
+    email VARCHAR(255) NOT NULL,
+    phone VARCHAR(15) NOT NULL,
+    participants INT DEFAULT 1,
+    special_requirements TEXT,
+    ip_address VARCHAR(45),
+    submitted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 ```
 
----
+**File: `src/pages/Events.tsx`**
+- Replace `VolunteerForm` modal with `EventRegistrationForm`, passing the selected event's title and category
 
-### Files to Create
+**File: `public/api/submit-form.php`**
+- Add `event_registration` case to route to the new table
 
-| File | Purpose |
-|------|---------|
-| `public/api/public-events.php` | Public GET endpoint for events (no auth) |
-| `public/api/public-gallery.php` | Public GET endpoint for gallery images (no auth) |
-| `public/api/public-news.php` | Public GET endpoint for published news (no auth) |
-| `public/api/admin/news.php` | Admin CRUD for news articles |
-| `src/pages/admin/NewsManager.tsx` | Admin UI to create, edit, delete news articles |
+**File: `src/pages/admin/Submissions.tsx`**
+- Add `event_registration` to `formTypes` list and `summaryColumns`
 
-### Files to Modify
-
-| File | Changes |
-|------|---------|
-| **`src/lib/api.ts`** | Add `fetchPublicEvents()`, `fetchPublicGallery()`, `fetchPublicNews()` using public (no-auth) endpoints |
-| **`src/lib/admin-api.ts`** | Add news CRUD functions: `getNews`, `createNews`, `updateNews`, `deleteNews` |
-| **`src/pages/admin/AdminLayout.tsx`** | Add "News" nav item with Newspaper icon |
-| **`src/App.tsx`** | Add lazy-loaded `NewsManager` route under `/admin/news` |
-| **`src/pages/admin/Dashboard.tsx`** | Enhanced: add gallery count, events count, news count stats; recent activity feed showing last 5 submissions; quick action buttons linking to each admin section |
-| **`src/components/GallerySection.tsx`** | Fetch from `fetchPublicGallery()`, fall back to static `featuredImages` |
-| **`src/pages/Gallery.tsx`** | Fetch from `fetchPublicGallery()`, merge with or replace static images |
-| **`src/pages/Events.tsx`** | Fetch from `fetchPublicEvents()`, fall back to static events array |
-| **`src/components/NewsSection.tsx`** | Fetch from `fetchPublicNews()`, fall back to static `latestNews` |
-| **`src/pages/News.tsx`** | Fetch from `fetchPublicNews()`, fall back to static `allNews` |
-| **`src/pages/NewsArticle.tsx`** | Fetch single article from API by slug, fall back to static data |
+**File: `public/api/admin/submissions.php`**
+- Add `event_registration` → `event_registrations` table mapping
 
 ---
 
-### Dashboard Enhancements
+### 3. Database Browser in Admin
 
-The current dashboard shows only 3 stat cards and a password form. Enhanced version:
+**New file: `src/pages/admin/DatabaseBrowser.tsx`**
+- A tabbed view showing all database tables: contact_submissions, volunteer_submissions, partner_submissions, adopt_student_submissions, report_challenge_submissions, sanskrit_registrations, dental_registrations, event_registrations, donations, gallery_images, events, news_articles, admin_users
+- Each tab shows the table data in a paginated table with search/filter
+- Row count per table shown as badges on tabs
+- Export CSV per table
+- This consolidates everything into one view so you don't need phpMyAdmin
 
-- **6 stat cards**: Submissions, Donations, Amount, Gallery Images, Events, News Articles
-- **Recent Activity**: Last 5 form submissions with type badges and timestamps
-- **Quick Actions**: Cards with icons linking to "Add Event", "Upload Photo", "Write Article", "View Donations"
-- Remove outdated "Google Sheets backup" text
+**New PHP file: `public/api/admin/database.php`**
+- Admin-only endpoint that accepts `?table=xxx&page=1&limit=50&search=xxx`
+- Returns paginated data from any allowed table (whitelist of table names for security)
+- Also returns table list with row counts at `?action=tables`
 
-### News Manager Features
+**File: `src/lib/admin-api.ts`**
+- Add `getTableList()` and `getTableData(table, page, limit, search)` functions
 
-- Table listing all articles with title, category, status (published/draft), date
-- Create/Edit dialog with: title, slug (auto-generated from title), excerpt, full content (textarea), image URL, author, category, read time, published toggle
-- Delete with confirmation
-- Preview link that opens the article on the public site
+**File: `src/pages/admin/AdminLayout.tsx`**
+- Add "Database" nav item with Database icon
 
-### Dynamic Content Pattern
+**File: `src/App.tsx`**
+- Add lazy route for `/admin/database`
 
-Each public component follows this pattern:
+---
+
+### 4. Image Upload for Events and News (replace URL-only input)
+
+**File: `src/pages/admin/EventsManager.tsx`**
+- Replace the "Image URL" text input with a file upload zone (like GalleryManager)
+- Upload goes to `/uploads/events/` via a new PHP handler, or reuse gallery upload endpoint with a different folder
+- Show image preview in the form
+
+**File: `src/pages/admin/NewsManager.tsx`**
+- Same: replace "Image URL" with file upload
+- Upload goes to `/uploads/news/`
+
+**New PHP file: `public/api/admin/upload.php`**
+- Generic admin image upload endpoint
+- Accepts `folder` param (events, news, gallery)
+- Returns the file path
+- Validates file type and size (max 5MB)
+
+**File: `src/lib/admin-api.ts`**
+- Add `uploadImage(file: File, folder: string)` function
+
+---
+
+### 5. Admin Layout & Dashboard Polish
+
+**File: `src/pages/admin/AdminLayout.tsx`**
+- Add nav items: "Event Registrations" (under Submissions or separate), "Database"
+- Add site settings link placeholder
+- Show current date/time in header
+
+**File: `src/pages/admin/Dashboard.tsx`**
+- Add "Event Registrations" stat card
+- Add a "System Status" card showing: DB connection status, last submission time, storage usage estimate
+- Add direct links in stat cards (click to navigate)
+
+---
+
+### 6. Submissions — Add Event Registrations
+
+**File: `src/pages/admin/Submissions.tsx`**
+- Add `{ value: "event_registration", label: "Event Registration" }` to formTypes
+- Add `event_registration: ["id", "event_title", "full_name", "email", "phone", "participants", "submitted_at"]` to summaryColumns
+- Add column labels for the new fields
+
+---
+
+### Files Summary
+
+| Action | File | Purpose |
+|--------|------|---------|
+| Create | `src/components/forms/EventRegistrationForm.tsx` | Event-specific registration form |
+| Create | `src/pages/admin/DatabaseBrowser.tsx` | Full database browser view |
+| Create | `public/api/admin/database.php` | DB browser API endpoint |
+| Create | `public/api/admin/upload.php` | Generic image upload endpoint |
+| Modify | `src/pages/Events.tsx` | Use EventRegistrationForm instead of VolunteerForm |
+| Modify | `src/pages/admin/GalleryManager.tsx` | Category filters, custom "others" category |
+| Modify | `src/pages/admin/EventsManager.tsx` | Image upload instead of URL input |
+| Modify | `src/pages/admin/NewsManager.tsx` | Image upload instead of URL input |
+| Modify | `src/pages/admin/Dashboard.tsx` | More stats, clickable cards, system status |
+| Modify | `src/pages/admin/AdminLayout.tsx` | Add Database nav item |
+| Modify | `src/pages/admin/Submissions.tsx` | Add event_registration type |
+| Modify | `src/App.tsx` | Add /admin/database route |
+| Modify | `src/lib/admin-api.ts` | Add upload, database browser functions |
+| Modify | `public/api/submit-form.php` | Add event_registration case |
+| Modify | `public/api/admin/submissions.php` | Add event_registrations table mapping |
+
+### New SQL (run in phpMyAdmin after approval)
+```sql
+CREATE TABLE IF NOT EXISTS event_registrations (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    event_title VARCHAR(255) NOT NULL,
+    event_category VARCHAR(50),
+    full_name VARCHAR(100) NOT NULL,
+    email VARCHAR(255) NOT NULL,
+    phone VARCHAR(15) NOT NULL,
+    participants INT DEFAULT 1,
+    special_requirements TEXT,
+    ip_address VARCHAR(45),
+    submitted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
 ```
-1. On mount, try fetching from PHP API
-2. If API returns data, use it (merge with static for fallback images)
-3. If API fails (preview mode, offline), use hardcoded static data
-4. Show content either way — no blank screens
-```
-
----
-
-### Summary
-
-| Area | Items |
-|------|-------|
-| New PHP files | 4 (3 public endpoints + 1 admin news CRUD) |
-| New React files | 1 (`NewsManager.tsx`) |
-| Modified React files | 10 |
-| New SQL table | 1 (`news_articles`) |
-| Total changes | ~15 files |
 
