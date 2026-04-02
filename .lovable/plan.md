@@ -1,138 +1,143 @@
 
 
-## Admin Dashboard Enhancement + Reels, Testimonials, and Profile Management
+## Admin Dashboard Comprehensive Enhancement — 7 Items
 
-### Overview
-Four major additions: (1) Reels section on landing page with admin management, (2) dynamic testimonials with admin CRUD, (3) foundation profile settings in admin, and (4) improved admin dashboard UI design.
+### 1. Seed Existing Static Content into Admin (Gallery + News)
 
----
+The landing page has hardcoded gallery images and news articles that don't appear in the admin. We'll add a "Seed Static Content" button on the Dashboard that inserts all existing static images (from `GallerySection.tsx` static data) and news articles (from `NewsSection.tsx` static data) into the database via the admin API. This is a one-time action.
 
-### New SQL Tables (run in phpMyAdmin)
+**Files to modify:**
+- `src/pages/admin/Dashboard.tsx` — Add a "Seed Static Content" card with buttons to import static gallery images and news into the DB
+- `src/lib/admin-api.ts` — Add `seedStaticContent()` function that POSTs existing static data to create gallery/news entries
 
-```sql
-CREATE TABLE IF NOT EXISTS reels (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    title VARCHAR(200) NOT NULL,
-    video_url VARCHAR(500) NOT NULL,
-    thumbnail VARCHAR(500),
-    description TEXT,
-    is_published TINYINT(1) DEFAULT 1,
-    sort_order INT DEFAULT 0,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
+**Note:** Hero section images (program slides) are bundled assets tied to specific page layouts. Making every section image admin-editable would require a full CMS architecture. Instead, the Site Settings page will get image upload fields for key branding assets (logo, hero background). Other section images remain as bundled assets that can be replaced by uploading new files to cPanel.
 
-CREATE TABLE IF NOT EXISTS testimonials (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    quote TEXT NOT NULL,
-    name VARCHAR(100) NOT NULL,
-    role VARCHAR(200) NOT NULL,
-    photo VARCHAR(500),
-    is_published TINYINT(1) DEFAULT 1,
-    sort_order INT DEFAULT 0,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
-CREATE TABLE IF NOT EXISTS site_settings (
-    setting_key VARCHAR(100) PRIMARY KEY,
-    setting_value TEXT NOT NULL,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-);
-
--- Seed default profile settings
-INSERT INTO site_settings (setting_key, setting_value) VALUES
-('org_name', 'AGR Foundation'),
-('tagline', 'Serving Society, Strengthening Lives'),
-('about_text', 'AGR Foundation is a non-profit organization dedicated to social welfare, education, healthcare, and environmental safety.'),
-('email', 'info@agrfoundation.ngo'),
-('phone', '+91 9876543210'),
-('address', 'Hyderabad, Telangana, India'),
-('facebook', ''),
-('instagram', ''),
-('twitter', ''),
-('youtube', ''),
-('linkedin', '')
-ON DUPLICATE KEY UPDATE setting_key = setting_key;
-```
+**Files to modify for Site Settings image uploads:**
+- `src/pages/admin/SiteSettings.tsx` — Add image upload fields for hero background, logo, and OG image
+- `public/api/admin/settings.php` — Support file uploads for settings images
 
 ---
 
-### Files to Create
+### 2. Analytics Charts on Dashboard
 
+Add two charts: submission trends (last 30 days) and donation growth (last 12 months).
+
+**New PHP endpoint:** `public/api/admin/analytics.php`
+- `?type=submissions` — Returns daily submission counts for last 30 days
+- `?type=donations` — Returns monthly donation totals for last 12 months
+
+**Files to modify:**
+- `src/pages/admin/Dashboard.tsx` — Add two Recharts area/bar charts below the stats grid
+- `src/lib/admin-api.ts` — Add `getSubmissionTrends()` and `getDonationTrends()` functions
+
+**New file:** `public/api/admin/analytics.php`
+
+---
+
+### 3. Email Notifications for New Submissions
+
+Add PHP `mail()` call in `submit-form.php` to notify admin when a form is submitted. This is the simplest approach for cPanel hosting — no external service needed.
+
+**Files to modify:**
+- `public/api/submit-form.php` — After successful insert, call `mail()` to send notification to admin email
+- `public/api/admin/settings.php` — Already stores `email` setting; we'll read it for the notification recipient
+- `src/pages/admin/SiteSettings.tsx` — Add "Notification Email" field (separate from public contact email)
+
+Add a new `site_settings` key: `notification_email` for the admin notification recipient.
+
+---
+
+### 4. Video/Thumbnail Upload for Reels
+
+Replace manual URL inputs with file upload in ReelsManager.
+
+**Files to modify:**
+- `src/pages/admin/ReelsManager.tsx` — Add file upload for thumbnail (reuse `uploadImage` from admin-api), and optionally for video files
+- `public/api/admin/upload.php` — Add `reels` to allowed folders; add video MIME types (mp4, webm) to allowed types with higher size limit (50MB)
+
+---
+
+### 5. Fix Admin Layout Scrolling (Sidebar + Main Body Independent Scroll)
+
+Currently the sidebar and main content share the same scroll context. Fix by making the sidebar and main area each independently scrollable with `overflow-y-auto` and `h-screen`.
+
+**File to modify:** `src/pages/admin/AdminLayout.tsx`
+- Change outer container to `h-screen overflow-hidden` instead of `min-h-screen`
+- Sidebar: already has `overflow-y-auto` on nav, but needs `h-screen` on the aside and `overflow-hidden` on the flex container
+- Main content area: wrap in `overflow-y-auto h-screen` (or `flex-1 overflow-y-auto`)
+- Header stays `sticky top-0`
+
+---
+
+### 6. Database Browser — Dropdown Navigation + Horizontal Scroll + Better Design
+
+Redesign the Database Browser to use a sidebar/dropdown for table selection instead of button chips, and ensure wide tables scroll horizontally.
+
+**File to modify:** `src/pages/admin/DatabaseBrowser.tsx`
+- Replace table selector buttons with a `Select` dropdown grouped by category (Submissions, Content, System)
+- Table grouping: Submissions (contact, volunteer, partner, adopt_student, report_challenge, sanskrit, dental, event_registrations), Content (gallery_images, events, news_articles, reels, testimonials), System (admin_users, donations, site_settings)
+- Ensure `overflow-x-auto` is applied (already present but verify it works with `min-w-max` on the table)
+- Add row count badges in the dropdown options
+- Add date range filter input for tables with `submitted_at` or `created_at` columns
+
+**Also update `AdminLayout.tsx`:**
+- Replace the single "Database" nav item with a collapsible section showing table sub-links, or keep it as a single link but with the dropdown inside DatabaseBrowser
+
+---
+
+### 7. Proper Filters Across All Admin Pages
+
+Add consistent filtering capabilities to each admin page:
+
+| Page | Filters to Add |
+|------|---------------|
+| `Submissions.tsx` | Date range picker, search by name/email (already has form type filter) |
+| `Donations.tsx` | Date range, status filter (success/failed), donation type filter, search by donor name |
+| `GalleryManager.tsx` | Already has category filter — add search by alt text |
+| `EventsManager.tsx` | Category filter, date range, featured toggle filter |
+| `NewsManager.tsx` | Category filter, published/draft filter, search by title |
+| `ReelsManager.tsx` | Published/unpublished filter, search by title |
+| `TestimonialsManager.tsx` | Published/unpublished filter |
+
+**Files to modify:** All 7 admin page components listed above.
+
+For date range filtering, add two date `<Input type="date">` fields. For search, add a text input. Filters are applied client-side for small datasets (events, gallery, news, reels, testimonials) and server-side for paginated datasets (submissions, donations).
+
+For server-side filters, update:
+- `public/api/admin/submissions.php` — Add `search` and `date_from`/`date_to` query params
+- `public/api/admin/donations.php` — Add `status`, `type`, `search`, `date_from`/`date_to` params
+
+---
+
+### New Files
 | File | Purpose |
 |------|---------|
-| `src/components/ReelsSection.tsx` | Landing page reels carousel (horizontal scroll of short videos with thumbnails) |
-| `src/pages/admin/ReelsManager.tsx` | Admin CRUD for reels — upload video URL, thumbnail, title, reorder |
-| `src/pages/admin/TestimonialsManager.tsx` | Admin CRUD for testimonials — add/edit/delete quotes, names, roles, photos |
-| `src/pages/admin/SiteSettings.tsx` | Profile/settings page — org name, tagline, contact info, social links |
-| `public/api/admin/reels.php` | Admin CRUD endpoint for reels table |
-| `public/api/admin/testimonials.php` | Admin CRUD endpoint for testimonials table |
-| `public/api/admin/settings.php` | Admin CRUD endpoint for site_settings table |
-| `public/api/public-reels.php` | Public GET endpoint for published reels |
-| `public/api/public-testimonials.php` | Public GET endpoint for published testimonials |
-| `public/api/public-settings.php` | Public GET endpoint for site settings (no auth) |
+| `public/api/admin/analytics.php` | Submission trends + donation growth data |
 
-### Files to Modify
-
+### Modified Files (Summary)
 | File | Changes |
 |------|---------|
-| `src/pages/Index.tsx` | Add `ReelsSection` above `GallerySection` |
-| `src/components/TestimonialsSection.tsx` | Fetch testimonials from API, fall back to static data |
-| `src/pages/admin/AdminLayout.tsx` | Add nav items: Reels, Testimonials, Site Settings |
-| `src/pages/admin/Dashboard.tsx` | Complete UI redesign with gradient header, better stat cards with trend indicators, chart-style recent activity, welcome banner, and links to all new sections |
-| `src/App.tsx` | Add lazy routes for `/admin/reels`, `/admin/testimonials`, `/admin/settings` |
-| `src/lib/api.ts` | Add `fetchPublicReels()`, `fetchPublicTestimonials()`, `fetchPublicSettings()` |
-| `src/lib/admin-api.ts` | Add CRUD functions for reels, testimonials, and settings; update dashboard stats to include reels/testimonials counts |
-| `src/components/Footer.tsx` | Optionally fetch social links from settings API |
+| `src/pages/admin/Dashboard.tsx` | Analytics charts, seed static content button |
+| `src/pages/admin/AdminLayout.tsx` | Fix independent scrolling |
+| `src/pages/admin/DatabaseBrowser.tsx` | Dropdown nav, grouped tables, better design |
+| `src/pages/admin/ReelsManager.tsx` | File upload for thumbnail/video, filter |
+| `src/pages/admin/Submissions.tsx` | Date range + search filters |
+| `src/pages/admin/Donations.tsx` | Date, status, type, search filters |
+| `src/pages/admin/EventsManager.tsx` | Category + date filters |
+| `src/pages/admin/NewsManager.tsx` | Category + status filters |
+| `src/pages/admin/TestimonialsManager.tsx` | Published filter |
+| `src/pages/admin/GalleryManager.tsx` | Search filter |
+| `src/pages/admin/SiteSettings.tsx` | Notification email + image uploads |
+| `src/lib/admin-api.ts` | Analytics + seed functions |
+| `public/api/submit-form.php` | Email notification on submission |
+| `public/api/admin/submissions.php` | Search + date filter params |
+| `public/api/admin/donations.php` | Status, type, search, date params |
+| `public/api/admin/upload.php` | Video support for reels |
 
----
-
-### 1. Reels Section (Landing Page)
-
-- Horizontal scrollable row of video cards (Instagram Reels / YouTube Shorts style)
-- Each card shows a thumbnail with a play button overlay, title below
-- Clicking opens the video in a dialog/modal (embedded iframe or HTML5 video)
-- Placed between Testimonials and Gallery on the landing page
-- Admin can add reels via URL (YouTube, Instagram embed links) with a thumbnail upload
-
-### 2. Testimonials — Dynamic from Admin
-
-- `TestimonialsSection.tsx` fetches from `public-testimonials.php` on mount
-- Falls back to the 4 existing hardcoded testimonials if API is unavailable
-- Admin manager: table view with add/edit/delete, optional photo upload, drag-to-reorder via sort_order
-- Each testimonial has: quote, name, role, photo (optional), published toggle
-
-### 3. Site Settings / Profile Control
-
-- Admin page with editable fields for: Organization Name, Tagline, About Text, Email, Phone, Address, and Social Media links (Facebook, Instagram, Twitter, YouTube, LinkedIn)
-- These values are fetched by the footer and about section to display dynamic contact info
-- Simple key-value store in `site_settings` table — no complex schema needed
-
-### 4. Dashboard UI Redesign
-
-- **Welcome banner** with gradient background, date, and admin name
-- **Stat cards** redesigned with subtle gradients, hover animations, and icon backgrounds
-- **Recent activity** shown as a timeline with colored dots per form type
-- **Quick actions** as icon-prominent cards in a 2x3 grid instead of plain buttons
-- **New stat cards** for Reels count and Testimonials count (total 8 stats)
-- Overall: more whitespace, rounded corners, softer shadows — matching the site's minimalist design
-
----
-
-### Summary
-
-| Area | Count |
-|------|-------|
-| New PHP files | 6 (3 admin + 3 public endpoints) |
-| New React pages | 3 (ReelsManager, TestimonialsManager, SiteSettings) |
-| New React component | 1 (ReelsSection) |
-| Modified files | 8 |
-| New SQL tables | 3 (reels, testimonials, site_settings) |
-
-### After Deployment
-1. Run the SQL in phpMyAdmin to create 3 new tables
-2. Upload updated PHP files to cPanel
-3. Deploy React build
-4. Test: add a reel in admin, check it appears on the landing page
-5. Test: edit a testimonial in admin, check it updates on the landing page
-6. Test: update org info in Site Settings, check footer reflects the changes
+### SQL to Run (after deployment)
+```sql
+INSERT INTO site_settings (setting_key, setting_value) VALUES
+('notification_email', 'info@agrfoundation.ngo')
+ON DUPLICATE KEY UPDATE setting_key = setting_key;
+```
 
