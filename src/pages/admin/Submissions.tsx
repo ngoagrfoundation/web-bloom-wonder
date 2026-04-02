@@ -86,7 +86,7 @@ const Submissions = () => {
     <div className="space-y-4">
       <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
         <div className="flex items-center gap-3">
-          <Select value={formType} onValueChange={(v) => { setFormType(v); setPage(1); }}>
+          <Select value={formType || "all"} onValueChange={(v) => { setFormType(v === "all" ? "" : v); setPage(1); }}>
             <SelectTrigger className="w-[200px]">
               <SelectValue placeholder="Filter by type" />
             </SelectTrigger>
