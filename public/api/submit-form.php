@@ -111,6 +111,20 @@ try {
             ]);
             break;
 
+        case 'event_registration':
+            $stmt = $pdo->prepare("INSERT INTO event_registrations (event_title, event_category, full_name, email, phone, participants, special_requirements, ip_address) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+            $stmt->execute([
+                $formData['event_title'] ?? '',
+                $formData['event_category'] ?? '',
+                $formData['full_name'] ?? '',
+                $formData['email'] ?? '',
+                $formData['phone'] ?? '',
+                intval($formData['participants'] ?? 1),
+                $formData['special_requirements'] ?? '',
+                $ip
+            ]);
+            break;
+
         default:
             // Fallback: save to form_submissions if table exists
             $stmt = $pdo->prepare("INSERT INTO form_submissions (form_type, data, ip_address) VALUES (?, ?, ?)");

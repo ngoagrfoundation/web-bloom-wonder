@@ -17,6 +17,7 @@ const formTypes = [
   { value: "report_challenge", label: "Report Challenge" },
   { value: "sanskrit_registration", label: "Sanskrit Registration" },
   { value: "dental_registration", label: "Dental Registration" },
+  { value: "event_registration", label: "Event Registration" },
 ];
 
 const columnLabels: Record<string, string> = {
@@ -49,6 +50,10 @@ const columnLabels: Record<string, string> = {
   ip_address: "IP Address",
   submitted_at: "Date",
   form_type: "Type",
+  event_title: "Event",
+  event_category: "Event Category",
+  participants: "Participants",
+  special_requirements: "Special Requirements",
 };
 
 // Columns to show in summary table per form type
@@ -60,6 +65,7 @@ const summaryColumns: Record<string, string[]> = {
   report_challenge: ["id", "name", "phone", "location", "challenge_type", "submitted_at"],
   sanskrit_registration: ["id", "name", "mobile", "batch", "submitted_at"],
   dental_registration: ["id", "name", "mobile", "submitted_at"],
+  event_registration: ["id", "event_title", "full_name", "email", "phone", "participants", "submitted_at"],
 };
 
 interface Submission {

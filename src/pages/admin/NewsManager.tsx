@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { getNews, createNews, updateNews, deleteNews } from "@/lib/admin-api";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { getNews, createNews, updateNews, deleteNews, uploadImage } from "@/lib/admin-api";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Pencil, Trash2, ExternalLink } from "lucide-react";
+import { Plus, Pencil, Trash2, ExternalLink, Upload, X } from "lucide-react";
 import { toast } from "sonner";
 
 interface NewsArticle {
@@ -41,6 +41,8 @@ const NewsManager = () => {
   const [form, setForm] = useState<NewsArticle>(emptyArticle);
   const [editId, setEditId] = useState<number | null>(null);
   const [saving, setSaving] = useState(false);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [uploading, setUploading] = useState(false);
 
   const fetchData = async () => {
     const result = await getNews();
@@ -53,11 +55,24 @@ const NewsManager = () => {
   const generateSlug = (title: string) =>
     title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
 
-  const openNew = () => { setForm(emptyArticle); setEditId(null); setShowForm(true); };
+  const openNew = () => { setForm(emptyArticle); setEditId(null); setImageFile(null); setShowForm(true); };
   const openEdit = (article: NewsArticle & { id: number }) => {
     setForm(article);
     setEditId(article.id);
+    setImageFile(null);
     setShowForm(true);
+  };
+
+  const handleImageUpload = async (): Promise<string> => {
+    if (!imageFile) return form.image;
+    setUploading(true);
+    try {
+      const result = await uploadImage(imageFile, 'news');
+      if (result.path) return result.path;
+      toast.error(result.error || "Upload failed");
+      return form.image;
+    } catch { return form.image; }
+    finally { setUploading(false); }
   };
 
   const handleSave = async () => {
@@ -65,14 +80,17 @@ const NewsManager = () => {
     const slug = form.slug || generateSlug(form.title);
     setSaving(true);
     try {
+      const imagePath = await handleImageUpload();
+      const data = { ...form, slug, image: imagePath };
       if (editId) {
-        await updateNews({ ...form, id: editId, slug });
+        await updateNews({ ...data, id: editId });
         toast.success("Article updated");
       } else {
-        await createNews({ ...form, slug });
+        await createNews(data);
         toast.success("Article created");
       }
       setShowForm(false);
+      setImageFile(null);
       fetchData();
     } catch { toast.error("Failed to save article"); }
     finally { setSaving(false); }
@@ -101,6 +119,7 @@ const NewsManager = () => {
           <Table>
             <TableHeader>
               <TableRow>
+                <TableHead>Image</TableHead>
                 <TableHead>Title</TableHead>
                 <TableHead>Category</TableHead>
                 <TableHead>Status</TableHead>
@@ -111,17 +130,20 @@ const NewsManager = () => {
             <TableBody>
               {articles.map((article) => (
                 <TableRow key={article.id}>
-                  <TableCell className="font-medium max-w-[300px] truncate">{article.title}</TableCell>
                   <TableCell>
-                    <Badge variant="secondary">{article.category}</Badge>
+                    {article.image ? (
+                      <img src={article.image} alt={article.title} className="w-16 h-10 object-cover rounded" />
+                    ) : <span className="text-xs text-muted-foreground">No image</span>}
                   </TableCell>
+                  <TableCell className="font-medium max-w-[250px] truncate">{article.title}</TableCell>
+                  <TableCell><Badge variant="secondary">{article.category}</Badge></TableCell>
                   <TableCell>
                     <Badge variant={article.is_published ? "default" : "outline"}>
                       {article.is_published ? "Published" : "Draft"}
                     </Badge>
                   </TableCell>
                   <TableCell className="text-sm text-muted-foreground">
-                    {article.published_at ? new Date(article.published_at as unknown as string).toLocaleDateString() : '-'}
+                    {article.published_at ? new Date(article.published_at as string).toLocaleDateString() : '-'}
                   </TableCell>
                   <TableCell>
                     <div className="flex gap-1">
@@ -140,7 +162,7 @@ const NewsManager = () => {
               ))}
               {articles.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
+                  <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
                     No articles yet. Create your first one!
                   </TableCell>
                 </TableRow>
@@ -172,26 +194,48 @@ const NewsManager = () => {
               <Label>Content (HTML)</Label>
               <Textarea value={form.content} onChange={(e) => setForm(f => ({ ...f, content: e.target.value }))} rows={10} className="font-mono text-sm" />
             </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>Image URL</Label>
-                <Input value={form.image} onChange={(e) => setForm(f => ({ ...f, image: e.target.value }))} placeholder="https://..." />
+            {/* Image upload */}
+            <div className="space-y-2">
+              <Label>Article Image</Label>
+              {form.image && !imageFile && (
+                <div className="relative">
+                  <img src={form.image} alt="Article" className="w-full h-32 object-cover rounded" />
+                  <Button size="icon" variant="destructive" className="absolute top-1 right-1 h-6 w-6" onClick={() => setForm(f => ({ ...f, image: "" }))}>
+                    <X className="h-3 w-3" />
+                  </Button>
+                </div>
+              )}
+              <div className="border-2 border-dashed rounded-lg p-3 text-center">
+                {imageFile ? (
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm truncate">{imageFile.name}</span>
+                    <Button variant="ghost" size="icon" onClick={() => setImageFile(null)}><X className="h-4 w-4" /></Button>
+                  </div>
+                ) : (
+                  <label className="cursor-pointer">
+                    <Upload className="h-6 w-6 mx-auto text-muted-foreground mb-1" />
+                    <p className="text-xs text-muted-foreground">Click to upload image (max 5MB)</p>
+                    <input type="file" accept="image/*" className="hidden" onChange={(e) => setImageFile(e.target.files?.[0] || null)} />
+                  </label>
+                )}
               </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>Author</Label>
                 <Input value={form.author} onChange={(e) => setForm(f => ({ ...f, author: e.target.value }))} />
               </div>
-            </div>
-            <div className="grid grid-cols-3 gap-4">
               <div className="space-y-2">
                 <Label>Category</Label>
                 <Select value={form.category} onValueChange={(v) => setForm(f => ({ ...f, category: v }))}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    {categories.map(c => <SelectItem key={c} value={c}>{c.replace('-', ' ')}</SelectItem>)}
+                    {categories.map(c => <SelectItem key={c} value={c}>{c.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())}</SelectItem>)}
                   </SelectContent>
                 </Select>
               </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>Read Time (min)</Label>
                 <Input type="number" value={form.read_time} onChange={(e) => setForm(f => ({ ...f, read_time: Number(e.target.value) }))} />
@@ -203,8 +247,8 @@ const NewsManager = () => {
                 </div>
               </div>
             </div>
-            <Button onClick={handleSave} disabled={saving} className="w-full">
-              {saving ? "Saving..." : editId ? "Update Article" : "Create Article"}
+            <Button onClick={handleSave} disabled={saving || uploading} className="w-full">
+              {saving ? "Saving..." : uploading ? "Uploading image..." : editId ? "Update Article" : "Create Article"}
             </Button>
           </div>
         </DialogContent>

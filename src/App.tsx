@@ -44,7 +44,7 @@ const Donations = lazy(() => import("./pages/admin/Donations"));
 const GalleryManager = lazy(() => import("./pages/admin/GalleryManager"));
 const EventsManager = lazy(() => import("./pages/admin/EventsManager"));
 const NewsManager = lazy(() => import("./pages/admin/NewsManager"));
-
+const DatabaseBrowser = lazy(() => import("./pages/admin/DatabaseBrowser"));
 const queryClient = new QueryClient();
 
 const AdminFallback = () => (
@@ -99,6 +99,7 @@ const App = () => (
               <Route path="/admin/gallery" element={<Suspense fallback={<AdminFallback />}><GalleryManager /></Suspense>} />
               <Route path="/admin/events" element={<Suspense fallback={<AdminFallback />}><EventsManager /></Suspense>} />
               <Route path="/admin/news" element={<Suspense fallback={<AdminFallback />}><NewsManager /></Suspense>} />
+              <Route path="/admin/database" element={<Suspense fallback={<AdminFallback />}><DatabaseBrowser /></Suspense>} />
             </Route>
             
             <Route path="*" element={<NotFound />} />

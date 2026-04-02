@@ -120,3 +120,10 @@ export const fetchGalleryImages = async () => {
 export const fetchEvents = async () => {
   return fetchPublicEvents();
 };
+
+/**
+ * Submit form (alias for EventRegistrationForm)
+ */
+export const submitForm = async (formType: string, data: Record<string, unknown>): Promise<boolean> => {
+  return submitFormToAPI(formType, data);
+};

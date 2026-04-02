@@ -4,6 +4,7 @@ import { getDashboardStats, getRecentActivity, changeAdminPassword } from "@/lib
 import {
   FileText, CreditCard, IndianRupee, KeyRound, Image, CalendarDays,
   Newspaper, Plus, Upload, PenLine, Eye, TrendingUp, Clock,
+  Database, Users, CheckCircle, Server,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -43,12 +44,12 @@ const Dashboard = () => {
   };
 
   const statCards = [
-    { title: "Submissions", value: stats.totalSubmissions, icon: FileText, color: "text-blue-600", bg: "bg-blue-50" },
-    { title: "Donations", value: stats.totalDonations, icon: CreditCard, color: "text-green-600", bg: "bg-green-50" },
-    { title: "Total Amount", value: `₹${stats.totalAmount.toLocaleString("en-IN")}`, icon: IndianRupee, color: "text-amber-600", bg: "bg-amber-50" },
-    { title: "Gallery Photos", value: stats.totalGallery, icon: Image, color: "text-purple-600", bg: "bg-purple-50" },
-    { title: "Events", value: stats.totalEvents, icon: CalendarDays, color: "text-rose-600", bg: "bg-rose-50" },
-    { title: "News Articles", value: stats.totalNews, icon: Newspaper, color: "text-cyan-600", bg: "bg-cyan-50" },
+    { title: "Submissions", value: stats.totalSubmissions, icon: FileText, color: "text-blue-600", bg: "bg-blue-50", path: "/admin/submissions" },
+    { title: "Donations", value: stats.totalDonations, icon: CreditCard, color: "text-green-600", bg: "bg-green-50", path: "/admin/donations" },
+    { title: "Total Amount", value: `₹${stats.totalAmount.toLocaleString("en-IN")}`, icon: IndianRupee, color: "text-amber-600", bg: "bg-amber-50", path: "/admin/donations" },
+    { title: "Gallery Photos", value: stats.totalGallery, icon: Image, color: "text-purple-600", bg: "bg-purple-50", path: "/admin/gallery" },
+    { title: "Events", value: stats.totalEvents, icon: CalendarDays, color: "text-rose-600", bg: "bg-rose-50", path: "/admin/events" },
+    { title: "News Articles", value: stats.totalNews, icon: Newspaper, color: "text-cyan-600", bg: "bg-cyan-50", path: "/admin/news" },
   ];
 
   const quickActions = [
@@ -56,6 +57,8 @@ const Dashboard = () => {
     { title: "Upload Photo", icon: Upload, path: "/admin/gallery", color: "text-purple-600" },
     { title: "Write Article", icon: PenLine, path: "/admin/news", color: "text-cyan-600" },
     { title: "View Donations", icon: Eye, path: "/admin/donations", color: "text-green-600" },
+    { title: "Browse Database", icon: Database, path: "/admin/database", color: "text-orange-600" },
+    { title: "View Submissions", icon: Users, path: "/admin/submissions", color: "text-blue-600" },
   ];
 
   const formTypeBadge = (type: string) => {
@@ -65,24 +68,50 @@ const Dashboard = () => {
       partner: "bg-purple-100 text-purple-800",
       adopt_student: "bg-amber-100 text-amber-800",
       report_challenge: "bg-red-100 text-red-800",
+      event_registration: "bg-rose-100 text-rose-800",
+      sanskrit_registration: "bg-indigo-100 text-indigo-800",
+      dental_registration: "bg-teal-100 text-teal-800",
     };
     return colors[type] || "bg-muted text-muted-foreground";
   };
 
   return (
     <div className="space-y-6">
+      {/* System Status */}
+      <Card className="bg-gradient-to-r from-primary/5 to-secondary/5">
+        <CardContent className="py-4">
+          <div className="flex items-center justify-between flex-wrap gap-2">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-full bg-green-100">
+                <CheckCircle className="h-5 w-5 text-green-600" />
+              </div>
+              <div>
+                <p className="font-medium text-sm">System Status: Online</p>
+                <p className="text-xs text-muted-foreground">{new Date().toLocaleDateString("en-IN", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <Badge variant="outline" className="gap-1"><Server className="h-3 w-3" /> PHP + MySQL</Badge>
+              <Badge variant="outline" className="gap-1"><Database className="h-3 w-3" /> agrfound_maindb</Badge>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Stats Grid */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
         {statCards.map((stat) => (
-          <Card key={stat.title} className="relative overflow-hidden">
-            <CardContent className="p-4">
-              <div className={`inline-flex p-2 rounded-lg ${stat.bg} mb-3`}>
-                <stat.icon className={`h-5 w-5 ${stat.color}`} />
-              </div>
-              <div className="text-2xl font-bold">{loading ? "..." : stat.value}</div>
-              <p className="text-xs text-muted-foreground mt-1">{stat.title}</p>
-            </CardContent>
-          </Card>
+          <Link key={stat.title} to={stat.path}>
+            <Card className="relative overflow-hidden hover:shadow-md transition-shadow cursor-pointer">
+              <CardContent className="p-4">
+                <div className={`inline-flex p-2 rounded-lg ${stat.bg} mb-3`}>
+                  <stat.icon className={`h-5 w-5 ${stat.color}`} />
+                </div>
+                <div className="text-2xl font-bold">{loading ? "..." : stat.value}</div>
+                <p className="text-xs text-muted-foreground mt-1">{stat.title}</p>
+              </CardContent>
+            </Card>
+          </Link>
         ))}
       </div>
 
@@ -102,7 +131,7 @@ const Dashboard = () => {
                   <div key={i} className="flex items-center justify-between py-2 border-b border-border last:border-0">
                     <div className="flex items-center gap-3">
                       <Badge variant="secondary" className={formTypeBadge(item.form_type as string)}>
-                        {(item.form_type as string || 'unknown').replace('_', ' ')}
+                        {(item.form_type as string || 'unknown').replace(/_/g, ' ')}
                       </Badge>
                       <span className="text-sm font-medium truncate max-w-[200px]">
                         {(item.name as string) || (item.full_name as string) || (item.contact_person as string) || 'Anonymous'}
@@ -134,7 +163,7 @@ const Dashboard = () => {
           <CardContent className="space-y-2">
             {quickActions.map((action) => (
               <Link key={action.title} to={action.path}>
-                <Button variant="outline" className="w-full justify-start gap-3 h-12">
+                <Button variant="outline" className="w-full justify-start gap-3 h-11 mb-1">
                   <action.icon className={`h-4 w-4 ${action.color}`} />
                   {action.title}
                 </Button>
