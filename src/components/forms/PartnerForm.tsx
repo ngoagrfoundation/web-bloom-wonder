@@ -17,7 +17,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzMHieEiY7wAX6btCmNCrPtPhBr63B3xUI6sDlAeUX6Z8I_WdLNULdmGDaWcSzAW9_O/exec";
+
 
 const organizationTypes = [
   { id: "corporate", label: "Corporate / Business" },
