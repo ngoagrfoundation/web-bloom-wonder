@@ -173,12 +173,14 @@ export const deleteNews = async (id: number) => {
 // Dashboard stats (enhanced)
 export const getDashboardStats = async () => {
   try {
-    const [submissions, donations, gallery, events, news] = await Promise.all([
+    const [submissions, donations, gallery, events, news, reels, testimonials] = await Promise.all([
       getSubmissions(1, 1),
       getDonations(1, 1),
       getGalleryImages(),
       getEvents(),
       getNews(),
+      adminFetch(`${API_BASE_URL}/admin/reels.php`).then(r => safeJson(r)).catch(() => ({ data: [] })),
+      adminFetch(`${API_BASE_URL}/admin/testimonials.php`).then(r => safeJson(r)).catch(() => ({ data: [] })),
     ]);
     return {
       totalSubmissions: submissions.total || 0,
@@ -187,9 +189,11 @@ export const getDashboardStats = async () => {
       totalGallery: gallery.data?.length || 0,
       totalEvents: events.data?.length || 0,
       totalNews: news.data?.length || 0,
+      totalReels: reels.data?.length || 0,
+      totalTestimonials: testimonials.data?.length || 0,
     };
   } catch {
-    return { totalSubmissions: 0, totalDonations: 0, totalAmount: 0, totalGallery: 0, totalEvents: 0, totalNews: 0 };
+    return { totalSubmissions: 0, totalDonations: 0, totalAmount: 0, totalGallery: 0, totalEvents: 0, totalNews: 0, totalReels: 0, totalTestimonials: 0 };
   }
 };
 
