@@ -65,7 +65,7 @@ const EventsManager = () => {
         await updateEvent({ ...form, id: editId });
         toast.success("Event updated");
       } else {
-        await createEvent(form);
+        await createEvent(form as unknown as Record<string, unknown>);
         toast.success("Event created");
       }
       setShowForm(false);
