@@ -9,6 +9,7 @@ import {
   Image,
   CalendarDays,
   Newspaper,
+  Database,
   LogOut,
   Menu,
   X,
@@ -23,6 +24,7 @@ const navItems = [
   { title: "Gallery", path: "/admin/gallery", icon: Image },
   { title: "Events", path: "/admin/events", icon: CalendarDays },
   { title: "News", path: "/admin/news", icon: Newspaper },
+  { title: "Database", path: "/admin/database", icon: Database },
 ];
 
 const AdminLayout = () => {

@@ -6,7 +6,7 @@ import EventCard, { Event } from "@/components/EventCard";
 import AnimatedSection, { StaggerContainer, StaggerItem } from "@/components/AnimatedSection";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import VolunteerForm from "@/components/forms/VolunteerForm";
+import EventRegistrationForm from "@/components/forms/EventRegistrationForm";
 import { fetchPublicEvents } from "@/lib/api";
 import healthCamp from "@/assets/generated/healthcare/health-camp.jpg";
 import tailoringTraining from "@/assets/generated/livelihood/tailoring-training.jpg";
@@ -37,7 +37,8 @@ const categories = [
 const Events = () => {
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [selectedCategory, setSelectedCategory] = useState("all");
-  const [showVolunteerModal, setShowVolunteerModal] = useState(false);
+  const [showRegModal, setShowRegModal] = useState(false);
+  const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [events, setEvents] = useState<Event[]>(staticEvents);
 
   useEffect(() => {
@@ -59,6 +60,11 @@ const Events = () => {
       }
     });
   }, []);
+
+  const handleRegister = (event: Event) => {
+    setSelectedEvent(event);
+    setShowRegModal(true);
+  };
 
   const filteredEvents = selectedCategory === "all"
     ? events
@@ -106,7 +112,7 @@ const Events = () => {
             <div className="container mx-auto px-4">
               <AnimatedSection><h2 className="text-2xl font-display font-bold text-foreground mb-8 flex items-center gap-2"><Calendar className="text-secondary" />Featured Events</h2></AnimatedSection>
               <StaggerContainer className={`grid gap-6 ${viewMode === "grid" ? "md:grid-cols-2" : "grid-cols-1"}`}>
-                {featuredEvents.map((event) => (<StaggerItem key={event.id}><EventCard event={event} onRegister={() => setShowVolunteerModal(true)} /></StaggerItem>))}
+                {featuredEvents.map((event) => (<StaggerItem key={event.id}><EventCard event={event} onRegister={() => handleRegister(event)} /></StaggerItem>))}
               </StaggerContainer>
             </div>
           </section>
@@ -117,7 +123,7 @@ const Events = () => {
             <AnimatedSection><h2 className="text-2xl font-display font-bold text-foreground mb-8">All Upcoming Events</h2></AnimatedSection>
             {upcomingEvents.length > 0 ? (
               <StaggerContainer className={`grid gap-6 ${viewMode === "grid" ? "md:grid-cols-2 lg:grid-cols-3" : "grid-cols-1 max-w-3xl"}`}>
-                {upcomingEvents.map((event) => (<StaggerItem key={event.id}><EventCard event={event} onRegister={() => setShowVolunteerModal(true)} /></StaggerItem>))}
+                {upcomingEvents.map((event) => (<StaggerItem key={event.id}><EventCard event={event} onRegister={() => handleRegister(event)} /></StaggerItem>))}
               </StaggerContainer>
             ) : (
               <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center py-12">
@@ -137,10 +143,16 @@ const Events = () => {
           </div>
         </section>
 
-        <Dialog open={showVolunteerModal} onOpenChange={setShowVolunteerModal}>
+        <Dialog open={showRegModal} onOpenChange={setShowRegModal}>
           <DialogContent className="max-w-2xl max-h-[90vh] p-0">
-            <DialogHeader className="sr-only"><DialogTitle>Register as a Volunteer</DialogTitle></DialogHeader>
-            <ScrollArea className="max-h-[85vh]"><VolunteerForm onSuccess={() => setShowVolunteerModal(false)} /></ScrollArea>
+            <DialogHeader className="sr-only"><DialogTitle>Event Registration</DialogTitle></DialogHeader>
+            <ScrollArea className="max-h-[85vh]">
+              <EventRegistrationForm
+                eventTitle={selectedEvent?.title}
+                eventCategory={selectedEvent?.category}
+                onSuccess={() => setShowRegModal(false)}
+              />
+            </ScrollArea>
           </DialogContent>
         </Dialog>
       </main>

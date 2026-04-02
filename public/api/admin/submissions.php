@@ -12,6 +12,7 @@ $tableMap = [
     'report_challenge' => ['table' => 'report_challenge_submissions', 'columns' => ['id', 'name', 'phone', 'email', 'location', 'challenge_type', 'description', 'people_affected', 'ip_address', 'submitted_at']],
     'sanskrit_registration' => ['table' => 'sanskrit_registrations', 'columns' => ['id', 'name', 'mobile', 'address', 'age', 'batch', 'ip_address', 'submitted_at']],
     'dental_registration' => ['table' => 'dental_registrations', 'columns' => ['id', 'name', 'mobile', 'address', 'problem', 'ip_address', 'submitted_at']],
+    'event_registration' => ['table' => 'event_registrations', 'columns' => ['id', 'event_title', 'event_category', 'full_name', 'email', 'phone', 'participants', 'special_requirements', 'ip_address', 'submitted_at']],
 ];
 
 if ($_SERVER['REQUEST_METHOD'] === 'GET') {

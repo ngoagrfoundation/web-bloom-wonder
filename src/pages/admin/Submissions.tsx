@@ -65,6 +65,7 @@ const summaryColumns: Record<string, string[]> = {
   report_challenge: ["id", "name", "phone", "location", "challenge_type", "submitted_at"],
   sanskrit_registration: ["id", "name", "mobile", "batch", "submitted_at"],
   dental_registration: ["id", "name", "mobile", "submitted_at"],
+  event_registration: ["id", "event_title", "full_name", "email", "phone", "participants", "submitted_at"],
 };
 
 interface Submission {
