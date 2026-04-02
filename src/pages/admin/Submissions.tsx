@@ -50,6 +50,10 @@ const columnLabels: Record<string, string> = {
   ip_address: "IP Address",
   submitted_at: "Date",
   form_type: "Type",
+  event_title: "Event",
+  event_category: "Event Category",
+  participants: "Participants",
+  special_requirements: "Special Requirements",
 };
 
 // Columns to show in summary table per form type
