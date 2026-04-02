@@ -1,143 +1,128 @@
 
 
-## Admin Dashboard Comprehensive Enhancement — 7 Items
+## Comprehensive Admin Enhancement — 8 Items
 
-### 1. Seed Existing Static Content into Admin (Gallery + News)
+### 1. Standalone Database Dashboard with Sidebar Layout
 
-The landing page has hardcoded gallery images and news articles that don't appear in the admin. We'll add a "Seed Static Content" button on the Dashboard that inserts all existing static images (from `GallerySection.tsx` static data) and news articles (from `NewsSection.tsx` static data) into the database via the admin API. This is a one-time action.
-
-**Files to modify:**
-- `src/pages/admin/Dashboard.tsx` — Add a "Seed Static Content" card with buttons to import static gallery images and news into the DB
-- `src/lib/admin-api.ts` — Add `seedStaticContent()` function that POSTs existing static data to create gallery/news entries
-
-**Note:** Hero section images (program slides) are bundled assets tied to specific page layouts. Making every section image admin-editable would require a full CMS architecture. Instead, the Site Settings page will get image upload fields for key branding assets (logo, hero background). Other section images remain as bundled assets that can be replaced by uploading new files to cPanel.
-
-**Files to modify for Site Settings image uploads:**
-- `src/pages/admin/SiteSettings.tsx` — Add image upload fields for hero background, logo, and OG image
-- `public/api/admin/settings.php` — Support file uploads for settings images
-
----
-
-### 2. Analytics Charts on Dashboard
-
-Add two charts: submission trends (last 30 days) and donation growth (last 12 months).
-
-**New PHP endpoint:** `public/api/admin/analytics.php`
-- `?type=submissions` — Returns daily submission counts for last 30 days
-- `?type=donations` — Returns monthly donation totals for last 12 months
+**Current**: Database is a single page inside the admin layout with a dropdown selector.
+**Change**: Create a dedicated full-page Database dashboard at `/admin/database` with its own left sidebar listing all tables (grouped by category) and a right content area — both scrolling independently.
 
 **Files to modify:**
-- `src/pages/admin/Dashboard.tsx` — Add two Recharts area/bar charts below the stats grid
-- `src/lib/admin-api.ts` — Add `getSubmissionTrends()` and `getDonationTrends()` functions
-
-**New file:** `public/api/admin/analytics.php`
+- `src/pages/admin/DatabaseBrowser.tsx` — Complete rewrite with a two-panel layout: left sidebar (table list with row counts, grouped into Submissions/Content/System) and right panel (data table with search, pagination, CSV export). Each panel gets `overflow-y-auto` independently.
+- `src/pages/admin/AdminLayout.tsx` — Keep Database in nav but route leads to the redesigned page
 
 ---
 
-### 3. Email Notifications for New Submissions
+### 2. Admin UI Enhancement — Fix Overlapping Borders + Polish All Pages
 
-Add PHP `mail()` call in `submit-form.php` to notify admin when a form is submitted. This is the simplest approach for cPanel hosting — no external service needed.
+Systematic UI cleanup across all admin pages:
+
+**Files to modify (all admin pages):**
+- `Dashboard.tsx` — Tighten card spacing, ensure chart cards don't clip, improve mobile responsiveness
+- `Submissions.tsx` — Better table cell padding, fix border overlap on filter bar, add subtle row hover colors
+- `Donations.tsx` — Fix stat cards overlapping borders, cleaner filter layout
+- `GalleryManager.tsx` — Grid card improvements, better image preview sizing
+- `EventsManager.tsx` — Cleaner form dialog, better table layout
+- `NewsManager.tsx` — Card-based article list instead of plain table
+- `ReelsManager.tsx` — Better video card previews
+- `TestimonialsManager.tsx` — Quote card layout instead of table rows
+- `SiteSettings.tsx` — Better form section spacing
+- `AdminLayout.tsx` — Refine sidebar padding, active state contrast
+
+Common fixes: replace `border` with `shadow-sm`, consistent `rounded-xl`, proper `p-0` on Card+Table combos to avoid double borders, uniform filter bar styling with a shared pattern.
+
+---
+
+### 3. Reels Manager — Add Video Upload Option
+
+**Current**: Only has URL input + thumbnail upload. Missing actual video file upload.
+**Change**: Add a "Upload Video" tab alongside the URL input — user can either paste a URL OR upload an MP4/WebM file directly.
 
 **Files to modify:**
-- `public/api/submit-form.php` — After successful insert, call `mail()` to send notification to admin email
-- `public/api/admin/settings.php` — Already stores `email` setting; we'll read it for the notification recipient
-- `src/pages/admin/SiteSettings.tsx` — Add "Notification Email" field (separate from public contact email)
-
-Add a new `site_settings` key: `notification_email` for the admin notification recipient.
+- `src/pages/admin/ReelsManager.tsx` — Add video file upload with a toggle between "URL" and "Upload" modes. Upload uses the existing `uploadImage` function (which already supports video MIME types via `upload.php`).
 
 ---
 
-### 4. Video/Thumbnail Upload for Reels
+### 4. Hero Section — Admin Control for Slide Images
 
-Replace manual URL inputs with file upload in ReelsManager.
+**Current**: Hero slides use 6 hardcoded imported images from `src/assets/`.
+**Change**: Add a "Hero Slides" management section in Site Settings where admin can view current slide images and upload replacements. Store override image URLs in `site_settings` table (keys: `hero_slide_1` through `hero_slide_6`). HeroSection fetches settings on mount and uses overrides if available, falling back to bundled assets.
 
 **Files to modify:**
-- `src/pages/admin/ReelsManager.tsx` — Add file upload for thumbnail (reuse `uploadImage` from admin-api), and optionally for video files
-- `public/api/admin/upload.php` — Add `reels` to allowed folders; add video MIME types (mp4, webm) to allowed types with higher size limit (50MB)
+- `src/pages/admin/SiteSettings.tsx` — Add "Hero Slides" card showing 6 slide previews with upload/replace buttons
+- `src/components/HeroSection.tsx` — On mount, fetch `fetchPublicSettings()` and override slide images if settings exist
+- `src/lib/api.ts` — Ensure `fetchPublicSettings()` returns all keys
 
 ---
 
-### 5. Fix Admin Layout Scrolling (Sidebar + Main Body Independent Scroll)
+### 5. Landing Page Image Management via Admin
 
-Currently the sidebar and main content share the same scroll context. Fix by making the sidebar and main area each independently scrollable with `overflow-y-auto` and `h-screen`.
+Beyond the hero, other sections with images (About, Programs, Causes, Focus areas) use bundled assets. We'll add an "Image Library" section in Site Settings that lets admin upload replacement images for key sections.
 
-**File to modify:** `src/pages/admin/AdminLayout.tsx`
-- Change outer container to `h-screen overflow-hidden` instead of `min-h-screen`
-- Sidebar: already has `overflow-y-auto` on nav, but needs `h-screen` on the aside and `overflow-hidden` on the flex container
-- Main content area: wrap in `overflow-y-auto h-screen` (or `flex-1 overflow-y-auto`)
-- Header stays `sticky top-0`
+**Files to modify:**
+- `src/pages/admin/SiteSettings.tsx` — Add "Section Images" card with upload zones for: About section, Programs (6 programs), Causes (5 causes), Focus areas (5 areas). Each stored as a `site_settings` key like `image_about_main`, `image_program_education`, etc.
+- Section components (`AboutSection.tsx`, `ProgramsSection.tsx`, `CausesSection.tsx`) — Fetch settings and use override URLs when available
 
 ---
 
-### 6. Database Browser — Dropdown Navigation + Horizontal Scroll + Better Design
+### 6. Gallery Section — Remove Static Images, Use Only DB Content
 
-Redesign the Database Browser to use a sidebar/dropdown for table selection instead of button chips, and ensure wide tables scroll horizontally.
+**Current**: `GallerySection.tsx` initializes with 6 hardcoded static images, then merges API data.
+**Change**: Remove all static image imports and default to an empty array. Only show images from the database. If API returns empty, show a "No images yet" placeholder.
 
-**File to modify:** `src/pages/admin/DatabaseBrowser.tsx`
-- Replace table selector buttons with a `Select` dropdown grouped by category (Submissions, Content, System)
-- Table grouping: Submissions (contact, volunteer, partner, adopt_student, report_challenge, sanskrit, dental, event_registrations), Content (gallery_images, events, news_articles, reels, testimonials), System (admin_users, donations, site_settings)
-- Ensure `overflow-x-auto` is applied (already present but verify it works with `min-w-max` on the table)
-- Add row count badges in the dropdown options
-- Add date range filter input for tables with `submitted_at` or `created_at` columns
-
-**Also update `AdminLayout.tsx`:**
-- Replace the single "Database" nav item with a collapsible section showing table sub-links, or keep it as a single link but with the dropdown inside DatabaseBrowser
+**Files to modify:**
+- `src/components/GallerySection.tsx` — Remove static imports and `staticImages` array. Initialize `images` as empty. Fetch from API only. Show placeholder if empty.
 
 ---
 
-### 7. Proper Filters Across All Admin Pages
+### 7. Impact Numbers — Admin Controlled
 
-Add consistent filtering capabilities to each admin page:
+**Current**: `ImpactSection.tsx` has hardcoded stats (1500+ Beneficiaries, 30+ Programs, 150+ Volunteers, 8 Districts).
+**Change**: Store impact stats in `site_settings` (keys: `impact_stat_1_value`, `impact_stat_1_suffix`, `impact_stat_1_label`, etc. for 4 stats). Admin edits them in Site Settings. ImpactSection fetches on mount, falls back to current hardcoded values.
 
-| Page | Filters to Add |
-|------|---------------|
-| `Submissions.tsx` | Date range picker, search by name/email (already has form type filter) |
-| `Donations.tsx` | Date range, status filter (success/failed), donation type filter, search by donor name |
-| `GalleryManager.tsx` | Already has category filter — add search by alt text |
-| `EventsManager.tsx` | Category filter, date range, featured toggle filter |
-| `NewsManager.tsx` | Category filter, published/draft filter, search by title |
-| `ReelsManager.tsx` | Published/unpublished filter, search by title |
-| `TestimonialsManager.tsx` | Published/unpublished filter |
-
-**Files to modify:** All 7 admin page components listed above.
-
-For date range filtering, add two date `<Input type="date">` fields. For search, add a text input. Filters are applied client-side for small datasets (events, gallery, news, reels, testimonials) and server-side for paginated datasets (submissions, donations).
-
-For server-side filters, update:
-- `public/api/admin/submissions.php` — Add `search` and `date_from`/`date_to` query params
-- `public/api/admin/donations.php` — Add `status`, `type`, `search`, `date_from`/`date_to` params
+**Files to modify:**
+- `src/pages/admin/SiteSettings.tsx` — Add "Impact Numbers" card with 4 rows of inputs (value, suffix, label)
+- `src/components/ImpactSection.tsx` — Fetch settings on mount, override stats if available
+- `public/api/public-settings.php` — Already returns all settings, no change needed
 
 ---
 
-### New Files
-| File | Purpose |
-|------|---------|
-| `public/api/admin/analytics.php` | Submission trends + donation growth data |
+### 8. Overall Admin UI Design Enhancement
 
-### Modified Files (Summary)
-| File | Changes |
-|------|---------|
-| `src/pages/admin/Dashboard.tsx` | Analytics charts, seed static content button |
-| `src/pages/admin/AdminLayout.tsx` | Fix independent scrolling |
-| `src/pages/admin/DatabaseBrowser.tsx` | Dropdown nav, grouped tables, better design |
-| `src/pages/admin/ReelsManager.tsx` | File upload for thumbnail/video, filter |
-| `src/pages/admin/Submissions.tsx` | Date range + search filters |
-| `src/pages/admin/Donations.tsx` | Date, status, type, search filters |
-| `src/pages/admin/EventsManager.tsx` | Category + date filters |
-| `src/pages/admin/NewsManager.tsx` | Category + status filters |
-| `src/pages/admin/TestimonialsManager.tsx` | Published filter |
-| `src/pages/admin/GalleryManager.tsx` | Search filter |
-| `src/pages/admin/SiteSettings.tsx` | Notification email + image uploads |
-| `src/lib/admin-api.ts` | Analytics + seed functions |
-| `public/api/submit-form.php` | Email notification on submission |
-| `public/api/admin/submissions.php` | Search + date filter params |
-| `public/api/admin/donations.php` | Status, type, search, date params |
-| `public/api/admin/upload.php` | Video support for reels |
+Beyond the border fixes in point 2, apply a cohesive design system:
+
+- **Consistent page headers**: Each page gets a header with title, description, and action buttons in a flex row
+- **Filter bars**: Unified pattern — white card with subtle shadow, inputs in a flex-wrap row with consistent height (h-9)
+- **Tables**: Consistent cell padding, alternating row colors, sticky headers
+- **Cards**: Uniform `rounded-xl shadow-sm` with `hover:shadow-md transition-shadow`
+- **Empty states**: Consistent illustration-style empty states instead of plain text
+- **Loading states**: Skeleton loaders instead of spinners for tables
+
+**Files to modify**: All admin page components listed in point 2.
+
+---
+
+### Summary
+
+| # | Change | Key Files |
+|---|--------|-----------|
+| 1 | Database standalone dashboard | `DatabaseBrowser.tsx` |
+| 2 | Fix overlapping borders + UI polish | All admin pages |
+| 3 | Video upload for Reels | `ReelsManager.tsx` |
+| 4 | Hero slide image control | `SiteSettings.tsx`, `HeroSection.tsx` |
+| 5 | All landing page images editable | `SiteSettings.tsx`, section components |
+| 6 | Remove static gallery images | `GallerySection.tsx` |
+| 7 | Impact numbers admin control | `SiteSettings.tsx`, `ImpactSection.tsx` |
+| 8 | Cohesive admin UI design system | All admin pages |
 
 ### SQL to Run (after deployment)
 ```sql
+-- Impact stats defaults
 INSERT INTO site_settings (setting_key, setting_value) VALUES
-('notification_email', 'info@agrfoundation.ngo')
+('impact_stat_1_value', '1500'), ('impact_stat_1_suffix', '+'), ('impact_stat_1_label', 'Beneficiaries Reached'),
+('impact_stat_2_value', '30'), ('impact_stat_2_suffix', '+'), ('impact_stat_2_label', 'Programs Running'),
+('impact_stat_3_value', '150'), ('impact_stat_3_suffix', '+'), ('impact_stat_3_label', 'Volunteers Active'),
+('impact_stat_4_value', '8'), ('impact_stat_4_suffix', ''), ('impact_stat_4_label', 'Districts Covered')
 ON DUPLICATE KEY UPDATE setting_key = setting_key;
 ```
 
