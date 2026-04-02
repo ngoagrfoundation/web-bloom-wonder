@@ -44,7 +44,7 @@ const Donations = lazy(() => import("./pages/admin/Donations"));
 const GalleryManager = lazy(() => import("./pages/admin/GalleryManager"));
 const EventsManager = lazy(() => import("./pages/admin/EventsManager"));
 const NewsManager = lazy(() => import("./pages/admin/NewsManager"));
-
+const DatabaseBrowser = lazy(() => import("./pages/admin/DatabaseBrowser"));
 const queryClient = new QueryClient();
 
 const AdminFallback = () => (
