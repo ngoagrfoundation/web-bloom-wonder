@@ -8,6 +8,7 @@ import {
   CreditCard,
   Image,
   CalendarDays,
+  Newspaper,
   LogOut,
   Menu,
   X,
