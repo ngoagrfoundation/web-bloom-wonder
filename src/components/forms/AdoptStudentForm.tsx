@@ -39,8 +39,7 @@ interface AdoptStudentFormProps {
 const AdoptStudentForm = ({ onSuccess: onSuccessCallback }: AdoptStudentFormProps) => {
   const [showSuccess, setShowSuccess] = useState(false);
 
-  const { submitForm, isSubmitting, security } = useGoogleSheetForm({
-    scriptUrl: SCRIPT_URL,
+  const { submitForm, isSubmitting, security } = useFormSubmit({
     formType: "adopt_student",
     onSuccess: () => {
       setShowSuccess(true);
