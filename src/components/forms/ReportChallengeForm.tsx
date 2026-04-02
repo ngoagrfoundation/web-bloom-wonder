@@ -3,7 +3,7 @@ import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { AlertTriangle, Loader2, CheckCircle, Lock, Clock } from "lucide-react";
 import { reportChallengeFormSchema, ReportChallengeFormData } from "@/lib/validation";
-import { useGoogleSheetForm } from "@/hooks/useGoogleSheetForm";
+import { useFormSubmit } from "@/hooks/useFormSubmit";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
@@ -16,7 +16,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxGarQhnIT59zLST4iR_IsKBOJQvcOi0xFCwWjnoVxl7aDkevKXBJnm_ctXbOpSF8T4/exec";
+
 
 const challengeTypes = [
   { id: "healthcare", label: "Healthcare Access" },
@@ -36,8 +36,7 @@ interface ReportChallengeFormProps {
 const ReportChallengeForm = ({ onSuccess: onSuccessCallback }: ReportChallengeFormProps) => {
   const [showSuccess, setShowSuccess] = useState(false);
 
-  const { submitForm, isSubmitting, security } = useGoogleSheetForm({
-    scriptUrl: SCRIPT_URL,
+  const { submitForm, isSubmitting, security } = useFormSubmit({
     formType: "report_challenge",
     onSuccess: () => {
       setShowSuccess(true);

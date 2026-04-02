@@ -3,7 +3,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { GraduationCap, Loader2, CheckCircle, Shield, Heart } from "lucide-react";
 import { adoptStudentFormSchema, AdoptStudentFormData } from "@/lib/validation";
-import { useGoogleSheetForm } from "@/hooks/useGoogleSheetForm";
+import { useFormSubmit } from "@/hooks/useFormSubmit";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
@@ -16,7 +16,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbze9LbMP1Ce3AirPUbDPLp1ZGusY6SgmvZ57hcOOxYSAvKabL2EULALHuK_peKL7k8r/exec";
+
 
 const gradeLevels = [
   { id: "primary", label: "Primary (1-5)" },
@@ -39,8 +39,7 @@ interface AdoptStudentFormProps {
 const AdoptStudentForm = ({ onSuccess: onSuccessCallback }: AdoptStudentFormProps) => {
   const [showSuccess, setShowSuccess] = useState(false);
 
-  const { submitForm, isSubmitting, security } = useGoogleSheetForm({
-    scriptUrl: SCRIPT_URL,
+  const { submitForm, isSubmitting, security } = useFormSubmit({
     formType: "adopt_student",
     onSuccess: () => {
       setShowSuccess(true);

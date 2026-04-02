@@ -1,16 +1,12 @@
 // API configuration for cPanel PHP backend
-// In Lovable preview, API calls will gracefully fail (no PHP server)
-// On cPanel, these endpoints work with the PHP files in /api/
+const PRODUCTION_API = 'https://agrfoundation.ngo/api';
 
-const isProduction = window.location.hostname !== 'localhost' && !window.location.hostname.includes('lovable.app');
+const isPreview = window.location.hostname.includes('lovable.app') || window.location.hostname === 'localhost';
 
-export const API_BASE_URL = isProduction 
-  ? `${window.location.origin}/api` 
-  : '/api'; // Will fail gracefully in preview
+export const API_BASE_URL = isPreview ? '/api' : PRODUCTION_API;
 
 /**
- * Submit form data to the PHP backend (fire-and-forget)
- * Used alongside Google Sheets submission for redundancy
+ * Submit form data to the PHP backend
  */
 export const submitFormToAPI = async (formType: string, data: Record<string, unknown>): Promise<boolean> => {
   try {
@@ -22,8 +18,7 @@ export const submitFormToAPI = async (formType: string, data: Record<string, unk
     });
     return response.ok;
   } catch {
-    // Silently fail - Google Sheets is the primary storage
-    console.log('API submission skipped (not on cPanel)');
+    console.log('API submission failed');
     return false;
   }
 };
@@ -50,7 +45,7 @@ export const recordDonationToAPI = async (donationData: {
     });
     return response.ok;
   } catch {
-    console.log('Donation recording skipped (not on cPanel)');
+    console.log('Donation recording failed');
     return false;
   }
 };
@@ -67,7 +62,7 @@ export const fetchGalleryImages = async () => {
     const result = await response.json();
     return result.data || [];
   } catch {
-    return null; // Caller should fall back to static data
+    return null;
   }
 };
 
@@ -83,6 +78,6 @@ export const fetchEvents = async () => {
     const result = await response.json();
     return result.data || [];
   } catch {
-    return null; // Caller should fall back to static data
+    return null;
   }
 };

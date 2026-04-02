@@ -3,14 +3,14 @@ import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Heart, Loader2, CheckCircle, Shield, Clock } from "lucide-react";
 import { volunteerFormSchema, VolunteerFormData } from "@/lib/validation";
-import { useGoogleSheetForm } from "@/hooks/useGoogleSheetForm";
+import { useFormSubmit } from "@/hooks/useFormSubmit";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwtNe9Kpt1ESjMC_s-8j1kfr62PBDoYFD3ZWlF-auBaxuYJPPZ-w_PFvwFgFEj2ns2d/exec";
+
 
 const initiatives = [
   { id: "eco-packaging", label: "Eco-Packaging Training" },
@@ -37,8 +37,7 @@ interface VolunteerFormProps {
 const VolunteerForm = ({ onSuccess: onSuccessCallback }: VolunteerFormProps) => {
   const [showSuccess, setShowSuccess] = useState(false);
 
-  const { submitForm, isSubmitting, security } = useGoogleSheetForm({
-    scriptUrl: SCRIPT_URL,
+  const { submitForm, isSubmitting, security } = useFormSubmit({
     formType: "volunteer",
     onSuccess: () => {
       setShowSuccess(true);

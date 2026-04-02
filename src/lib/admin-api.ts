@@ -1,5 +1,14 @@
 import { API_BASE_URL } from './api';
 
+const safeJson = async (response: Response) => {
+  const contentType = response.headers.get('content-type') || '';
+  if (contentType.includes('application/json')) {
+    return response.json();
+  }
+  const text = await response.text();
+  return { error: text.substring(0, 200) || 'Server returned non-JSON response' };
+};
+
 const adminFetch = async (url: string, options: RequestInit = {}) => {
   const response = await fetch(url, {
     ...options,
@@ -26,7 +35,7 @@ export const adminLogin = async (username: string, password: string) => {
     credentials: 'include',
     body: JSON.stringify({ username, password }),
   });
-  return res.json();
+  return safeJson(res);
 };
 
 export const adminLogout = async () => {
@@ -41,7 +50,7 @@ export const checkAdminAuth = async () => {
     const res = await fetch(`${API_BASE_URL}/auth.php?action=check`, {
       credentials: 'include',
     });
-    return res.json();
+    return safeJson(res);
   } catch {
     return { authenticated: false };
   }
@@ -52,7 +61,7 @@ export const changeAdminPassword = async (currentPassword: string, newPassword: 
     method: 'POST',
     body: JSON.stringify({ current_password: currentPassword, new_password: newPassword }),
   });
-  return res.json();
+  return safeJson(res);
 };
 
 // Submissions
@@ -60,38 +69,38 @@ export const getSubmissions = async (page = 1, limit = 20, formType = '') => {
   const params = new URLSearchParams({ page: String(page), limit: String(limit) });
   if (formType) params.set('form_type', formType);
   const res = await adminFetch(`${API_BASE_URL}/admin/submissions.php?${params}`);
-  return res.json();
+  return safeJson(res);
 };
 
 export const deleteSubmission = async (id: number) => {
   const res = await adminFetch(`${API_BASE_URL}/admin/submissions.php?id=${id}`, { method: 'DELETE' });
-  return res.json();
+  return safeJson(res);
 };
 
 // Donations
 export const getDonations = async (page = 1, limit = 20) => {
   const params = new URLSearchParams({ page: String(page), limit: String(limit) });
   const res = await adminFetch(`${API_BASE_URL}/admin/donations.php?${params}`);
-  return res.json();
+  return safeJson(res);
 };
 
 // Gallery
 export const getGalleryImages = async () => {
   const res = await adminFetch(`${API_BASE_URL}/admin/gallery.php`);
-  return res.json();
+  return safeJson(res);
 };
 
 export const uploadGalleryImage = async (formData: FormData) => {
   const res = await fetch(`${API_BASE_URL}/admin/gallery.php`, {
     method: 'POST',
     credentials: 'include',
-    body: formData, // Don't set Content-Type for FormData
+    body: formData,
   });
   if (res.status === 401) {
     window.location.href = '/admin';
     throw new Error('Unauthorized');
   }
-  return res.json();
+  return safeJson(res);
 };
 
 export const updateGalleryImage = async (data: { id: number; alt?: string; category?: string; caption?: string; sort_order?: number }) => {
@@ -99,18 +108,18 @@ export const updateGalleryImage = async (data: { id: number; alt?: string; categ
     method: 'PUT',
     body: JSON.stringify(data),
   });
-  return res.json();
+  return safeJson(res);
 };
 
 export const deleteGalleryImage = async (id: number) => {
   const res = await adminFetch(`${API_BASE_URL}/admin/gallery.php?id=${id}`, { method: 'DELETE' });
-  return res.json();
+  return safeJson(res);
 };
 
 // Events
 export const getEvents = async () => {
   const res = await adminFetch(`${API_BASE_URL}/admin/events.php`);
-  return res.json();
+  return safeJson(res);
 };
 
 export const createEvent = async (data: Record<string, unknown>) => {
@@ -118,7 +127,7 @@ export const createEvent = async (data: Record<string, unknown>) => {
     method: 'POST',
     body: JSON.stringify(data),
   });
-  return res.json();
+  return safeJson(res);
 };
 
 export const updateEvent = async (data: Record<string, unknown>) => {
@@ -126,12 +135,12 @@ export const updateEvent = async (data: Record<string, unknown>) => {
     method: 'PUT',
     body: JSON.stringify(data),
   });
-  return res.json();
+  return safeJson(res);
 };
 
 export const deleteEvent = async (id: number) => {
   const res = await adminFetch(`${API_BASE_URL}/admin/events.php?id=${id}`, { method: 'DELETE' });
-  return res.json();
+  return safeJson(res);
 };
 
 // Dashboard stats
