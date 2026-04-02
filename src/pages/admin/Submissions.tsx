@@ -1,29 +1,71 @@
 import { useEffect, useState } from "react";
 import { getSubmissions, deleteSubmission } from "@/lib/admin-api";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Trash2, ChevronLeft, ChevronRight, Download } from "lucide-react";
+import { Trash2, ChevronLeft, ChevronRight, Download, Eye, X } from "lucide-react";
 import { toast } from "sonner";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 const formTypes = [
   { value: "", label: "All Types" },
-  { value: "contact", label: "Contact" },
+  { value: "contact", label: "Contact Us" },
   { value: "volunteer", label: "Volunteer" },
-  { value: "partner", label: "Partner" },
+  { value: "partner", label: "Partner with Us" },
+  { value: "adopt_student", label: "Adopt a Student" },
   { value: "report_challenge", label: "Report Challenge" },
-  { value: "adopt_student", label: "Adopt Student" },
   { value: "sanskrit_registration", label: "Sanskrit Registration" },
   { value: "dental_registration", label: "Dental Registration" },
 ];
 
+const columnLabels: Record<string, string> = {
+  id: "ID",
+  name: "Name",
+  full_name: "Full Name",
+  sponsor_name: "Sponsor Name",
+  contact_person: "Contact Person",
+  organization_name: "Organization",
+  email: "Email",
+  phone: "Phone",
+  mobile: "Mobile",
+  message: "Message",
+  location: "Location",
+  city: "City",
+  initiatives: "Initiatives",
+  availability: "Availability",
+  experience: "Experience",
+  organization_type: "Org Type",
+  partnership_interest: "Interests",
+  grade_level: "Grade Level",
+  duration: "Duration",
+  challenge_type: "Challenge Type",
+  description: "Description",
+  people_affected: "People Affected",
+  address: "Address",
+  age: "Age",
+  batch: "Batch",
+  problem: "Problem",
+  ip_address: "IP Address",
+  submitted_at: "Date",
+  form_type: "Type",
+};
+
+// Columns to show in summary table per form type
+const summaryColumns: Record<string, string[]> = {
+  contact: ["id", "name", "email", "phone", "submitted_at"],
+  volunteer: ["id", "full_name", "email", "phone", "location", "submitted_at"],
+  partner: ["id", "organization_name", "contact_person", "email", "submitted_at"],
+  adopt_student: ["id", "sponsor_name", "email", "phone", "city", "submitted_at"],
+  report_challenge: ["id", "name", "phone", "location", "challenge_type", "submitted_at"],
+  sanskrit_registration: ["id", "name", "mobile", "batch", "submitted_at"],
+  dental_registration: ["id", "name", "mobile", "submitted_at"],
+};
+
 interface Submission {
   id: number;
   form_type: string;
-  data: Record<string, unknown>;
-  ip_address: string;
-  submitted_at: string;
+  [key: string]: unknown;
 }
 
 const Submissions = () => {
@@ -33,6 +75,7 @@ const Submissions = () => {
   const [total, setTotal] = useState(0);
   const [formType, setFormType] = useState("");
   const [loading, setLoading] = useState(true);
+  const [detailRow, setDetailRow] = useState<Submission | null>(null);
 
   const fetchData = async () => {
     setLoading(true);
@@ -49,45 +92,63 @@ const Submissions = () => {
 
   useEffect(() => { fetchData(); }, [page, formType]);
 
-  const handleDelete = async (id: number) => {
+  const handleDelete = async (id: number, type: string) => {
     if (!confirm("Delete this submission?")) return;
     try {
-      await deleteSubmission(id);
+      await deleteSubmission(id, type);
       toast.success("Submission deleted");
       fetchData();
     } catch { toast.error("Failed to delete"); }
   };
 
+  const getVisibleColumns = (): string[] => {
+    if (formType && summaryColumns[formType]) {
+      return summaryColumns[formType];
+    }
+    return ["id", "form_type", "submitted_at"];
+  };
+
+  const formatValue = (key: string, value: unknown): string => {
+    if (value === null || value === undefined) return "—";
+    if (key === "submitted_at") {
+      return new Date(String(value)).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
+    }
+    return String(value);
+  };
+
   const exportCSV = () => {
     if (!submissions.length) return;
     const allKeys = new Set<string>();
-    submissions.forEach(s => {
-      if (s.data) Object.keys(s.data).forEach(k => allKeys.add(k));
-    });
-    const headers = ["ID", "Type", "Date", ...allKeys];
-    const rows = submissions.map(s => [
-      s.id,
-      s.form_type,
-      new Date(s.submitted_at).toLocaleDateString(),
-      ...Array.from(allKeys).map(k => {
-        const val = s.data?.[k];
+    submissions.forEach(s => Object.keys(s).forEach(k => allKeys.add(k)));
+    const headers = Array.from(allKeys);
+    const rows = submissions.map(s =>
+      headers.map(k => {
+        const val = s[k];
         return typeof val === "object" ? JSON.stringify(val) : String(val ?? "");
-      }),
-    ]);
-    const csv = [headers.join(","), ...rows.map(r => r.map(c => `"${String(c).replace(/"/g, '""')}"`).join(","))].join("\n");
+      })
+    );
+    const csv = [
+      headers.map(h => columnLabels[h] || h).join(","),
+      ...rows.map(r => r.map(c => `"${c.replace(/"/g, '""')}"`).join(","))
+    ].join("\n");
     const blob = new Blob([csv], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
-    a.href = url; a.download = `submissions_${formType || "all"}_${new Date().toISOString().slice(0,10)}.csv`;
-    a.click(); URL.revokeObjectURL(url);
+    a.href = url;
+    a.download = `submissions_${formType || "all"}_${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
   };
+
+  const visibleCols = getVisibleColumns();
+  const hiddenKeys = ["id", "ip_address", "form_type"];
 
   return (
     <div className="space-y-4">
       <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
         <div className="flex items-center gap-3">
           <Select value={formType || "all"} onValueChange={(v) => { setFormType(v === "all" ? "" : v); setPage(1); }}>
-            <SelectTrigger className="w-[200px]">
+            <SelectTrigger className="w-[220px]">
               <SelectValue placeholder="Filter by type" />
             </SelectTrigger>
             <SelectContent>
@@ -112,36 +173,35 @@ const Submissions = () => {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>ID</TableHead>
-                    <TableHead>Type</TableHead>
-                    <TableHead>Summary</TableHead>
-                    <TableHead>Date</TableHead>
-                    <TableHead className="w-[60px]"></TableHead>
+                    {visibleCols.map(col => (
+                      <TableHead key={col}>{columnLabels[col] || col}</TableHead>
+                    ))}
+                    <TableHead className="w-[90px]">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {submissions.map((s) => (
-                    <TableRow key={s.id}>
-                      <TableCell className="font-mono text-xs">{s.id}</TableCell>
+                    <TableRow key={`${s.form_type}-${s.id}`}>
+                      {visibleCols.map(col => (
+                        <TableCell key={col} className={col === "id" ? "font-mono text-xs" : "text-sm"}>
+                          {col === "form_type" ? (
+                            <span className="inline-block px-2 py-1 rounded-full text-xs bg-primary/10 text-primary">
+                              {formTypes.find(f => f.value === String(s.form_type))?.label || String(s.form_type)}
+                            </span>
+                          ) : (
+                            <span className="truncate max-w-[200px] block">{formatValue(col, s[col])}</span>
+                          )}
+                        </TableCell>
+                      ))}
                       <TableCell>
-                        <span className="inline-block px-2 py-1 rounded-full text-xs bg-primary/10 text-primary">
-                          {s.form_type}
-                        </span>
-                      </TableCell>
-                      <TableCell className="max-w-[300px]">
-                        <div className="text-sm truncate">
-                          {s.data?.name && <span className="font-medium">{String(s.data.name)}</span>}
-                          {s.data?.email && <span className="text-muted-foreground ml-2">{String(s.data.email)}</span>}
-                          {s.data?.phone && <span className="text-muted-foreground ml-2">{String(s.data.phone)}</span>}
+                        <div className="flex gap-1">
+                          <Button variant="ghost" size="icon" onClick={() => setDetailRow(s)} title="View details">
+                            <Eye className="h-4 w-4" />
+                          </Button>
+                          <Button variant="ghost" size="icon" onClick={() => handleDelete(s.id, String(s.form_type))} className="text-destructive hover:text-destructive" title="Delete">
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
                         </div>
-                      </TableCell>
-                      <TableCell className="text-xs text-muted-foreground whitespace-nowrap">
-                        {new Date(s.submitted_at).toLocaleDateString("en-IN")}
-                      </TableCell>
-                      <TableCell>
-                        <Button variant="ghost" size="icon" onClick={() => handleDelete(s.id)} className="text-destructive hover:text-destructive">
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
                       </TableCell>
                     </TableRow>
                   ))}
@@ -163,6 +223,29 @@ const Submissions = () => {
           </Button>
         </div>
       )}
+
+      {/* Detail Dialog */}
+      <Dialog open={!!detailRow} onOpenChange={(open) => !open && setDetailRow(null)}>
+        <DialogContent className="max-w-lg max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>
+              {detailRow && (formTypes.find(f => f.value === String(detailRow.form_type))?.label || String(detailRow.form_type))} — #{detailRow?.id}
+            </DialogTitle>
+          </DialogHeader>
+          {detailRow && (
+            <div className="space-y-3">
+              {Object.entries(detailRow)
+                .filter(([key]) => !hiddenKeys.includes(key))
+                .map(([key, value]) => (
+                  <div key={key} className="flex flex-col border-b border-border pb-2">
+                    <span className="text-xs font-medium text-muted-foreground uppercase">{columnLabels[key] || key.replace(/_/g, " ")}</span>
+                    <span className="text-sm mt-0.5 whitespace-pre-wrap">{formatValue(key, value)}</span>
+                  </div>
+                ))}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
