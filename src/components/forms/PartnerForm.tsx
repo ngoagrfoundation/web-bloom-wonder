@@ -46,6 +46,7 @@ const PartnerForm = ({ onSuccess: onSuccessCallback }: PartnerFormProps) => {
 
   const { submitForm, isSubmitting, security } = useGoogleSheetForm({
     scriptUrl: SCRIPT_URL,
+    formType: "partner",
     onSuccess: () => {
       setShowSuccess(true);
       reset();

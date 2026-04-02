@@ -41,6 +41,7 @@ const AdoptStudentForm = ({ onSuccess: onSuccessCallback }: AdoptStudentFormProp
 
   const { submitForm, isSubmitting, security } = useGoogleSheetForm({
     scriptUrl: SCRIPT_URL,
+    formType: "adopt_student",
     onSuccess: () => {
       setShowSuccess(true);
       reset();
