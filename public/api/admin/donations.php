@@ -9,15 +9,51 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     $limit = min(100, max(10, intval($_GET['limit'] ?? 20)));
     $offset = ($page - 1) * $limit;
     
-    // Count
-    $total = $pdo->query("SELECT COUNT(*) FROM donations")->fetchColumn();
+    $status = $_GET['status'] ?? '';
+    $type = $_GET['type'] ?? '';
+    $search = $_GET['search'] ?? '';
+    $dateFrom = $_GET['date_from'] ?? '';
+    $dateTo = $_GET['date_to'] ?? '';
+
+    $where = [];
+    $params = [];
+
+    if ($status) {
+        $where[] = "status = ?";
+        $params[] = $status;
+    }
+    if ($type) {
+        $where[] = "donation_type = ?";
+        $params[] = $type;
+    }
+    if ($search) {
+        $where[] = "(donor_name LIKE ? OR donor_email LIKE ?)";
+        $params[] = "%$search%";
+        $params[] = "%$search%";
+    }
+    if ($dateFrom) {
+        $where[] = "created_at >= ?";
+        $params[] = $dateFrom;
+    }
+    if ($dateTo) {
+        $where[] = "created_at <= ?";
+        $params[] = $dateTo . ' 23:59:59';
+    }
+
+    $whereSQL = $where ? 'WHERE ' . implode(' AND ', $where) : '';
     
-    // Stats
+    // Count
+    $countStmt = $pdo->prepare("SELECT COUNT(*) FROM donations $whereSQL");
+    $countStmt->execute($params);
+    $total = $countStmt->fetchColumn();
+    
+    // Stats (always for successful)
     $stats = $pdo->query("SELECT COUNT(*) as count, COALESCE(SUM(amount), 0) as total_amount FROM donations WHERE status = 'success'")->fetch();
     
     // Data
-    $stmt = $pdo->prepare("SELECT * FROM donations ORDER BY created_at DESC LIMIT ? OFFSET ?");
-    $stmt->execute([$limit, $offset]);
+    $stmt = $pdo->prepare("SELECT * FROM donations $whereSQL ORDER BY created_at DESC LIMIT ? OFFSET ?");
+    $allParams = array_merge($params, [$limit, $offset]);
+    $stmt->execute($allParams);
     $rows = $stmt->fetchAll();
     
     echo json_encode([

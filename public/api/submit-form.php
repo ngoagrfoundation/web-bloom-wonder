@@ -126,13 +126,50 @@ try {
             break;
 
         default:
-            // Fallback: save to form_submissions if table exists
             $stmt = $pdo->prepare("INSERT INTO form_submissions (form_type, data, ip_address) VALUES (?, ?, ?)");
             $stmt->execute([$formType, json_encode($formData), $ip]);
             break;
     }
 
-    echo json_encode(['success' => true, 'id' => $pdo->lastInsertId()]);
+    $insertId = $pdo->lastInsertId();
+
+    // Send email notification
+    try {
+        $settingsStmt = $pdo->query("SELECT setting_value FROM site_settings WHERE setting_key = 'notification_email'");
+        $notifEmail = $settingsStmt ? $settingsStmt->fetchColumn() : null;
+        
+        if (!$notifEmail) {
+            $settingsStmt = $pdo->query("SELECT setting_value FROM site_settings WHERE setting_key = 'email'");
+            $notifEmail = $settingsStmt ? $settingsStmt->fetchColumn() : null;
+        }
+
+        if ($notifEmail) {
+            $formLabel = ucwords(str_replace('_', ' ', $formType));
+            $subject = "New $formLabel Submission - AGR Foundation";
+            
+            $body = "New form submission received:\n\n";
+            $body .= "Form Type: $formLabel\n";
+            $body .= "Submission ID: $insertId\n";
+            $body .= "Date: " . date('Y-m-d H:i:s') . "\n";
+            $body .= "IP: $ip\n\n";
+            $body .= "--- Details ---\n";
+            foreach ($formData as $key => $value) {
+                if (is_array($value)) $value = implode(', ', $value);
+                $body .= ucwords(str_replace('_', ' ', $key)) . ": $value\n";
+            }
+            $body .= "\n---\nView in admin: https://agrfoundation.ngo/admin/submissions\n";
+
+            $headers = "From: noreply@agrfoundation.ngo\r\n";
+            $headers .= "Reply-To: noreply@agrfoundation.ngo\r\n";
+            $headers .= "X-Mailer: PHP/" . phpversion();
+            
+            @mail($notifEmail, $subject, $body, $headers);
+        }
+    } catch (Exception $e) {
+        // Email failure should not affect form submission
+    }
+
+    echo json_encode(['success' => true, 'id' => $insertId]);
 } catch (PDOException $e) {
     http_response_code(500);
     echo json_encode(['error' => 'Failed to save submission', 'debug' => $e->getMessage()]);
