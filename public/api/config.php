@@ -1,9 +1,9 @@
 <?php
 // Database Configuration - UPDATE THESE VALUES ON CPANEL
 define('DB_HOST', 'localhost');
-define('DB_NAME', 'your_database_name');
-define('DB_USER', 'your_database_user');
-define('DB_PASS', 'your_database_password');
+define('DB_NAME', 'agrfound_maindb');
+define('DB_USER', 'agrfound_dbuser');
+define('DB_PASS', 'BxwV#XFZlx5z.');
 
 // CORS - Update with your actual domain
 $allowed_origins = [
