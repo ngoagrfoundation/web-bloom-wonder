@@ -51,13 +51,11 @@ export const recordDonationToAPI = async (donationData: {
 };
 
 /**
- * Fetch gallery images from the database (with fallback)
+ * Fetch public gallery images (no auth required)
  */
-export const fetchGalleryImages = async () => {
+export const fetchPublicGallery = async () => {
   try {
-    const response = await fetch(`${API_BASE_URL}/admin/gallery.php`, {
-      credentials: 'include',
-    });
+    const response = await fetch(`${API_BASE_URL}/public-gallery.php`);
     if (!response.ok) throw new Error('API error');
     const result = await response.json();
     return result.data || [];
@@ -67,17 +65,58 @@ export const fetchGalleryImages = async () => {
 };
 
 /**
- * Fetch events from the database (with fallback)
+ * Fetch public events (no auth required)
  */
-export const fetchEvents = async () => {
+export const fetchPublicEvents = async () => {
   try {
-    const response = await fetch(`${API_BASE_URL}/admin/events.php`, {
-      credentials: 'include',
-    });
+    const response = await fetch(`${API_BASE_URL}/public-events.php`);
     if (!response.ok) throw new Error('API error');
     const result = await response.json();
     return result.data || [];
   } catch {
     return null;
   }
+};
+
+/**
+ * Fetch public news articles (no auth required)
+ */
+export const fetchPublicNews = async (limit?: number) => {
+  try {
+    const params = limit ? `?limit=${limit}` : '';
+    const response = await fetch(`${API_BASE_URL}/public-news.php${params}`);
+    if (!response.ok) throw new Error('API error');
+    const result = await response.json();
+    return result.data || [];
+  } catch {
+    return null;
+  }
+};
+
+/**
+ * Fetch single news article by slug (no auth required)
+ */
+export const fetchNewsBySlug = async (slug: string) => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/public-news.php?slug=${encodeURIComponent(slug)}`);
+    if (!response.ok) throw new Error('API error');
+    const result = await response.json();
+    return result.data || null;
+  } catch {
+    return null;
+  }
+};
+
+/**
+ * Fetch gallery images from the database (with fallback) - legacy
+ */
+export const fetchGalleryImages = async () => {
+  return fetchPublicGallery();
+};
+
+/**
+ * Fetch events from the database (with fallback) - legacy
+ */
+export const fetchEvents = async () => {
+  return fetchPublicEvents();
 };

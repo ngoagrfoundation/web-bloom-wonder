@@ -143,19 +143,62 @@ export const deleteEvent = async (id: number) => {
   return safeJson(res);
 };
 
-// Dashboard stats
+// News
+export const getNews = async () => {
+  const res = await adminFetch(`${API_BASE_URL}/admin/news.php`);
+  return safeJson(res);
+};
+
+export const createNews = async (data: Record<string, unknown>) => {
+  const res = await adminFetch(`${API_BASE_URL}/admin/news.php`, {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
+  return safeJson(res);
+};
+
+export const updateNews = async (data: Record<string, unknown>) => {
+  const res = await adminFetch(`${API_BASE_URL}/admin/news.php`, {
+    method: 'PUT',
+    body: JSON.stringify(data),
+  });
+  return safeJson(res);
+};
+
+export const deleteNews = async (id: number) => {
+  const res = await adminFetch(`${API_BASE_URL}/admin/news.php?id=${id}`, { method: 'DELETE' });
+  return safeJson(res);
+};
+
+// Dashboard stats (enhanced)
 export const getDashboardStats = async () => {
   try {
-    const [submissions, donations] = await Promise.all([
+    const [submissions, donations, gallery, events, news] = await Promise.all([
       getSubmissions(1, 1),
       getDonations(1, 1),
+      getGalleryImages(),
+      getEvents(),
+      getNews(),
     ]);
     return {
       totalSubmissions: submissions.total || 0,
       totalDonations: donations.stats?.total_donations || 0,
       totalAmount: donations.stats?.total_amount || 0,
+      totalGallery: gallery.data?.length || 0,
+      totalEvents: events.data?.length || 0,
+      totalNews: news.data?.length || 0,
     };
   } catch {
-    return { totalSubmissions: 0, totalDonations: 0, totalAmount: 0 };
+    return { totalSubmissions: 0, totalDonations: 0, totalAmount: 0, totalGallery: 0, totalEvents: 0, totalNews: 0 };
+  }
+};
+
+// Recent activity
+export const getRecentActivity = async () => {
+  try {
+    const res = await getSubmissions(1, 5);
+    return res.data || [];
+  } catch {
+    return [];
   }
 };
