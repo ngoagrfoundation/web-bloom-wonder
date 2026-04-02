@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Switch } from "@/components/ui/switch";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Plus, Trash2, Edit, CalendarDays, Upload, X } from "lucide-react";
+import { Plus, Trash2, Edit, CalendarDays, Upload, X, Search } from "lucide-react";
 import { toast } from "sonner";
 
 const eventCategories = ["health-camp", "workshop", "cleanup", "fundraiser", "education", "community", "cultural", "others"];
@@ -40,6 +40,9 @@ const EventsManager = () => {
   const [saving, setSaving] = useState(false);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [categoryFilter, setCategoryFilter] = useState("all");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [featuredFilter, setFeaturedFilter] = useState("all");
 
   const fetchData = async () => {
     setLoading(true);
@@ -51,6 +54,14 @@ const EventsManager = () => {
   };
 
   useEffect(() => { fetchData(); }, []);
+
+  const filteredEvents = events.filter(e => {
+    if (categoryFilter !== "all" && e.category !== categoryFilter) return false;
+    if (featuredFilter === "featured" && !e.is_featured) return false;
+    if (featuredFilter === "regular" && e.is_featured) return false;
+    if (searchQuery && !e.title.toLowerCase().includes(searchQuery.toLowerCase())) return false;
+    return true;
+  });
 
   const openNew = () => { setForm(emptyEvent); setEditId(null); setImageFile(null); setShowForm(true); };
   const openEdit = (evt: EventData & { id: number }) => {
@@ -105,17 +116,38 @@ const EventsManager = () => {
     <div className="space-y-4">
       <div className="flex justify-between items-center">
         <span className="text-sm text-muted-foreground">{events.length} events</span>
-        <Button onClick={openNew}>
-          <Plus className="h-4 w-4 mr-2" /> Add Event
-        </Button>
+        <Button onClick={openNew}><Plus className="h-4 w-4 mr-2" /> Add Event</Button>
+      </div>
+
+      {/* Filters */}
+      <div className="flex flex-wrap gap-2">
+        <div className="flex gap-1">
+          <Input placeholder="Search title..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-48 h-8" />
+          <Search className="h-4 w-4 mt-2 text-muted-foreground" />
+        </div>
+        <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+          <SelectTrigger className="w-[150px] h-8"><SelectValue placeholder="Category" /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Categories</SelectItem>
+            {eventCategories.map(c => <SelectItem key={c} value={c}>{c.replace(/-/g, " ").replace(/\b\w/g, l => l.toUpperCase())}</SelectItem>)}
+          </SelectContent>
+        </Select>
+        <Select value={featuredFilter} onValueChange={setFeaturedFilter}>
+          <SelectTrigger className="w-[130px] h-8"><SelectValue /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All</SelectItem>
+            <SelectItem value="featured">Featured</SelectItem>
+            <SelectItem value="regular">Regular</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
       <Card>
         <CardContent className="p-0">
           {loading ? (
             <div className="p-8 text-center text-muted-foreground">Loading...</div>
-          ) : events.length === 0 ? (
-            <div className="p-8 text-center text-muted-foreground">No events yet. Create your first event!</div>
+          ) : filteredEvents.length === 0 ? (
+            <div className="p-8 text-center text-muted-foreground">No events found</div>
           ) : (
             <div className="overflow-x-auto">
               <Table>
@@ -131,30 +163,20 @@ const EventsManager = () => {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {events.map((evt) => (
+                  {filteredEvents.map((evt) => (
                     <TableRow key={evt.id}>
                       <TableCell>
-                        {evt.image ? (
-                          <img src={evt.image} alt={evt.title} className="w-16 h-10 object-cover rounded" />
-                        ) : <span className="text-xs text-muted-foreground">No image</span>}
+                        {evt.image ? <img src={evt.image} alt={evt.title} className="w-16 h-10 object-cover rounded" /> : <span className="text-xs text-muted-foreground">No image</span>}
                       </TableCell>
                       <TableCell className="font-medium">{evt.title}</TableCell>
-                      <TableCell className="text-sm whitespace-nowrap">
-                        {evt.date ? new Date(evt.date).toLocaleDateString("en-IN") : "—"}
-                      </TableCell>
+                      <TableCell className="text-sm whitespace-nowrap">{evt.date ? new Date(evt.date).toLocaleDateString("en-IN") : "—"}</TableCell>
                       <TableCell className="text-sm max-w-[200px] truncate">{evt.location || "—"}</TableCell>
-                      <TableCell>
-                        <span className="px-2 py-1 rounded-full text-xs bg-primary/10 text-primary">{evt.category}</span>
-                      </TableCell>
+                      <TableCell><span className="px-2 py-1 rounded-full text-xs bg-primary/10 text-primary">{evt.category}</span></TableCell>
                       <TableCell>{evt.is_featured ? "⭐" : "—"}</TableCell>
                       <TableCell>
                         <div className="flex gap-1">
-                          <Button variant="ghost" size="icon" onClick={() => openEdit(evt)}>
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                          <Button variant="ghost" size="icon" className="text-destructive" onClick={() => handleDelete(evt.id)}>
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
+                          <Button variant="ghost" size="icon" onClick={() => openEdit(evt)}><Edit className="h-4 w-4" /></Button>
+                          <Button variant="ghost" size="icon" className="text-destructive" onClick={() => handleDelete(evt.id)}><Trash2 className="h-4 w-4" /></Button>
                         </div>
                       </TableCell>
                     </TableRow>
@@ -169,58 +191,32 @@ const EventsManager = () => {
       <Dialog open={showForm} onOpenChange={setShowForm}>
         <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <CalendarDays className="h-5 w-5" />
-              {editId ? "Edit Event" : "New Event"}
-            </DialogTitle>
+            <DialogTitle className="flex items-center gap-2"><CalendarDays className="h-5 w-5" />{editId ? "Edit Event" : "New Event"}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
-            <div className="space-y-2">
-              <Label>Title *</Label>
-              <Input value={form.title} onChange={(e) => setForm(f => ({ ...f, title: e.target.value }))} placeholder="Event title" />
-            </div>
-            <div className="space-y-2">
-              <Label>Description</Label>
-              <Textarea value={form.description} onChange={(e) => setForm(f => ({ ...f, description: e.target.value }))} rows={3} />
-            </div>
+            <div className="space-y-2"><Label>Title *</Label><Input value={form.title} onChange={(e) => setForm(f => ({ ...f, title: e.target.value }))} placeholder="Event title" /></div>
+            <div className="space-y-2"><Label>Description</Label><Textarea value={form.description} onChange={(e) => setForm(f => ({ ...f, description: e.target.value }))} rows={3} /></div>
             <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>Date</Label>
-                <Input type="date" value={form.date} onChange={(e) => setForm(f => ({ ...f, date: e.target.value }))} />
-              </div>
-              <div className="space-y-2">
-                <Label>Time</Label>
-                <Input value={form.time} onChange={(e) => setForm(f => ({ ...f, time: e.target.value }))} placeholder="e.g. 9:00 AM - 5:00 PM" />
-              </div>
+              <div className="space-y-2"><Label>Date</Label><Input type="date" value={form.date} onChange={(e) => setForm(f => ({ ...f, date: e.target.value }))} /></div>
+              <div className="space-y-2"><Label>Time</Label><Input value={form.time} onChange={(e) => setForm(f => ({ ...f, time: e.target.value }))} placeholder="e.g. 9:00 AM - 5:00 PM" /></div>
             </div>
-            <div className="space-y-2">
-              <Label>Location</Label>
-              <Input value={form.location} onChange={(e) => setForm(f => ({ ...f, location: e.target.value }))} placeholder="Event location" />
-            </div>
+            <div className="space-y-2"><Label>Location</Label><Input value={form.location} onChange={(e) => setForm(f => ({ ...f, location: e.target.value }))} placeholder="Event location" /></div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>Category</Label>
                 <Select value={form.category} onValueChange={(v) => setForm(f => ({ ...f, category: v }))}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    {eventCategories.map(c => <SelectItem key={c} value={c}>{c.replace(/-/g, " ").replace(/\b\w/g, l => l.toUpperCase())}</SelectItem>)}
-                  </SelectContent>
+                  <SelectContent>{eventCategories.map(c => <SelectItem key={c} value={c}>{c.replace(/-/g, " ").replace(/\b\w/g, l => l.toUpperCase())}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
-              <div className="space-y-2">
-                <Label>Expected Attendees</Label>
-                <Input type="number" value={form.attendees} onChange={(e) => setForm(f => ({ ...f, attendees: parseInt(e.target.value) || 0 }))} />
-              </div>
+              <div className="space-y-2"><Label>Expected Attendees</Label><Input type="number" value={form.attendees} onChange={(e) => setForm(f => ({ ...f, attendees: parseInt(e.target.value) || 0 }))} /></div>
             </div>
-            {/* Image upload */}
             <div className="space-y-2">
               <Label>Event Image</Label>
               {form.image && !imageFile && (
                 <div className="relative">
                   <img src={form.image} alt="Event" className="w-full h-32 object-cover rounded" />
-                  <Button size="icon" variant="destructive" className="absolute top-1 right-1 h-6 w-6" onClick={() => setForm(f => ({ ...f, image: "" }))}>
-                    <X className="h-3 w-3" />
-                  </Button>
+                  <Button size="icon" variant="destructive" className="absolute top-1 right-1 h-6 w-6" onClick={() => setForm(f => ({ ...f, image: "" }))}><X className="h-3 w-3" /></Button>
                 </div>
               )}
               <div className="border-2 border-dashed rounded-lg p-3 text-center">

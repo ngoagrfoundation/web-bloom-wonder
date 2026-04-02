@@ -2,9 +2,10 @@ import { useEffect, useState } from "react";
 import { getSubmissions, deleteSubmission } from "@/lib/admin-api";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Trash2, ChevronLeft, ChevronRight, Download, Eye, X } from "lucide-react";
+import { Trash2, ChevronLeft, ChevronRight, Download, Eye, Search } from "lucide-react";
 import { toast } from "sonner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
@@ -21,42 +22,19 @@ const formTypes = [
 ];
 
 const columnLabels: Record<string, string> = {
-  id: "ID",
-  name: "Name",
-  full_name: "Full Name",
-  sponsor_name: "Sponsor Name",
-  contact_person: "Contact Person",
-  organization_name: "Organization",
-  email: "Email",
-  phone: "Phone",
-  mobile: "Mobile",
-  message: "Message",
-  location: "Location",
-  city: "City",
-  initiatives: "Initiatives",
-  availability: "Availability",
-  experience: "Experience",
-  organization_type: "Org Type",
-  partnership_interest: "Interests",
-  grade_level: "Grade Level",
-  duration: "Duration",
-  challenge_type: "Challenge Type",
-  description: "Description",
-  people_affected: "People Affected",
-  address: "Address",
-  age: "Age",
-  batch: "Batch",
-  problem: "Problem",
-  ip_address: "IP Address",
-  submitted_at: "Date",
-  form_type: "Type",
-  event_title: "Event",
-  event_category: "Event Category",
-  participants: "Participants",
+  id: "ID", name: "Name", full_name: "Full Name", sponsor_name: "Sponsor Name",
+  contact_person: "Contact Person", organization_name: "Organization", email: "Email",
+  phone: "Phone", mobile: "Mobile", message: "Message", location: "Location",
+  city: "City", initiatives: "Initiatives", availability: "Availability",
+  experience: "Experience", organization_type: "Org Type", partnership_interest: "Interests",
+  grade_level: "Grade Level", duration: "Duration", challenge_type: "Challenge Type",
+  description: "Description", people_affected: "People Affected", address: "Address",
+  age: "Age", batch: "Batch", problem: "Problem", ip_address: "IP Address",
+  submitted_at: "Date", form_type: "Type", event_title: "Event",
+  event_category: "Event Category", participants: "Participants",
   special_requirements: "Special Requirements",
 };
 
-// Columns to show in summary table per form type
 const summaryColumns: Record<string, string[]> = {
   contact: ["id", "name", "email", "phone", "submitted_at"],
   volunteer: ["id", "full_name", "email", "phone", "location", "submitted_at"],
@@ -82,11 +60,14 @@ const Submissions = () => {
   const [formType, setFormType] = useState("");
   const [loading, setLoading] = useState(true);
   const [detailRow, setDetailRow] = useState<Submission | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateTo, setDateTo] = useState("");
 
   const fetchData = async () => {
     setLoading(true);
     try {
-      const result = await getSubmissions(page, 20, formType);
+      const result = await getSubmissions(page, 20, formType, searchQuery, dateFrom, dateTo);
       setSubmissions(result.data || []);
       setTotalPages(result.pages || 1);
       setTotal(result.total || 0);
@@ -98,6 +79,8 @@ const Submissions = () => {
 
   useEffect(() => { fetchData(); }, [page, formType]);
 
+  const handleSearch = () => { setPage(1); fetchData(); };
+
   const handleDelete = async (id: number, type: string) => {
     if (!confirm("Delete this submission?")) return;
     try {
@@ -108,17 +91,13 @@ const Submissions = () => {
   };
 
   const getVisibleColumns = (): string[] => {
-    if (formType && summaryColumns[formType]) {
-      return summaryColumns[formType];
-    }
+    if (formType && summaryColumns[formType]) return summaryColumns[formType];
     return ["id", "form_type", "submitted_at"];
   };
 
   const formatValue = (key: string, value: unknown): string => {
     if (value === null || value === undefined) return "—";
-    if (key === "submitted_at") {
-      return new Date(String(value)).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
-    }
+    if (key === "submitted_at") return new Date(String(value)).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
     return String(value);
   };
 
@@ -127,23 +106,13 @@ const Submissions = () => {
     const allKeys = new Set<string>();
     submissions.forEach(s => Object.keys(s).forEach(k => allKeys.add(k)));
     const headers = Array.from(allKeys);
-    const rows = submissions.map(s =>
-      headers.map(k => {
-        const val = s[k];
-        return typeof val === "object" ? JSON.stringify(val) : String(val ?? "");
-      })
-    );
-    const csv = [
-      headers.map(h => columnLabels[h] || h).join(","),
-      ...rows.map(r => r.map(c => `"${c.replace(/"/g, '""')}"`).join(","))
-    ].join("\n");
+    const rows = submissions.map(s => headers.map(k => { const val = s[k]; return typeof val === "object" ? JSON.stringify(val) : String(val ?? ""); }));
+    const csv = [headers.map(h => columnLabels[h] || h).join(","), ...rows.map(r => r.map(c => `"${c.replace(/"/g, '""')}"`).join(","))].join("\n");
     const blob = new Blob([csv], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
-    a.href = url;
-    a.download = `submissions_${formType || "all"}_${new Date().toISOString().slice(0, 10)}.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
+    a.href = url; a.download = `submissions_${formType || "all"}_${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click(); URL.revokeObjectURL(url);
   };
 
   const visibleCols = getVisibleColumns();
@@ -151,21 +120,37 @@ const Submissions = () => {
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-        <div className="flex items-center gap-3">
-          <Select value={formType || "all"} onValueChange={(v) => { setFormType(v === "all" ? "" : v); setPage(1); }}>
-            <SelectTrigger className="w-[220px]">
-              <SelectValue placeholder="Filter by type" />
-            </SelectTrigger>
-            <SelectContent>
-              {formTypes.map(t => <SelectItem key={t.value} value={t.value || "all"}>{t.label}</SelectItem>)}
-            </SelectContent>
-          </Select>
-          <span className="text-sm text-muted-foreground">{total} total</span>
+      <div className="flex flex-col gap-3">
+        <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
+          <div className="flex items-center gap-3 flex-wrap">
+            <Select value={formType || "all"} onValueChange={(v) => { setFormType(v === "all" ? "" : v); setPage(1); }}>
+              <SelectTrigger className="w-[200px]">
+                <SelectValue placeholder="Filter by type" />
+              </SelectTrigger>
+              <SelectContent>
+                {formTypes.map(t => <SelectItem key={t.value} value={t.value || "all"}>{t.label}</SelectItem>)}
+              </SelectContent>
+            </Select>
+            <span className="text-sm text-muted-foreground">{total} total</span>
+          </div>
+          <Button variant="outline" size="sm" onClick={exportCSV} disabled={!submissions.length}>
+            <Download className="h-4 w-4 mr-2" /> Export CSV
+          </Button>
         </div>
-        <Button variant="outline" size="sm" onClick={exportCSV} disabled={!submissions.length}>
-          <Download className="h-4 w-4 mr-2" /> Export CSV
-        </Button>
+        <div className="flex flex-wrap gap-2 items-end">
+          <div className="flex gap-1">
+            <Input placeholder="Search by name/email..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} onKeyDown={(e) => e.key === "Enter" && handleSearch()} className="w-52 h-8" />
+            <Button variant="outline" size="sm" onClick={handleSearch}><Search className="h-4 w-4" /></Button>
+          </div>
+          <div className="flex gap-1 items-center">
+            <Input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} className="h-8 w-36" />
+            <span className="text-xs text-muted-foreground">to</span>
+            <Input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} className="h-8 w-36" />
+            {(dateFrom || dateTo) && (
+              <Button variant="ghost" size="sm" onClick={() => { setDateFrom(""); setDateTo(""); setPage(1); setTimeout(fetchData, 0); }} className="text-xs h-8">Clear</Button>
+            )}
+          </div>
+        </div>
       </div>
 
       <Card>
@@ -179,9 +164,7 @@ const Submissions = () => {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    {visibleCols.map(col => (
-                      <TableHead key={col}>{columnLabels[col] || col}</TableHead>
-                    ))}
+                    {visibleCols.map(col => <TableHead key={col}>{columnLabels[col] || col}</TableHead>)}
                     <TableHead className="w-[90px]">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -201,12 +184,8 @@ const Submissions = () => {
                       ))}
                       <TableCell>
                         <div className="flex gap-1">
-                          <Button variant="ghost" size="icon" onClick={() => setDetailRow(s)} title="View details">
-                            <Eye className="h-4 w-4" />
-                          </Button>
-                          <Button variant="ghost" size="icon" onClick={() => handleDelete(s.id, String(s.form_type))} className="text-destructive hover:text-destructive" title="Delete">
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
+                          <Button variant="ghost" size="icon" onClick={() => setDetailRow(s)} title="View details"><Eye className="h-4 w-4" /></Button>
+                          <Button variant="ghost" size="icon" onClick={() => handleDelete(s.id, String(s.form_type))} className="text-destructive hover:text-destructive" title="Delete"><Trash2 className="h-4 w-4" /></Button>
                         </div>
                       </TableCell>
                     </TableRow>
@@ -220,17 +199,12 @@ const Submissions = () => {
 
       {totalPages > 1 && (
         <div className="flex items-center justify-center gap-2">
-          <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => setPage(p => p - 1)}>
-            <ChevronLeft className="h-4 w-4" />
-          </Button>
+          <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => setPage(p => p - 1)}><ChevronLeft className="h-4 w-4" /></Button>
           <span className="text-sm">Page {page} of {totalPages}</span>
-          <Button variant="outline" size="sm" disabled={page >= totalPages} onClick={() => setPage(p => p + 1)}>
-            <ChevronRight className="h-4 w-4" />
-          </Button>
+          <Button variant="outline" size="sm" disabled={page >= totalPages} onClick={() => setPage(p => p + 1)}><ChevronRight className="h-4 w-4" /></Button>
         </div>
       )}
 
-      {/* Detail Dialog */}
       <Dialog open={!!detailRow} onOpenChange={(open) => !open && setDetailRow(null)}>
         <DialogContent className="max-w-lg max-h-[80vh] overflow-y-auto">
           <DialogHeader>
@@ -240,14 +214,12 @@ const Submissions = () => {
           </DialogHeader>
           {detailRow && (
             <div className="space-y-3">
-              {Object.entries(detailRow)
-                .filter(([key]) => !hiddenKeys.includes(key))
-                .map(([key, value]) => (
-                  <div key={key} className="flex flex-col border-b border-border pb-2">
-                    <span className="text-xs font-medium text-muted-foreground uppercase">{columnLabels[key] || key.replace(/_/g, " ")}</span>
-                    <span className="text-sm mt-0.5 whitespace-pre-wrap">{formatValue(key, value)}</span>
-                  </div>
-                ))}
+              {Object.entries(detailRow).filter(([key]) => !hiddenKeys.includes(key)).map(([key, value]) => (
+                <div key={key} className="flex flex-col border-b border-border pb-2">
+                  <span className="text-xs font-medium text-muted-foreground uppercase">{columnLabels[key] || key.replace(/_/g, " ")}</span>
+                  <span className="text-sm mt-0.5 whitespace-pre-wrap">{formatValue(key, value)}</span>
+                </div>
+              ))}
             </div>
           )}
         </DialogContent>

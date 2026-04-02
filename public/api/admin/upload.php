@@ -9,7 +9,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 }
 
 $folder = $_POST['folder'] ?? 'general';
-$allowedFolders = ['events', 'news', 'gallery', 'general'];
+$allowedFolders = ['events', 'news', 'gallery', 'general', 'reels'];
 if (!in_array($folder, $allowedFolders)) {
     $folder = 'general';
 }
@@ -21,20 +21,25 @@ if (!isset($_FILES['image']) || $_FILES['image']['error'] !== UPLOAD_ERR_OK) {
 }
 
 $file = $_FILES['image'];
-$allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+$allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'video/mp4', 'video/webm'];
 $finfo = finfo_open(FILEINFO_MIME_TYPE);
 $mimeType = finfo_file($finfo, $file['tmp_name']);
 finfo_close($finfo);
 
 if (!in_array($mimeType, $allowedTypes)) {
     http_response_code(400);
-    echo json_encode(['error' => 'Invalid file type. Allowed: JPG, PNG, WebP, GIF']);
+    echo json_encode(['error' => 'Invalid file type. Allowed: JPG, PNG, WebP, GIF, MP4, WebM']);
     exit();
 }
 
-if ($file['size'] > 5 * 1024 * 1024) {
+// 50MB limit for videos, 5MB for images
+$isVideo = strpos($mimeType, 'video/') === 0;
+$maxSize = $isVideo ? 50 * 1024 * 1024 : 5 * 1024 * 1024;
+
+if ($file['size'] > $maxSize) {
+    $maxMB = $maxSize / (1024 * 1024);
     http_response_code(400);
-    echo json_encode(['error' => 'File too large. Maximum 5MB']);
+    echo json_encode(['error' => "File too large. Maximum {$maxMB}MB"]);
     exit();
 }
 
@@ -43,7 +48,7 @@ if (!is_dir($uploadDir)) {
     mkdir($uploadDir, 0755, true);
 }
 
-$ext = pathinfo($file['name'], PATHINFO_EXTENSION) ?: 'jpg';
+$ext = pathinfo($file['name'], PATHINFO_EXTENSION) ?: ($isVideo ? 'mp4' : 'jpg');
 $filename = uniqid() . '_' . time() . '.' . $ext;
 $targetPath = $uploadDir . $filename;
 

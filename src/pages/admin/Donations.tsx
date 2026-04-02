@@ -2,8 +2,10 @@ import { useEffect, useState } from "react";
 import { getDonations } from "@/lib/admin-api";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { ChevronLeft, ChevronRight, Download, IndianRupee } from "lucide-react";
+import { ChevronLeft, ChevronRight, Download, IndianRupee, Search } from "lucide-react";
 import { toast } from "sonner";
 
 interface Donation {
@@ -25,11 +27,16 @@ const Donations = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [stats, setStats] = useState({ total_donations: 0, total_amount: 0 });
   const [loading, setLoading] = useState(true);
+  const [statusFilter, setStatusFilter] = useState("");
+  const [typeFilter, setTypeFilter] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateTo, setDateTo] = useState("");
 
   const fetchData = async () => {
     setLoading(true);
     try {
-      const result = await getDonations(page, 20);
+      const result = await getDonations(page, 20, statusFilter, typeFilter, searchQuery, dateFrom, dateTo);
       setDonations(result.data || []);
       setTotalPages(result.pages || 1);
       setStats(result.stats || { total_donations: 0, total_amount: 0 });
@@ -39,7 +46,9 @@ const Donations = () => {
     setLoading(false);
   };
 
-  useEffect(() => { fetchData(); }, [page]);
+  useEffect(() => { fetchData(); }, [page, statusFilter, typeFilter]);
+
+  const handleSearch = () => { setPage(1); fetchData(); };
 
   const exportCSV = () => {
     if (!donations.length) return;
@@ -66,7 +75,35 @@ const Donations = () => {
         </Card>
       </div>
 
-      <div className="flex justify-end">
+      {/* Filters */}
+      <div className="flex flex-wrap gap-3 items-end">
+        <Select value={statusFilter || "all"} onValueChange={(v) => { setStatusFilter(v === "all" ? "" : v); setPage(1); }}>
+          <SelectTrigger className="w-[140px] h-8"><SelectValue placeholder="Status" /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Status</SelectItem>
+            <SelectItem value="success">Success</SelectItem>
+            <SelectItem value="failed">Failed</SelectItem>
+            <SelectItem value="pending">Pending</SelectItem>
+          </SelectContent>
+        </Select>
+        <Select value={typeFilter || "all"} onValueChange={(v) => { setTypeFilter(v === "all" ? "" : v); setPage(1); }}>
+          <SelectTrigger className="w-[140px] h-8"><SelectValue placeholder="Type" /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Types</SelectItem>
+            <SelectItem value="one-time">One-time</SelectItem>
+            <SelectItem value="monthly">Monthly</SelectItem>
+            <SelectItem value="sponsorship">Sponsorship</SelectItem>
+          </SelectContent>
+        </Select>
+        <div className="flex gap-1">
+          <Input placeholder="Search donor..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} onKeyDown={(e) => e.key === "Enter" && handleSearch()} className="w-44 h-8" />
+          <Button variant="outline" size="sm" onClick={handleSearch}><Search className="h-4 w-4" /></Button>
+        </div>
+        <div className="flex gap-1 items-center">
+          <Input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} className="h-8 w-36" />
+          <span className="text-xs text-muted-foreground">to</span>
+          <Input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} className="h-8 w-36" />
+        </div>
         <Button variant="outline" size="sm" onClick={exportCSV} disabled={!donations.length}>
           <Download className="h-4 w-4 mr-2" /> Export CSV
         </Button>
@@ -102,7 +139,7 @@ const Donations = () => {
                       <TableCell className="font-semibold">₹{Number(d.amount).toLocaleString("en-IN")}</TableCell>
                       <TableCell className="text-sm">{d.donation_type}</TableCell>
                       <TableCell>
-                        <span className={`px-2 py-1 rounded-full text-xs ${d.status === "success" ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}>
+                        <span className={`px-2 py-1 rounded-full text-xs ${d.status === "success" ? "bg-green-100 text-green-700" : d.status === "failed" ? "bg-red-100 text-red-700" : "bg-yellow-100 text-yellow-700"}`}>
                           {d.status}
                         </span>
                       </TableCell>
@@ -120,13 +157,9 @@ const Donations = () => {
 
       {totalPages > 1 && (
         <div className="flex items-center justify-center gap-2">
-          <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => setPage(p => p - 1)}>
-            <ChevronLeft className="h-4 w-4" />
-          </Button>
+          <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => setPage(p => p - 1)}><ChevronLeft className="h-4 w-4" /></Button>
           <span className="text-sm">Page {page} of {totalPages}</span>
-          <Button variant="outline" size="sm" disabled={page >= totalPages} onClick={() => setPage(p => p + 1)}>
-            <ChevronRight className="h-4 w-4" />
-          </Button>
+          <Button variant="outline" size="sm" disabled={page >= totalPages} onClick={() => setPage(p => p + 1)}><ChevronRight className="h-4 w-4" /></Button>
         </div>
       )}
     </div>

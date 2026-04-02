@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { getDashboardStats, getRecentActivity, changeAdminPassword } from "@/lib/admin-api";
+import { getDashboardStats, getRecentActivity, changeAdminPassword, getSubmissionTrends, getDonationTrends, seedStaticGallery, seedStaticNews } from "@/lib/admin-api";
 import {
   FileText, CreditCard, IndianRupee, KeyRound, Image, CalendarDays,
   Newspaper, Plus, Upload, PenLine, Eye, TrendingUp, Clock,
   Database, Users, CheckCircle, Server, Film, MessageSquareQuote, Settings,
+  Sprout, Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,6 +14,7 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { Link } from "react-router-dom";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
+import { AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 
 const Dashboard = () => {
   const { username } = useAdminAuth();
@@ -25,11 +27,16 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true);
   const [showPasswordForm, setShowPasswordForm] = useState(false);
   const [passwords, setPasswords] = useState({ current: "", new: "", confirm: "" });
+  const [submissionTrends, setSubmissionTrends] = useState<{ date: string; count: number }[]>([]);
+  const [donationTrends, setDonationTrends] = useState<{ month: string; total: number; count: number }[]>([]);
+  const [seeding, setSeeding] = useState(false);
 
   useEffect(() => {
     Promise.all([
       getDashboardStats().then(setStats),
       getRecentActivity().then(setRecentActivity),
+      getSubmissionTrends().then(setSubmissionTrends),
+      getDonationTrends().then(setDonationTrends),
     ]).finally(() => setLoading(false));
   }, []);
 
@@ -44,6 +51,20 @@ const Dashboard = () => {
       setPasswords({ current: "", new: "", confirm: "" });
       setShowPasswordForm(false);
     } catch { toast.error("Failed to change password"); }
+  };
+
+  const handleSeedContent = async () => {
+    setSeeding(true);
+    try {
+      const [galleryRes, newsRes] = await Promise.all([seedStaticGallery(), seedStaticNews()]);
+      const msgs: string[] = [];
+      if (galleryRes.inserted) msgs.push(`${galleryRes.inserted} gallery images`);
+      if (newsRes.inserted) msgs.push(`${newsRes.inserted} news articles`);
+      if (msgs.length) toast.success(`Seeded: ${msgs.join(", ")}`);
+      else toast.info("Content already exists or no static data to seed");
+      getDashboardStats().then(setStats);
+    } catch { toast.error("Failed to seed content"); }
+    setSeeding(false);
   };
 
   const statCards = [
@@ -82,6 +103,17 @@ const Dashboard = () => {
     return colors[type] || "bg-muted text-muted-foreground";
   };
 
+  const formatChartDate = (date: string) => {
+    const d = new Date(date);
+    return `${d.getDate()}/${d.getMonth() + 1}`;
+  };
+
+  const formatChartMonth = (month: string) => {
+    const [y, m] = month.split("-");
+    const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    return `${months[parseInt(m) - 1]} ${y.slice(2)}`;
+  };
+
   return (
     <div className="space-y-6">
       {/* Welcome Banner */}
@@ -108,6 +140,10 @@ const Dashboard = () => {
             <div className="flex items-center gap-2">
               <Badge variant="outline" className="gap-1 text-xs"><Server className="h-3 w-3" /> PHP + MySQL</Badge>
               <Badge variant="outline" className="gap-1 text-xs"><Database className="h-3 w-3" /> agrfound_maindb</Badge>
+              <Button variant="outline" size="sm" className="h-7 text-xs gap-1" onClick={handleSeedContent} disabled={seeding}>
+                {seeding ? <Loader2 className="h-3 w-3 animate-spin" /> : <Sprout className="h-3 w-3" />}
+                Seed Static Content
+              </Button>
             </div>
           </div>
         </CardContent>
@@ -131,6 +167,57 @@ const Dashboard = () => {
             </Card>
           </Link>
         ))}
+      </div>
+
+      {/* Analytics Charts */}
+      <div className="grid lg:grid-cols-2 gap-6">
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg flex items-center gap-2">
+              <TrendingUp className="h-5 w-5 text-blue-600" />
+              Submission Trends (30 Days)
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {submissionTrends.length > 0 ? (
+              <ResponsiveContainer width="100%" height={220}>
+                <AreaChart data={submissionTrends}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                  <XAxis dataKey="date" tickFormatter={formatChartDate} tick={{ fontSize: 11 }} interval={4} />
+                  <YAxis tick={{ fontSize: 11 }} allowDecimals={false} />
+                  <Tooltip labelFormatter={(v) => new Date(v).toLocaleDateString("en-IN")} />
+                  <Area type="monotone" dataKey="count" stroke="hsl(var(--primary))" fill="hsl(var(--primary) / 0.2)" strokeWidth={2} name="Submissions" />
+                </AreaChart>
+              </ResponsiveContainer>
+            ) : (
+              <p className="text-sm text-muted-foreground py-8 text-center">No data yet</p>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg flex items-center gap-2">
+              <IndianRupee className="h-5 w-5 text-green-600" />
+              Donation Growth (12 Months)
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {donationTrends.length > 0 ? (
+              <ResponsiveContainer width="100%" height={220}>
+                <BarChart data={donationTrends}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                  <XAxis dataKey="month" tickFormatter={formatChartMonth} tick={{ fontSize: 11 }} />
+                  <YAxis tick={{ fontSize: 11 }} tickFormatter={(v) => `₹${(v / 1000).toFixed(0)}k`} />
+                  <Tooltip formatter={(v: number) => [`₹${v.toLocaleString("en-IN")}`, "Amount"]} labelFormatter={formatChartMonth} />
+                  <Bar dataKey="total" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} name="Amount" />
+                </BarChart>
+              </ResponsiveContainer>
+            ) : (
+              <p className="text-sm text-muted-foreground py-8 text-center">No data yet</p>
+            )}
+          </CardContent>
+        </Card>
       </div>
 
       <div className="grid lg:grid-cols-3 gap-6">
@@ -216,7 +303,6 @@ const Dashboard = () => {
   );
 };
 
-// Simple icon for the welcome banner decoration
 const LayoutDashboardIcon = ({ className }: { className?: string }) => (
   <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
     <rect x="3" y="3" width="7" height="9" rx="1" /><rect x="14" y="3" width="7" height="5" rx="1" /><rect x="14" y="12" width="7" height="9" rx="1" /><rect x="3" y="16" width="7" height="5" rx="1" />

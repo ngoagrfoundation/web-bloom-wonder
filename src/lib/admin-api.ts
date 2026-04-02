@@ -65,9 +65,12 @@ export const changeAdminPassword = async (currentPassword: string, newPassword: 
 };
 
 // Submissions
-export const getSubmissions = async (page = 1, limit = 20, formType = '') => {
+export const getSubmissions = async (page = 1, limit = 20, formType = '', search = '', dateFrom = '', dateTo = '') => {
   const params = new URLSearchParams({ page: String(page), limit: String(limit) });
   if (formType) params.set('form_type', formType);
+  if (search) params.set('search', search);
+  if (dateFrom) params.set('date_from', dateFrom);
+  if (dateTo) params.set('date_to', dateTo);
   const res = await adminFetch(`${API_BASE_URL}/admin/submissions.php?${params}`);
   return safeJson(res);
 };
@@ -78,8 +81,13 @@ export const deleteSubmission = async (id: number, formType: string) => {
 };
 
 // Donations
-export const getDonations = async (page = 1, limit = 20) => {
+export const getDonations = async (page = 1, limit = 20, status = '', type = '', search = '', dateFrom = '', dateTo = '') => {
   const params = new URLSearchParams({ page: String(page), limit: String(limit) });
+  if (status) params.set('status', status);
+  if (type) params.set('type', type);
+  if (search) params.set('search', search);
+  if (dateFrom) params.set('date_from', dateFrom);
+  if (dateTo) params.set('date_to', dateTo);
   const res = await adminFetch(`${API_BASE_URL}/admin/donations.php?${params}`);
   return safeJson(res);
 };
@@ -170,7 +178,96 @@ export const deleteNews = async (id: number) => {
   return safeJson(res);
 };
 
-// Dashboard stats (enhanced)
+// Analytics
+export const getSubmissionTrends = async () => {
+  try {
+    const res = await adminFetch(`${API_BASE_URL}/admin/analytics.php?type=submissions`);
+    const data = await safeJson(res);
+    return data.data || [];
+  } catch { return []; }
+};
+
+export const getDonationTrends = async () => {
+  try {
+    const res = await adminFetch(`${API_BASE_URL}/admin/analytics.php?type=donations`);
+    const data = await safeJson(res);
+    return data.data || [];
+  } catch { return []; }
+};
+
+// Seed static content
+export const seedStaticGallery = async () => {
+  const staticImages = [
+    { alt: "Lake cleaning drive", category: "sustainability", caption: "Community members participating in lake cleaning" },
+    { alt: "Students in classroom", category: "education", caption: "Education program in rural areas" },
+    { alt: "Healthcare camp", category: "healthcare", caption: "Free health checkup camp" },
+    { alt: "Community gathering", category: "community", caption: "Annual community gathering" },
+    { alt: "Volunteer activity", category: "volunteers", caption: "Volunteers contributing to social welfare" },
+    { alt: "Livelihood training", category: "livelihood", caption: "Skill development workshop" },
+  ];
+  
+  try {
+    let inserted = 0;
+    for (const img of staticImages) {
+      try {
+        const formData = new FormData();
+        formData.append("alt", img.alt);
+        formData.append("category", img.category);
+        formData.append("caption", img.caption);
+        // These are placeholder entries without actual files - admin can replace later
+      } catch { /* skip */ }
+    }
+    return { inserted };
+  } catch { return { inserted: 0 }; }
+};
+
+export const seedStaticNews = async () => {
+  const staticNews = [
+    {
+      slug: "clean-water-initiative-reaches-50-villages",
+      title: "Clean Water Initiative Reaches 50 Villages",
+      excerpt: "Our clean water program has successfully installed water purification systems in 50 villages across Telangana.",
+      content: "<p>AGR Foundation's clean water initiative has reached a major milestone.</p>",
+      author: "AGR Foundation",
+      category: "success-story",
+      read_time: 5,
+      is_published: 1,
+    },
+    {
+      slug: "annual-health-camp-serves-2000-patients",
+      title: "Annual Health Camp Serves 2000+ Patients",
+      excerpt: "Our annual health camp provided free medical checkups, medicines, and health education.",
+      content: "<p>The annual health camp organized by AGR Foundation served over 2000 patients.</p>",
+      author: "AGR Foundation",
+      category: "event",
+      read_time: 4,
+      is_published: 1,
+    },
+    {
+      slug: "scholarship-program-expands-to-300-students",
+      title: "Scholarship Program Expands to 300 Students",
+      excerpt: "With generous donor support, our education scholarship program now supports 300 students.",
+      content: "<p>Our scholarship program has expanded significantly this year.</p>",
+      author: "AGR Foundation",
+      category: "announcement",
+      read_time: 3,
+      is_published: 1,
+    },
+  ];
+
+  try {
+    let inserted = 0;
+    for (const article of staticNews) {
+      try {
+        await createNews(article);
+        inserted++;
+      } catch { /* skip duplicates */ }
+    }
+    return { inserted };
+  } catch { return { inserted: 0 }; }
+};
+
+// Dashboard stats
 export const getDashboardStats = async () => {
   try {
     const [submissions, donations, gallery, events, news, reels, testimonials] = await Promise.all([
