@@ -13,6 +13,9 @@ import {
   LogOut,
   Menu,
   X,
+  Film,
+  MessageSquareQuote,
+  Settings,
 } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
@@ -24,7 +27,10 @@ const navItems = [
   { title: "Gallery", path: "/admin/gallery", icon: Image },
   { title: "Events", path: "/admin/events", icon: CalendarDays },
   { title: "News", path: "/admin/news", icon: Newspaper },
+  { title: "Reels", path: "/admin/reels", icon: Film },
+  { title: "Testimonials", path: "/admin/testimonials", icon: MessageSquareQuote },
   { title: "Database", path: "/admin/database", icon: Database },
+  { title: "Site Settings", path: "/admin/settings", icon: Settings },
 ];
 
 const AdminLayout = () => {
@@ -56,7 +62,6 @@ const AdminLayout = () => {
 
   return (
     <div className="min-h-screen flex bg-muted/20">
-      {/* Sidebar */}
       <aside
         className={cn(
           "fixed inset-y-0 left-0 z-50 w-64 bg-background border-r transform transition-transform duration-200 lg:translate-x-0 lg:static",
@@ -73,7 +78,7 @@ const AdminLayout = () => {
               <X className="h-4 w-4" />
             </Button>
           </div>
-          <nav className="flex-1 p-4 space-y-1">
+          <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
             {navItems.map((item) => (
               <Link
                 key={item.path}
@@ -103,12 +108,10 @@ const AdminLayout = () => {
         </div>
       </aside>
 
-      {/* Overlay */}
       {sidebarOpen && (
         <div className="fixed inset-0 bg-black/50 z-40 lg:hidden" onClick={() => setSidebarOpen(false)} />
       )}
 
-      {/* Main content */}
       <div className="flex-1 min-h-screen">
         <header className="sticky top-0 z-30 bg-background border-b px-4 py-3 flex items-center gap-4 lg:px-6">
           <Button variant="ghost" size="icon" className="lg:hidden" onClick={() => setSidebarOpen(true)}>
@@ -117,6 +120,9 @@ const AdminLayout = () => {
           <h1 className="text-lg font-semibold">
             {navItems.find((i) => i.path === location.pathname)?.title || "Admin"}
           </h1>
+          <span className="ml-auto text-xs text-muted-foreground hidden sm:block">
+            {new Date().toLocaleDateString("en-IN", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}
+          </span>
         </header>
         <main className="p-4 lg:p-6">
           <Outlet />
