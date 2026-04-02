@@ -1,152 +1,106 @@
 
 
-## Separate MySQL Tables for Each Form + Updated PHP & Admin UI
+## Enhanced Admin Dashboard + Dynamic Content on Public Pages
 
-### Overview
+### What This Does
 
-Replace the single `form_submissions` table with 7 dedicated tables — one per form type — each with explicit columns for every input field. Update the PHP API to insert into the correct table, and update the admin dashboard to display all fields per form type.
+1. **Admin-managed content flows to the public site**: Events, gallery images, and news created in the admin panel will automatically appear on the landing page, Events page, Gallery page, and News page.
+2. **News management in admin**: Add a full News/Articles manager (CRUD) to the admin dashboard — currently missing.
+3. **Dashboard enhancements**: Better stats, recent activity feed, quick action cards.
+4. **Public pages load dynamic content**: Events, Gallery, and News pages fetch from the database first, falling back to static data if the API is unavailable (for preview/offline).
 
-### SQL Schema (copy-paste into phpMyAdmin)
+---
 
+### New PHP Endpoint Needed
+
+**`public/api/admin/news.php`** — CRUD for news articles (GET/POST/PUT/DELETE). Also needs a **public read** endpoint: `public/api/news.php` (no auth required, GET only) so the landing page can fetch news without admin session.
+
+Similarly, update `public/api/admin/events.php` and `public/api/admin/gallery.php` to allow **public GET** (unauthenticated reads) — or create separate `public/api/events.php` and `public/api/gallery.php` public endpoints.
+
+**New SQL table** (run in phpMyAdmin):
 ```sql
--- Drop the old generic table (backup first if it has data)
--- DROP TABLE IF EXISTS form_submissions;
-
-CREATE TABLE IF NOT EXISTS contact_submissions (
+CREATE TABLE IF NOT EXISTS news_articles (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(100) NOT NULL,
-    email VARCHAR(255) NOT NULL,
-    phone VARCHAR(15),
-    message TEXT NOT NULL,
-    ip_address VARCHAR(45),
-    submitted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
-CREATE TABLE IF NOT EXISTS volunteer_submissions (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    full_name VARCHAR(100) NOT NULL,
-    email VARCHAR(255) NOT NULL,
-    phone VARCHAR(15) NOT NULL,
-    location VARCHAR(200) NOT NULL,
-    initiatives TEXT NOT NULL,
-    availability TEXT NOT NULL,
-    experience TEXT,
-    ip_address VARCHAR(45),
-    submitted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
-CREATE TABLE IF NOT EXISTS partner_submissions (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    organization_name VARCHAR(200) NOT NULL,
-    contact_person VARCHAR(100) NOT NULL,
-    email VARCHAR(255) NOT NULL,
-    phone VARCHAR(15) NOT NULL,
-    organization_type VARCHAR(100) NOT NULL,
-    partnership_interest TEXT NOT NULL,
-    message TEXT,
-    ip_address VARCHAR(45),
-    submitted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
-CREATE TABLE IF NOT EXISTS adopt_student_submissions (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    sponsor_name VARCHAR(100) NOT NULL,
-    email VARCHAR(255) NOT NULL,
-    phone VARCHAR(15) NOT NULL,
-    city VARCHAR(100) NOT NULL,
-    grade_level VARCHAR(50) NOT NULL,
-    duration VARCHAR(50) NOT NULL,
-    message TEXT,
-    ip_address VARCHAR(45),
-    submitted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
-CREATE TABLE IF NOT EXISTS report_challenge_submissions (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(100) NOT NULL,
-    phone VARCHAR(15) NOT NULL,
-    email VARCHAR(255),
-    location VARCHAR(200) NOT NULL,
-    challenge_type VARCHAR(100) NOT NULL,
-    description TEXT NOT NULL,
-    people_affected VARCHAR(50),
-    ip_address VARCHAR(45),
-    submitted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
-CREATE TABLE IF NOT EXISTS sanskrit_registrations (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(100) NOT NULL,
-    mobile VARCHAR(15) NOT NULL,
-    address TEXT,
-    age VARCHAR(10),
-    batch VARCHAR(50),
-    ip_address VARCHAR(45),
-    submitted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
-CREATE TABLE IF NOT EXISTS dental_registrations (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(100) NOT NULL,
-    mobile VARCHAR(15) NOT NULL,
-    address TEXT,
-    problem TEXT,
-    ip_address VARCHAR(45),
-    submitted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    slug VARCHAR(255) UNIQUE NOT NULL,
+    title VARCHAR(255) NOT NULL,
+    excerpt TEXT,
+    content LONGTEXT,
+    image VARCHAR(500),
+    author VARCHAR(100) DEFAULT 'AGR Foundation',
+    category VARCHAR(50) DEFAULT 'announcement',
+    read_time INT DEFAULT 3,
+    is_published TINYINT(1) DEFAULT 1,
+    published_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 ```
 
-The existing `donations`, `gallery_images`, `events`, and `admin_users` tables stay unchanged.
+---
 
-### Security Note (RLS equivalent)
+### Files to Create
 
-MySQL doesn't have RLS like PostgreSQL/Supabase. Since this is a cPanel PHP project, security is enforced at the **PHP layer**:
-- All admin endpoints already call `requireAdmin()` which checks PHP session
-- Public form endpoints only allow INSERT (no SELECT/DELETE)
-- No direct database access from the frontend
+| File | Purpose |
+|------|---------|
+| `public/api/public-events.php` | Public GET endpoint for events (no auth) |
+| `public/api/public-gallery.php` | Public GET endpoint for gallery images (no auth) |
+| `public/api/public-news.php` | Public GET endpoint for published news (no auth) |
+| `public/api/admin/news.php` | Admin CRUD for news articles |
+| `src/pages/admin/NewsManager.tsx` | Admin UI to create, edit, delete news articles |
 
-This is the standard and correct approach for cPanel/PHP projects.
+### Files to Modify
+
+| File | Changes |
+|------|---------|
+| **`src/lib/api.ts`** | Add `fetchPublicEvents()`, `fetchPublicGallery()`, `fetchPublicNews()` using public (no-auth) endpoints |
+| **`src/lib/admin-api.ts`** | Add news CRUD functions: `getNews`, `createNews`, `updateNews`, `deleteNews` |
+| **`src/pages/admin/AdminLayout.tsx`** | Add "News" nav item with Newspaper icon |
+| **`src/App.tsx`** | Add lazy-loaded `NewsManager` route under `/admin/news` |
+| **`src/pages/admin/Dashboard.tsx`** | Enhanced: add gallery count, events count, news count stats; recent activity feed showing last 5 submissions; quick action buttons linking to each admin section |
+| **`src/components/GallerySection.tsx`** | Fetch from `fetchPublicGallery()`, fall back to static `featuredImages` |
+| **`src/pages/Gallery.tsx`** | Fetch from `fetchPublicGallery()`, merge with or replace static images |
+| **`src/pages/Events.tsx`** | Fetch from `fetchPublicEvents()`, fall back to static events array |
+| **`src/components/NewsSection.tsx`** | Fetch from `fetchPublicNews()`, fall back to static `latestNews` |
+| **`src/pages/News.tsx`** | Fetch from `fetchPublicNews()`, fall back to static `allNews` |
+| **`src/pages/NewsArticle.tsx`** | Fetch single article from API by slug, fall back to static data |
 
 ---
 
-### Files to Change
+### Dashboard Enhancements
 
-#### 1. `public/api/submit-form.php` — Route to correct table
-Instead of inserting everything into `form_submissions` with JSON, parse each `form_type` and INSERT into the matching table with explicit columns.
+The current dashboard shows only 3 stat cards and a password form. Enhanced version:
 
-#### 2. `public/api/admin/submissions.php` — Read from separate tables
-Update to query from the correct table based on `form_type` filter. When "All Types" is selected, query each table and merge results. Return explicit column data instead of a JSON blob.
+- **6 stat cards**: Submissions, Donations, Amount, Gallery Images, Events, News Articles
+- **Recent Activity**: Last 5 form submissions with type badges and timestamps
+- **Quick Actions**: Cards with icons linking to "Add Event", "Upload Photo", "Write Article", "View Donations"
+- Remove outdated "Google Sheets backup" text
 
-#### 3. `src/pages/admin/Submissions.tsx` — Show all fields per form
-Update the admin UI to display a detailed table with all columns visible (not just a "Summary" column). When filtering by form type, show columns specific to that form. Add a detail view/expandable row to see every field.
+### News Manager Features
 
-#### 4. `src/lib/admin-api.ts` — Update `getSubmissions` response type
-Update the TypeScript interface to handle the new response format with explicit fields instead of a `data: Record<string, unknown>` JSON blob.
+- Table listing all articles with title, category, status (published/draft), date
+- Create/Edit dialog with: title, slug (auto-generated from title), excerpt, full content (textarea), image URL, author, category, read time, published toggle
+- Delete with confirmation
+- Preview link that opens the article on the public site
 
-#### 5. `src/hooks/useFormSubmit.ts` — No changes needed
-The hook already sends `formType` and data correctly. The PHP backend handles the routing.
+### Dynamic Content Pattern
 
----
-
-### How Each Form Maps to Its Table
-
-| Form | `formType` sent | Table | Columns |
-|------|----------------|-------|---------|
-| Contact Us | `contact` | `contact_submissions` | name, email, phone, message |
-| Volunteer | `volunteer` | `volunteer_submissions` | full_name, email, phone, location, initiatives, availability, experience |
-| Partner | `partner` | `partner_submissions` | organization_name, contact_person, email, phone, organization_type, partnership_interest, message |
-| Adopt Student | `adopt_student` | `adopt_student_submissions` | sponsor_name, email, phone, city, grade_level, duration, message |
-| Report Challenge | `report_challenge` | `report_challenge_submissions` | name, phone, email, location, challenge_type, description, people_affected |
-| Sanskrit Registration | `sanskrit_registration` | `sanskrit_registrations` | name, mobile, address, age, batch |
-| Dental Registration | `dental_registration` | `dental_registrations` | name, mobile, address, problem |
-| Donate | (via record-donation.php) | `donations` | razorpay_payment_id, donor_name, donor_email, donor_phone, amount, donation_type, pan_number, status |
+Each public component follows this pattern:
+```
+1. On mount, try fetching from PHP API
+2. If API returns data, use it (merge with static for fallback images)
+3. If API fails (preview mode, offline), use hardcoded static data
+4. Show content either way — no blank screens
+```
 
 ---
 
-### Steps After Approval
+### Summary
 
-1. I will update `submit-form.php`, `admin/submissions.php`, `Submissions.tsx`, and `admin-api.ts`
-2. You run the SQL in phpMyAdmin to create the 7 new tables
-3. You can optionally keep `form_submissions` as a backup, or drop it later
-4. Deploy updated code to cPanel and test
+| Area | Items |
+|------|-------|
+| New PHP files | 4 (3 public endpoints + 1 admin news CRUD) |
+| New React files | 1 (`NewsManager.tsx`) |
+| Modified React files | 10 |
+| New SQL table | 1 (`news_articles`) |
+| Total changes | ~15 files |
 
