@@ -91,12 +91,12 @@ const App = () => (
             
             {/* Admin Routes */}
             <Route path="/admin" element={<Suspense fallback={<AdminFallback />}><AdminLogin /></Suspense>} />
-            <Route path="/admin" element={<Suspense fallback={<AdminFallback />}><AdminLayout /></Suspense>}>
-              <Route path="dashboard" element={<Suspense fallback={<AdminFallback />}><Dashboard /></Suspense>} />
-              <Route path="submissions" element={<Suspense fallback={<AdminFallback />}><Submissions /></Suspense>} />
-              <Route path="donations" element={<Suspense fallback={<AdminFallback />}><Donations /></Suspense>} />
-              <Route path="gallery" element={<Suspense fallback={<AdminFallback />}><GalleryManager /></Suspense>} />
-              <Route path="events" element={<Suspense fallback={<AdminFallback />}><EventsManager /></Suspense>} />
+            <Route element={<Suspense fallback={<AdminFallback />}><AdminLayout /></Suspense>}>
+              <Route path="/admin/dashboard" element={<Suspense fallback={<AdminFallback />}><Dashboard /></Suspense>} />
+              <Route path="/admin/submissions" element={<Suspense fallback={<AdminFallback />}><Submissions /></Suspense>} />
+              <Route path="/admin/donations" element={<Suspense fallback={<AdminFallback />}><Donations /></Suspense>} />
+              <Route path="/admin/gallery" element={<Suspense fallback={<AdminFallback />}><GalleryManager /></Suspense>} />
+              <Route path="/admin/events" element={<Suspense fallback={<AdminFallback />}><EventsManager /></Suspense>} />
             </Route>
             
             <Route path="*" element={<NotFound />} />
