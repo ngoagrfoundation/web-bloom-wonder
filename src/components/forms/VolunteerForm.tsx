@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwtNe9Kpt1ESjMC_s-8j1kfr62PBDoYFD3ZWlF-auBaxuYJPPZ-w_PFvwFgFEj2ns2d/exec";
+
 
 const initiatives = [
   { id: "eco-packaging", label: "Eco-Packaging Training" },
