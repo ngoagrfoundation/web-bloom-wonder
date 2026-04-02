@@ -16,7 +16,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxGarQhnIT59zLST4iR_IsKBOJQvcOi0xFCwWjnoVxl7aDkevKXBJnm_ctXbOpSF8T4/exec";
+
 
 const challengeTypes = [
   { id: "healthcare", label: "Healthcare Access" },
