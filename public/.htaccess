@@ -1,12 +1,11 @@
 RewriteEngine On
 
-# Allow API and uploads to pass through
+# Allow API and uploads to pass through to PHP
 RewriteRule ^api/ - [L]
 RewriteRule ^uploads/ - [L]
 
-# If file or directory exists, serve it directly
-RewriteCond %{REQUEST_FILENAME} -f [OR]
-RewriteCond %{REQUEST_FILENAME} -d
+# If an actual FILE exists, serve it (but NOT directories)
+RewriteCond %{REQUEST_FILENAME} -f
 RewriteRule ^ - [L]
 
 # Route everything else to index.html for React Router
