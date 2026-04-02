@@ -3,6 +3,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { lazy, Suspense } from "react";
 import ErrorBoundary from "./components/ErrorBoundary";
 import Index from "./pages/Index";
 import Events from "./pages/Events";
@@ -34,7 +35,22 @@ import WaterFilterSchool from "./pages/causes/WaterFilterSchool";
 import WheelchairStudent from "./pages/causes/WheelchairStudent";
 import WheelchairElderly from "./pages/causes/WheelchairElderly";
 
+// Admin Pages (lazy loaded)
+const AdminLogin = lazy(() => import("./pages/admin/AdminLogin"));
+const AdminLayout = lazy(() => import("./pages/admin/AdminLayout"));
+const Dashboard = lazy(() => import("./pages/admin/Dashboard"));
+const Submissions = lazy(() => import("./pages/admin/Submissions"));
+const Donations = lazy(() => import("./pages/admin/Donations"));
+const GalleryManager = lazy(() => import("./pages/admin/GalleryManager"));
+const EventsManager = lazy(() => import("./pages/admin/EventsManager"));
+
 const queryClient = new QueryClient();
+
+const AdminFallback = () => (
+  <div className="min-h-screen flex items-center justify-center">
+    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+  </div>
+);
 
 const App = () => (
   <ErrorBoundary>
@@ -72,6 +88,16 @@ const App = () => (
             <Route path="/causes/water-filter-school" element={<WaterFilterSchool />} />
             <Route path="/causes/wheelchair-student" element={<WheelchairStudent />} />
             <Route path="/causes/wheelchair-elderly" element={<WheelchairElderly />} />
+            
+            {/* Admin Routes */}
+            <Route path="/admin" element={<Suspense fallback={<AdminFallback />}><AdminLogin /></Suspense>} />
+            <Route element={<Suspense fallback={<AdminFallback />}><AdminLayout /></Suspense>}>
+              <Route path="/admin/dashboard" element={<Suspense fallback={<AdminFallback />}><Dashboard /></Suspense>} />
+              <Route path="/admin/submissions" element={<Suspense fallback={<AdminFallback />}><Submissions /></Suspense>} />
+              <Route path="/admin/donations" element={<Suspense fallback={<AdminFallback />}><Donations /></Suspense>} />
+              <Route path="/admin/gallery" element={<Suspense fallback={<AdminFallback />}><GalleryManager /></Suspense>} />
+              <Route path="/admin/events" element={<Suspense fallback={<AdminFallback />}><EventsManager /></Suspense>} />
+            </Route>
             
             <Route path="*" element={<NotFound />} />
           </Routes>

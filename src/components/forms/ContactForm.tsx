@@ -16,6 +16,7 @@ const ContactForm = () => {
   
   const { submitForm, isSubmitting, security } = useGoogleSheetForm({
     scriptUrl: SCRIPT_URL,
+    formType: "contact",
     onSuccess: () => {
       setShowSuccess(true);
       reset();

@@ -38,6 +38,7 @@ const ReportChallengeForm = ({ onSuccess: onSuccessCallback }: ReportChallengeFo
 
   const { submitForm, isSubmitting, security } = useGoogleSheetForm({
     scriptUrl: SCRIPT_URL,
+    formType: "report_challenge",
     onSuccess: () => {
       setShowSuccess(true);
       reset();

@@ -2,8 +2,11 @@ import { useState, useCallback } from "react";
 import { useFormSecurity } from "./useFormSecurity";
 import { toast } from "@/hooks/use-toast";
 
+import { submitFormToAPI } from "@/lib/api";
+
 interface UseGoogleSheetFormOptions {
   scriptUrl: string;
+  formType?: string;
   onSuccess?: () => void;
   onError?: (error: Error) => void;
 }
@@ -21,7 +24,7 @@ interface UseGoogleSheetFormReturn {
  * Custom hook for submitting forms to Google Sheets via Apps Script
  */
 export const useGoogleSheetForm = (options: UseGoogleSheetFormOptions): UseGoogleSheetFormReturn => {
-  const { scriptUrl, onSuccess, onError } = options;
+  const { scriptUrl, formType, onSuccess, onError } = options;
   
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
@@ -75,7 +78,12 @@ export const useGoogleSheetForm = (options: UseGoogleSheetFormOptions): UseGoogl
       // The response type will be "opaque" which means we can't check status
       security.recordSubmission();
       setIsSuccess(true);
-      
+
+      // Also submit to PHP/MySQL API (fire-and-forget)
+      if (formType) {
+        submitFormToAPI(formType, data).catch(() => {});
+      }
+
       toast({
         title: "Submitted successfully!",
         description: "Thank you for reaching out. We'll get back to you soon.",

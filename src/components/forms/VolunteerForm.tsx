@@ -39,6 +39,7 @@ const VolunteerForm = ({ onSuccess: onSuccessCallback }: VolunteerFormProps) => 
 
   const { submitForm, isSubmitting, security } = useGoogleSheetForm({
     scriptUrl: SCRIPT_URL,
+    formType: "volunteer",
     onSuccess: () => {
       setShowSuccess(true);
       reset();
