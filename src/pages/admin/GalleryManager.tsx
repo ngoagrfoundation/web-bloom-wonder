@@ -1,16 +1,17 @@
 import { useEffect, useState } from "react";
 import { getGalleryImages, uploadGalleryImage, updateGalleryImage, deleteGalleryImage } from "@/lib/admin-api";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
-import { Plus, Trash2, Edit, Upload, X } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Plus, Trash2, Edit, Upload, X, FolderOpen, CheckSquare, Square } from "lucide-react";
 import { toast } from "sonner";
 
-const categories = ["sustainability", "education", "healthcare", "community", "livelihood", "events", "volunteers"];
+const defaultCategories = ["sustainability", "education", "healthcare", "community", "livelihood", "events", "volunteers", "others"];
 
 interface GalleryImage {
   id: number;
@@ -26,9 +27,12 @@ const GalleryManager = () => {
   const [loading, setLoading] = useState(true);
   const [showUpload, setShowUpload] = useState(false);
   const [editImage, setEditImage] = useState<GalleryImage | null>(null);
-  const [uploadForm, setUploadForm] = useState({ alt: "", category: "community", caption: "" });
+  const [uploadForm, setUploadForm] = useState({ alt: "", category: "community", caption: "", customCategory: "" });
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [filterCategory, setFilterCategory] = useState("all");
+  const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
+  const [editCustomCategory, setEditCustomCategory] = useState("");
 
   const fetchData = async () => {
     setLoading(true);
@@ -41,21 +45,35 @@ const GalleryManager = () => {
 
   useEffect(() => { fetchData(); }, []);
 
+  // Build categories from defaults + any custom ones found in images
+  const allCategories = Array.from(new Set([
+    ...defaultCategories,
+    ...images.map(img => img.category).filter(c => c && !defaultCategories.includes(c))
+  ]));
+
+  const filteredImages = filterCategory === "all" ? images : images.filter(img => img.category === filterCategory);
+
+  const categoryCounts = images.reduce<Record<string, number>>((acc, img) => {
+    acc[img.category] = (acc[img.category] || 0) + 1;
+    return acc;
+  }, {});
+
   const handleUpload = async () => {
     if (!selectedFile) { toast.error("Please select an image"); return; }
     setUploading(true);
+    const category = uploadForm.category === "others" ? uploadForm.customCategory || "others" : uploadForm.category;
     try {
       const formData = new FormData();
       formData.append("image", selectedFile);
       formData.append("alt", uploadForm.alt);
-      formData.append("category", uploadForm.category);
+      formData.append("category", category);
       formData.append("caption", uploadForm.caption);
       const result = await uploadGalleryImage(formData);
       if (result.error) { toast.error(result.error); } else {
         toast.success("Image uploaded!");
         setShowUpload(false);
         setSelectedFile(null);
-        setUploadForm({ alt: "", category: "community", caption: "" });
+        setUploadForm({ alt: "", category: "community", caption: "", customCategory: "" });
         fetchData();
       }
     } catch { toast.error("Upload failed"); }
@@ -64,10 +82,12 @@ const GalleryManager = () => {
 
   const handleUpdate = async () => {
     if (!editImage) return;
+    const category = editImage.category === "others" ? editCustomCategory || "others" : editImage.category;
     try {
-      await updateGalleryImage({ id: editImage.id, alt: editImage.alt, category: editImage.category, caption: editImage.caption });
+      await updateGalleryImage({ id: editImage.id, alt: editImage.alt, category, caption: editImage.caption });
       toast.success("Image updated");
       setEditImage(null);
+      setEditCustomCategory("");
       fetchData();
     } catch { toast.error("Update failed"); }
   };
@@ -81,27 +101,73 @@ const GalleryManager = () => {
     } catch { toast.error("Delete failed"); }
   };
 
+  const handleBulkDelete = async () => {
+    if (selectedIds.size === 0) return;
+    if (!confirm(`Delete ${selectedIds.size} selected images?`)) return;
+    for (const id of selectedIds) {
+      try { await deleteGalleryImage(id); } catch { /* skip */ }
+    }
+    toast.success(`${selectedIds.size} images deleted`);
+    setSelectedIds(new Set());
+    fetchData();
+  };
+
+  const toggleSelect = (id: number) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
         <span className="text-sm text-muted-foreground">{images.length} images</span>
-        <Button onClick={() => setShowUpload(true)}>
-          <Plus className="h-4 w-4 mr-2" /> Upload Image
+        <div className="flex gap-2">
+          {selectedIds.size > 0 && (
+            <Button variant="destructive" size="sm" onClick={handleBulkDelete}>
+              <Trash2 className="h-4 w-4 mr-1" /> Delete {selectedIds.size}
+            </Button>
+          )}
+          <Button onClick={() => setShowUpload(true)}>
+            <Plus className="h-4 w-4 mr-2" /> Upload Image
+          </Button>
+        </div>
+      </div>
+
+      {/* Category filter tabs */}
+      <div className="flex flex-wrap gap-2">
+        <Button variant={filterCategory === "all" ? "default" : "outline"} size="sm" onClick={() => setFilterCategory("all")} className="gap-1">
+          <FolderOpen className="h-3 w-3" /> All <Badge variant="secondary" className="ml-1">{images.length}</Badge>
         </Button>
+        {allCategories.map(cat => (
+          <Button key={cat} variant={filterCategory === cat ? "default" : "outline"} size="sm" onClick={() => setFilterCategory(cat)} className="gap-1">
+            {cat.charAt(0).toUpperCase() + cat.slice(1)}
+            {categoryCounts[cat] ? <Badge variant="secondary" className="ml-1">{categoryCounts[cat]}</Badge> : null}
+          </Button>
+        ))}
       </div>
 
       {loading ? (
         <div className="p-8 text-center text-muted-foreground">Loading...</div>
-      ) : images.length === 0 ? (
-        <Card><CardContent className="p-8 text-center text-muted-foreground">No gallery images yet. Upload your first image!</CardContent></Card>
+      ) : filteredImages.length === 0 ? (
+        <Card><CardContent className="p-8 text-center text-muted-foreground">
+          {filterCategory === "all" ? "No gallery images yet. Upload your first image!" : `No images in "${filterCategory}" category.`}
+        </CardContent></Card>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {images.map((img) => (
-            <Card key={img.id} className="overflow-hidden">
+          {filteredImages.map((img) => (
+            <Card key={img.id} className={`overflow-hidden ${selectedIds.has(img.id) ? 'ring-2 ring-primary' : ''}`}>
               <div className="aspect-video relative">
                 <img src={img.src} alt={img.alt} className="w-full h-full object-cover" />
+                <div className="absolute top-2 left-2">
+                  <Button size="icon" variant="secondary" className="h-8 w-8" onClick={() => toggleSelect(img.id)}>
+                    {selectedIds.has(img.id) ? <CheckSquare className="h-3 w-3" /> : <Square className="h-3 w-3" />}
+                  </Button>
+                </div>
                 <div className="absolute top-2 right-2 flex gap-1">
-                  <Button size="icon" variant="secondary" className="h-8 w-8" onClick={() => setEditImage(img)}>
+                  <Button size="icon" variant="secondary" className="h-8 w-8" onClick={() => { setEditImage(img); setEditCustomCategory(img.category); }}>
                     <Edit className="h-3 w-3" />
                   </Button>
                   <Button size="icon" variant="destructive" className="h-8 w-8" onClick={() => handleDelete(img.id)}>
@@ -111,7 +177,10 @@ const GalleryManager = () => {
               </div>
               <CardContent className="p-3">
                 <p className="text-sm font-medium truncate">{img.alt || "No title"}</p>
-                <p className="text-xs text-muted-foreground">{img.category} • {img.caption?.slice(0, 50)}</p>
+                <p className="text-xs text-muted-foreground">
+                  <Badge variant="outline" className="text-xs mr-1">{img.category}</Badge>
+                  {img.caption?.slice(0, 40)}
+                </p>
               </CardContent>
             </Card>
           ))}
@@ -149,9 +218,12 @@ const GalleryManager = () => {
               <Select value={uploadForm.category} onValueChange={(v) => setUploadForm(f => ({ ...f, category: v }))}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  {categories.map(c => <SelectItem key={c} value={c}>{c.charAt(0).toUpperCase() + c.slice(1)}</SelectItem>)}
+                  {allCategories.map(c => <SelectItem key={c} value={c}>{c.charAt(0).toUpperCase() + c.slice(1)}</SelectItem>)}
                 </SelectContent>
               </Select>
+              {uploadForm.category === "others" && (
+                <Input value={uploadForm.customCategory} onChange={(e) => setUploadForm(f => ({ ...f, customCategory: e.target.value }))} placeholder="Enter custom category name" className="mt-2" />
+              )}
             </div>
             <div className="space-y-2">
               <Label>Caption</Label>
@@ -165,7 +237,7 @@ const GalleryManager = () => {
       </Dialog>
 
       {/* Edit Dialog */}
-      <Dialog open={!!editImage} onOpenChange={() => setEditImage(null)}>
+      <Dialog open={!!editImage} onOpenChange={() => { setEditImage(null); setEditCustomCategory(""); }}>
         <DialogContent>
           <DialogHeader><DialogTitle>Edit Image</DialogTitle></DialogHeader>
           {editImage && (
@@ -177,12 +249,15 @@ const GalleryManager = () => {
               </div>
               <div className="space-y-2">
                 <Label>Category</Label>
-                <Select value={editImage.category} onValueChange={(v) => setEditImage({ ...editImage, category: v })}>
+                <Select value={allCategories.includes(editImage.category) ? editImage.category : "others"} onValueChange={(v) => { setEditImage({ ...editImage, category: v }); if (v !== "others") setEditCustomCategory(v); }}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    {categories.map(c => <SelectItem key={c} value={c}>{c.charAt(0).toUpperCase() + c.slice(1)}</SelectItem>)}
+                    {allCategories.map(c => <SelectItem key={c} value={c}>{c.charAt(0).toUpperCase() + c.slice(1)}</SelectItem>)}
                   </SelectContent>
                 </Select>
+                {editImage.category === "others" && (
+                  <Input value={editCustomCategory} onChange={(e) => setEditCustomCategory(e.target.value)} placeholder="Enter custom category name" className="mt-2" />
+                )}
               </div>
               <div className="space-y-2">
                 <Label>Caption</Label>

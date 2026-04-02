@@ -202,3 +202,33 @@ export const getRecentActivity = async () => {
     return [];
   }
 };
+
+// Database Browser
+export const getTableList = async () => {
+  const res = await adminFetch(`${API_BASE_URL}/admin/database.php?action=tables`);
+  return safeJson(res);
+};
+
+export const getTableData = async (table: string, page = 1, limit = 50, search = '') => {
+  const params = new URLSearchParams({ table, page: String(page), limit: String(limit) });
+  if (search) params.set('search', search);
+  const res = await adminFetch(`${API_BASE_URL}/admin/database.php?${params}`);
+  return safeJson(res);
+};
+
+// Image upload
+export const uploadImage = async (file: File, folder: string) => {
+  const formData = new FormData();
+  formData.append('image', file);
+  formData.append('folder', folder);
+  const res = await fetch(`${API_BASE_URL}/admin/upload.php`, {
+    method: 'POST',
+    credentials: 'include',
+    body: formData,
+  });
+  if (res.status === 401) {
+    window.location.href = '/admin';
+    throw new Error('Unauthorized');
+  }
+  return safeJson(res);
+};

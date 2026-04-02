@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { getEvents, createEvent, updateEvent, deleteEvent } from "@/lib/admin-api";
+import { getEvents, createEvent, updateEvent, deleteEvent, uploadImage } from "@/lib/admin-api";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,10 +9,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Switch } from "@/components/ui/switch";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Plus, Trash2, Edit, CalendarDays } from "lucide-react";
+import { Plus, Trash2, Edit, CalendarDays, Upload, X } from "lucide-react";
 import { toast } from "sonner";
 
-const eventCategories = ["health-camp", "workshop", "cleanup", "fundraiser", "education", "community", "cultural"];
+const eventCategories = ["health-camp", "workshop", "cleanup", "fundraiser", "education", "community", "cultural", "others"];
 
 interface EventData {
   id?: number;
@@ -38,6 +38,8 @@ const EventsManager = () => {
   const [form, setForm] = useState<EventData>(emptyEvent);
   const [editId, setEditId] = useState<number | null>(null);
   const [saving, setSaving] = useState(false);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [uploading, setUploading] = useState(false);
 
   const fetchData = async () => {
     setLoading(true);
@@ -50,25 +52,41 @@ const EventsManager = () => {
 
   useEffect(() => { fetchData(); }, []);
 
-  const openNew = () => { setForm(emptyEvent); setEditId(null); setShowForm(true); };
+  const openNew = () => { setForm(emptyEvent); setEditId(null); setImageFile(null); setShowForm(true); };
   const openEdit = (evt: EventData & { id: number }) => {
     setForm({ ...evt, date: evt.date?.slice(0, 10) || "" });
     setEditId(evt.id);
+    setImageFile(null);
     setShowForm(true);
+  };
+
+  const handleImageUpload = async (): Promise<string> => {
+    if (!imageFile) return form.image;
+    setUploading(true);
+    try {
+      const result = await uploadImage(imageFile, 'events');
+      if (result.path) return result.path;
+      toast.error(result.error || "Upload failed");
+      return form.image;
+    } catch { return form.image; }
+    finally { setUploading(false); }
   };
 
   const handleSave = async () => {
     if (!form.title.trim()) { toast.error("Title is required"); return; }
     setSaving(true);
     try {
+      const imagePath = await handleImageUpload();
+      const data = { ...form, image: imagePath };
       if (editId) {
-        await updateEvent({ ...form, id: editId } as unknown as Record<string, unknown>);
+        await updateEvent({ ...data, id: editId } as unknown as Record<string, unknown>);
         toast.success("Event updated");
       } else {
-        await createEvent(form as unknown as Record<string, unknown>);
+        await createEvent(data as unknown as Record<string, unknown>);
         toast.success("Event created");
       }
       setShowForm(false);
+      setImageFile(null);
       fetchData();
     } catch { toast.error("Save failed"); }
     setSaving(false);
@@ -103,6 +121,7 @@ const EventsManager = () => {
               <Table>
                 <TableHeader>
                   <TableRow>
+                    <TableHead>Image</TableHead>
                     <TableHead>Title</TableHead>
                     <TableHead>Date</TableHead>
                     <TableHead>Location</TableHead>
@@ -114,6 +133,11 @@ const EventsManager = () => {
                 <TableBody>
                   {events.map((evt) => (
                     <TableRow key={evt.id}>
+                      <TableCell>
+                        {evt.image ? (
+                          <img src={evt.image} alt={evt.title} className="w-16 h-10 object-cover rounded" />
+                        ) : <span className="text-xs text-muted-foreground">No image</span>}
+                      </TableCell>
                       <TableCell className="font-medium">{evt.title}</TableCell>
                       <TableCell className="text-sm whitespace-nowrap">
                         {evt.date ? new Date(evt.date).toLocaleDateString("en-IN") : "—"}
@@ -142,7 +166,6 @@ const EventsManager = () => {
         </CardContent>
       </Card>
 
-      {/* Create/Edit Dialog */}
       <Dialog open={showForm} onOpenChange={setShowForm}>
         <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader>
@@ -180,7 +203,7 @@ const EventsManager = () => {
                 <Select value={form.category} onValueChange={(v) => setForm(f => ({ ...f, category: v }))}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    {eventCategories.map(c => <SelectItem key={c} value={c}>{c.replace("-", " ").replace(/\b\w/g, l => l.toUpperCase())}</SelectItem>)}
+                    {eventCategories.map(c => <SelectItem key={c} value={c}>{c.replace(/-/g, " ").replace(/\b\w/g, l => l.toUpperCase())}</SelectItem>)}
                   </SelectContent>
                 </Select>
               </div>
@@ -189,16 +212,38 @@ const EventsManager = () => {
                 <Input type="number" value={form.attendees} onChange={(e) => setForm(f => ({ ...f, attendees: parseInt(e.target.value) || 0 }))} />
               </div>
             </div>
+            {/* Image upload */}
             <div className="space-y-2">
-              <Label>Image URL</Label>
-              <Input value={form.image} onChange={(e) => setForm(f => ({ ...f, image: e.target.value }))} placeholder="https://..." />
+              <Label>Event Image</Label>
+              {form.image && !imageFile && (
+                <div className="relative">
+                  <img src={form.image} alt="Event" className="w-full h-32 object-cover rounded" />
+                  <Button size="icon" variant="destructive" className="absolute top-1 right-1 h-6 w-6" onClick={() => setForm(f => ({ ...f, image: "" }))}>
+                    <X className="h-3 w-3" />
+                  </Button>
+                </div>
+              )}
+              <div className="border-2 border-dashed rounded-lg p-3 text-center">
+                {imageFile ? (
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm truncate">{imageFile.name}</span>
+                    <Button variant="ghost" size="icon" onClick={() => setImageFile(null)}><X className="h-4 w-4" /></Button>
+                  </div>
+                ) : (
+                  <label className="cursor-pointer">
+                    <Upload className="h-6 w-6 mx-auto text-muted-foreground mb-1" />
+                    <p className="text-xs text-muted-foreground">Click to upload image (max 5MB)</p>
+                    <input type="file" accept="image/*" className="hidden" onChange={(e) => setImageFile(e.target.files?.[0] || null)} />
+                  </label>
+                )}
+              </div>
             </div>
             <div className="flex items-center gap-2">
               <Switch checked={!!form.is_featured} onCheckedChange={(v) => setForm(f => ({ ...f, is_featured: v ? 1 : 0 }))} />
               <Label>Featured Event</Label>
             </div>
-            <Button onClick={handleSave} disabled={saving} className="w-full">
-              {saving ? "Saving..." : editId ? "Update Event" : "Create Event"}
+            <Button onClick={handleSave} disabled={saving || uploading} className="w-full">
+              {saving ? "Saving..." : uploading ? "Uploading image..." : editId ? "Update Event" : "Create Event"}
             </Button>
           </div>
         </DialogContent>
