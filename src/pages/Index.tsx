@@ -6,6 +6,7 @@ import SustainabilitySection from "@/components/SustainabilitySection";
 import CausesSection from "@/components/CausesSection";
 import ImpactSection from "@/components/ImpactSection";
 import TestimonialsSection from "@/components/TestimonialsSection";
+import ReelsSection from "@/components/ReelsSection";
 import GetInvolvedSection from "@/components/GetInvolvedSection";
 import NewsSection from "@/components/NewsSection";
 import GallerySection from "@/components/GallerySection";
@@ -22,6 +23,7 @@ const Index = () => {
         <CausesSection />
         <ImpactSection />
         <TestimonialsSection />
+        <ReelsSection />
         <GetInvolvedSection />
         <NewsSection />
         <GallerySection />

@@ -1,35 +1,48 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { fetchPublicTestimonials } from "@/lib/api";
 
-const testimonials = [
+const staticTestimonials = [
   {
-    quote:
-      "Thanks for giving training of eco-friendly packaging and wrapping. Now our entire family uses sustainable alternatives instead of plastic.",
+    quote: "Thanks for giving training of eco-friendly packaging and wrapping. Now our entire family uses sustainable alternatives instead of plastic.",
     name: "Venkata Rao",
     role: "Eco-Training Participant",
   },
   {
-    quote:
-      "AGR Foundation's support has completely transformed my life. I was able to complete my education and now I'm pursuing my dreams of becoming a teacher.",
+    quote: "AGR Foundation's support has completely transformed my life. I was able to complete my education and now I'm pursuing my dreams of becoming a teacher.",
     name: "Maria Lopez",
     role: "Education Program Beneficiary",
   },
   {
-    quote:
-      "The healthcare camp organized by AGR Foundation saved my father's life. We are forever grateful for their timely intervention and care.",
+    quote: "The healthcare camp organized by AGR Foundation saved my father's life. We are forever grateful for their timely intervention and care.",
     name: "Ramesh Kumar",
     role: "Healthcare Initiative Recipient",
   },
   {
-    quote:
-      "Thanks to the skill development program, I now run my own small business. AGR Foundation gave me the confidence and tools to become independent.",
+    quote: "Thanks to the skill development program, I now run my own small business. AGR Foundation gave me the confidence and tools to become independent.",
     name: "Sunita Devi",
     role: "Livelihood Program Member",
   },
 ];
 
+interface Testimonial {
+  quote: string;
+  name: string;
+  role: string;
+  photo?: string;
+}
+
 const TestimonialsSection = () => {
+  const [testimonials, setTestimonials] = useState<Testimonial[]>(staticTestimonials);
   const [currentIndex, setCurrentIndex] = useState(0);
+
+  useEffect(() => {
+    fetchPublicTestimonials().then((data) => {
+      if (data && data.length > 0) {
+        setTestimonials(data);
+      }
+    });
+  }, []);
 
   const nextTestimonial = () => {
     setCurrentIndex((prev) => (prev + 1) % testimonials.length);
@@ -42,7 +55,6 @@ const TestimonialsSection = () => {
   return (
     <section className="py-24 section-warm">
       <div className="container mx-auto px-4">
-        {/* Section Header */}
         <div className="text-center mb-14">
           <h2 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-4">
             Voices of Change
@@ -52,25 +64,29 @@ const TestimonialsSection = () => {
           </p>
         </div>
 
-        {/* Testimonial */}
         <div className="max-w-3xl mx-auto">
           <div className="text-center">
-            {/* Quote */}
+            {testimonials[currentIndex]?.photo && (
+              <div className="mb-6">
+                <img
+                  src={testimonials[currentIndex].photo}
+                  alt={testimonials[currentIndex].name}
+                  className="w-16 h-16 rounded-full object-cover mx-auto"
+                />
+              </div>
+            )}
             <blockquote className="font-display text-xl md:text-2xl text-foreground italic mb-8 leading-relaxed">
-              "{testimonials[currentIndex].quote}"
+              "{testimonials[currentIndex]?.quote}"
             </blockquote>
-            
-            {/* Author */}
             <div className="mb-10">
               <p className="font-semibold text-foreground text-lg">
-                {testimonials[currentIndex].name}
+                {testimonials[currentIndex]?.name}
               </p>
               <p className="text-muted-foreground text-sm">
-                {testimonials[currentIndex].role}
+                {testimonials[currentIndex]?.role}
               </p>
             </div>
 
-            {/* Navigation */}
             <div className="flex justify-center items-center gap-6">
               <button
                 onClick={prevTestimonial}
@@ -79,22 +95,20 @@ const TestimonialsSection = () => {
               >
                 <ChevronLeft className="w-5 h-5" />
               </button>
-              
               <div className="flex items-center gap-2">
                 {testimonials.map((_, index) => (
                   <button
                     key={index}
                     onClick={() => setCurrentIndex(index)}
                     className={`w-2 h-2 rounded-full transition-all ${
-                      index === currentIndex 
-                        ? "bg-primary w-6" 
+                      index === currentIndex
+                        ? "bg-primary w-6"
                         : "bg-border hover:bg-muted-foreground"
                     }`}
                     aria-label={`Go to testimonial ${index + 1}`}
                   />
                 ))}
               </div>
-              
               <button
                 onClick={nextTestimonial}
                 className="w-10 h-10 rounded-full flex items-center justify-center text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"

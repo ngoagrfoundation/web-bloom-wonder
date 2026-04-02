@@ -45,6 +45,9 @@ const GalleryManager = lazy(() => import("./pages/admin/GalleryManager"));
 const EventsManager = lazy(() => import("./pages/admin/EventsManager"));
 const NewsManager = lazy(() => import("./pages/admin/NewsManager"));
 const DatabaseBrowser = lazy(() => import("./pages/admin/DatabaseBrowser"));
+const ReelsManager = lazy(() => import("./pages/admin/ReelsManager"));
+const TestimonialsManager = lazy(() => import("./pages/admin/TestimonialsManager"));
+const SiteSettingsPage = lazy(() => import("./pages/admin/SiteSettings"));
 const queryClient = new QueryClient();
 
 const AdminFallback = () => (
@@ -100,6 +103,9 @@ const App = () => (
               <Route path="/admin/events" element={<Suspense fallback={<AdminFallback />}><EventsManager /></Suspense>} />
               <Route path="/admin/news" element={<Suspense fallback={<AdminFallback />}><NewsManager /></Suspense>} />
               <Route path="/admin/database" element={<Suspense fallback={<AdminFallback />}><DatabaseBrowser /></Suspense>} />
+              <Route path="/admin/reels" element={<Suspense fallback={<AdminFallback />}><ReelsManager /></Suspense>} />
+              <Route path="/admin/testimonials" element={<Suspense fallback={<AdminFallback />}><TestimonialsManager /></Suspense>} />
+              <Route path="/admin/settings" element={<Suspense fallback={<AdminFallback />}><SiteSettingsPage /></Suspense>} />
             </Route>
             
             <Route path="*" element={<NotFound />} />

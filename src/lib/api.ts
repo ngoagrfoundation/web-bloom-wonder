@@ -127,3 +127,45 @@ export const fetchEvents = async () => {
 export const submitForm = async (formType: string, data: Record<string, unknown>): Promise<boolean> => {
   return submitFormToAPI(formType, data);
 };
+
+/**
+ * Fetch public reels (no auth required)
+ */
+export const fetchPublicReels = async () => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/public-reels.php`);
+    if (!response.ok) throw new Error('API error');
+    const result = await response.json();
+    return result.data || [];
+  } catch {
+    return null;
+  }
+};
+
+/**
+ * Fetch public testimonials (no auth required)
+ */
+export const fetchPublicTestimonials = async () => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/public-testimonials.php`);
+    if (!response.ok) throw new Error('API error');
+    const result = await response.json();
+    return result.data || [];
+  } catch {
+    return null;
+  }
+};
+
+/**
+ * Fetch public site settings (no auth required)
+ */
+export const fetchPublicSettings = async () => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/public-settings.php`);
+    if (!response.ok) throw new Error('API error');
+    const result = await response.json();
+    return result.data || {};
+  } catch {
+    return null;
+  }
+};
