@@ -24,6 +24,7 @@ interface NewsArticle {
   category: string;
   read_time: number;
   is_published: number;
+  published_at?: string;
 }
 
 const emptyArticle: NewsArticle = {
