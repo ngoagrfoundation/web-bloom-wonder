@@ -2,8 +2,11 @@ import { useState, useCallback } from "react";
 import { useFormSecurity } from "./useFormSecurity";
 import { toast } from "@/hooks/use-toast";
 
+import { submitFormToAPI } from "@/lib/api";
+
 interface UseGoogleSheetFormOptions {
   scriptUrl: string;
+  formType?: string;
   onSuccess?: () => void;
   onError?: (error: Error) => void;
 }
