@@ -54,10 +54,11 @@ export const useAdminAuth = () => {
         error: null,
       });
       return true;
-    } catch {
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Login failed. Check your connection.';
       setState(prev => ({
         ...prev,
-        error: 'Login failed. Make sure you are on the live site.',
+        error: message,
         isLoading: false,
       }));
       return false;

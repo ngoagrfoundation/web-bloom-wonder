@@ -1,5 +1,5 @@
 <?php
-// Database Configuration - UPDATE THESE VALUES ON CPANEL
+// Database Configuration
 define('DB_HOST', 'localhost');
 define('DB_NAME', 'agrfound_maindb');
 define('DB_USER', 'agrfound_dbuser');
@@ -29,25 +29,36 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit();
 }
 
-// PDO Connection
+// PDO Connection - tries localhost first, then 127.0.0.1
 function getDB() {
-    try {
-        $pdo = new PDO(
-            "mysql:host=" . DB_HOST . ";dbname=" . DB_NAME . ";charset=utf8mb4",
-            DB_USER,
-            DB_PASS,
-            [
-                PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-                PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-                PDO::ATTR_EMULATE_PREPARES => false,
-            ]
-        );
-        return $pdo;
-    } catch (PDOException $e) {
-        http_response_code(500);
-        echo json_encode(['error' => 'Database connection failed']);
-        exit();
+    $hosts = [DB_HOST, '127.0.0.1'];
+    $lastError = '';
+    
+    foreach ($hosts as $host) {
+        try {
+            $pdo = new PDO(
+                "mysql:host=" . $host . ";dbname=" . DB_NAME . ";charset=utf8mb4",
+                DB_USER,
+                DB_PASS,
+                [
+                    PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+                    PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+                    PDO::ATTR_EMULATE_PREPARES => false,
+                ]
+            );
+            return $pdo;
+        } catch (PDOException $e) {
+            $lastError = $e->getMessage();
+        }
     }
+    
+    http_response_code(500);
+    echo json_encode([
+        'error' => 'Database connection failed',
+        'debug' => $lastError,
+        'hint' => 'Check: 1) User agrfound_dbuser is added to agrfound_maindb with ALL PRIVILEGES in cPanel > MySQL Databases. 2) Password is correct. 3) Database exists.'
+    ]);
+    exit();
 }
 
 // Auth helper

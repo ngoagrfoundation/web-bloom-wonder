@@ -1,0 +1,13 @@
+RewriteEngine On
+
+# Allow API and uploads to pass through
+RewriteRule ^api/ - [L]
+RewriteRule ^uploads/ - [L]
+
+# If file or directory exists, serve it directly
+RewriteCond %{REQUEST_FILENAME} -f [OR]
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^ - [L]
+
+# Route everything else to index.html for React Router
+RewriteRule . /index.html [L]
