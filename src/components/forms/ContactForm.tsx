@@ -9,13 +9,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwMjOuB2s6bd_bTuxT98-U5ioSbgmmyqv_5_DiH_WALJI4-ZdMVRAyggNNRTq84Ci1EqQ/exec";
-
 const ContactForm = () => {
   const [showSuccess, setShowSuccess] = useState(false);
   
-  const { submitForm, isSubmitting, security } = useGoogleSheetForm({
-    scriptUrl: SCRIPT_URL,
+  const { submitForm, isSubmitting, security } = useFormSubmit({
     formType: "contact",
     onSuccess: () => {
       setShowSuccess(true);

@@ -3,7 +3,7 @@ import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Handshake, Loader2, CheckCircle, Shield, Clock } from "lucide-react";
 import { partnerFormSchema, PartnerFormData } from "@/lib/validation";
-import { useGoogleSheetForm } from "@/hooks/useGoogleSheetForm";
+import { useFormSubmit } from "@/hooks/useFormSubmit";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";

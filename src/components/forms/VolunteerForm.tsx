@@ -37,8 +37,7 @@ interface VolunteerFormProps {
 const VolunteerForm = ({ onSuccess: onSuccessCallback }: VolunteerFormProps) => {
   const [showSuccess, setShowSuccess] = useState(false);
 
-  const { submitForm, isSubmitting, security } = useGoogleSheetForm({
-    scriptUrl: SCRIPT_URL,
+  const { submitForm, isSubmitting, security } = useFormSubmit({
     formType: "volunteer",
     onSuccess: () => {
       setShowSuccess(true);
