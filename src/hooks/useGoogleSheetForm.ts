@@ -24,7 +24,7 @@ interface UseGoogleSheetFormReturn {
  * Custom hook for submitting forms to Google Sheets via Apps Script
  */
 export const useGoogleSheetForm = (options: UseGoogleSheetFormOptions): UseGoogleSheetFormReturn => {
-  const { scriptUrl, onSuccess, onError } = options;
+  const { scriptUrl, formType, onSuccess, onError } = options;
   
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
