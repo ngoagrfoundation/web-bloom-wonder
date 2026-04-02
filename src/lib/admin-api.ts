@@ -72,8 +72,8 @@ export const getSubmissions = async (page = 1, limit = 20, formType = '') => {
   return safeJson(res);
 };
 
-export const deleteSubmission = async (id: number) => {
-  const res = await adminFetch(`${API_BASE_URL}/admin/submissions.php?id=${id}`, { method: 'DELETE' });
+export const deleteSubmission = async (id: number, formType: string) => {
+  const res = await adminFetch(`${API_BASE_URL}/admin/submissions.php?id=${id}&form_type=${formType}`, { method: 'DELETE' });
   return safeJson(res);
 };
 
