@@ -16,7 +16,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbze9LbMP1Ce3AirPUbDPLp1ZGusY6SgmvZ57hcOOxYSAvKabL2EULALHuK_peKL7k8r/exec";
+
 
 const gradeLevels = [
   { id: "primary", label: "Primary (1-5)" },
