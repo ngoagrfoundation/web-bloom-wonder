@@ -22,6 +22,7 @@ const navItems = [
   { title: "Donations", path: "/admin/donations", icon: CreditCard },
   { title: "Gallery", path: "/admin/gallery", icon: Image },
   { title: "Events", path: "/admin/events", icon: CalendarDays },
+  { title: "News", path: "/admin/news", icon: Newspaper },
 ];
 
 const AdminLayout = () => {
