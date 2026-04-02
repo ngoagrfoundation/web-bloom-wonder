@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Trash2, ChevronLeft, ChevronRight, Download, Eye, Search } from "lucide-react";
+import { Trash2, ChevronLeft, ChevronRight, Download, Eye, Search, Inbox } from "lucide-react";
 import { toast } from "sonner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
@@ -46,11 +46,7 @@ const summaryColumns: Record<string, string[]> = {
   event_registration: ["id", "event_title", "full_name", "email", "phone", "participants", "submitted_at"],
 };
 
-interface Submission {
-  id: number;
-  form_type: string;
-  [key: string]: unknown;
-}
+interface Submission { id: number; form_type: string; [key: string]: unknown; }
 
 const Submissions = () => {
   const [submissions, setSubmissions] = useState<Submission[]>([]);
@@ -71,9 +67,7 @@ const Submissions = () => {
       setSubmissions(result.data || []);
       setTotalPages(result.pages || 1);
       setTotal(result.total || 0);
-    } catch {
-      toast.error("Failed to load submissions");
-    }
+    } catch { toast.error("Failed to load submissions"); }
     setLoading(false);
   };
 
@@ -83,11 +77,8 @@ const Submissions = () => {
 
   const handleDelete = async (id: number, type: string) => {
     if (!confirm("Delete this submission?")) return;
-    try {
-      await deleteSubmission(id, type);
-      toast.success("Submission deleted");
-      fetchData();
-    } catch { toast.error("Failed to delete"); }
+    try { await deleteSubmission(id, type); toast.success("Submission deleted"); fetchData(); }
+    catch { toast.error("Failed to delete"); }
   };
 
   const getVisibleColumns = (): string[] => {
@@ -110,8 +101,7 @@ const Submissions = () => {
     const csv = [headers.map(h => columnLabels[h] || h).join(","), ...rows.map(r => r.map(c => `"${c.replace(/"/g, '""')}"`).join(","))].join("\n");
     const blob = new Blob([csv], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url; a.download = `submissions_${formType || "all"}_${new Date().toISOString().slice(0, 10)}.csv`;
+    const a = document.createElement("a"); a.href = url; a.download = `submissions_${formType || "all"}_${new Date().toISOString().slice(0, 10)}.csv`;
     a.click(); URL.revokeObjectURL(url);
   };
 
@@ -120,61 +110,63 @@ const Submissions = () => {
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-col gap-3">
-        <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
-          <div className="flex items-center gap-3 flex-wrap">
+      {/* Filters */}
+      <Card className="rounded-xl shadow-sm">
+        <CardContent className="py-3">
+          <div className="flex flex-wrap gap-3 items-center">
             <Select value={formType || "all"} onValueChange={(v) => { setFormType(v === "all" ? "" : v); setPage(1); }}>
-              <SelectTrigger className="w-[200px]">
-                <SelectValue placeholder="Filter by type" />
-              </SelectTrigger>
+              <SelectTrigger className="w-[180px] h-9"><SelectValue placeholder="Filter by type" /></SelectTrigger>
               <SelectContent>
                 {formTypes.map(t => <SelectItem key={t.value} value={t.value || "all"}>{t.label}</SelectItem>)}
               </SelectContent>
             </Select>
-            <span className="text-sm text-muted-foreground">{total} total</span>
+            <div className="flex gap-1">
+              <Input placeholder="Search name/email..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} onKeyDown={(e) => e.key === "Enter" && handleSearch()} className="w-52 h-9" />
+              <Button variant="outline" size="sm" className="h-9" onClick={handleSearch}><Search className="h-4 w-4" /></Button>
+            </div>
+            <div className="flex gap-1 items-center">
+              <Input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} className="h-9 w-36" />
+              <span className="text-xs text-muted-foreground">to</span>
+              <Input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} className="h-9 w-36" />
+              {(dateFrom || dateTo) && (
+                <Button variant="ghost" size="sm" onClick={() => { setDateFrom(""); setDateTo(""); setPage(1); setTimeout(fetchData, 0); }} className="text-xs h-9">Clear</Button>
+              )}
+            </div>
+            <div className="ml-auto flex items-center gap-2">
+              <span className="text-sm text-muted-foreground">{total} total</span>
+              <Button variant="outline" size="sm" className="h-9" onClick={exportCSV} disabled={!submissions.length}>
+                <Download className="h-4 w-4 mr-1" /> CSV
+              </Button>
+            </div>
           </div>
-          <Button variant="outline" size="sm" onClick={exportCSV} disabled={!submissions.length}>
-            <Download className="h-4 w-4 mr-2" /> Export CSV
-          </Button>
-        </div>
-        <div className="flex flex-wrap gap-2 items-end">
-          <div className="flex gap-1">
-            <Input placeholder="Search by name/email..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} onKeyDown={(e) => e.key === "Enter" && handleSearch()} className="w-52 h-8" />
-            <Button variant="outline" size="sm" onClick={handleSearch}><Search className="h-4 w-4" /></Button>
-          </div>
-          <div className="flex gap-1 items-center">
-            <Input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} className="h-8 w-36" />
-            <span className="text-xs text-muted-foreground">to</span>
-            <Input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} className="h-8 w-36" />
-            {(dateFrom || dateTo) && (
-              <Button variant="ghost" size="sm" onClick={() => { setDateFrom(""); setDateTo(""); setPage(1); setTimeout(fetchData, 0); }} className="text-xs h-8">Clear</Button>
-            )}
-          </div>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
 
-      <Card>
+      <Card className="rounded-xl shadow-sm overflow-hidden">
         <CardContent className="p-0">
           {loading ? (
-            <div className="p-8 text-center text-muted-foreground">Loading...</div>
+            <div className="p-8 text-center text-muted-foreground text-sm">Loading...</div>
           ) : submissions.length === 0 ? (
-            <div className="p-8 text-center text-muted-foreground">No submissions found</div>
+            <div className="flex flex-col items-center justify-center py-16 text-muted-foreground gap-2">
+              <Inbox className="h-8 w-8 text-muted-foreground/40" />
+              <p className="text-sm">No submissions found</p>
+            </div>
           ) : (
             <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
-                  <TableRow>
-                    {visibleCols.map(col => <TableHead key={col}>{columnLabels[col] || col}</TableHead>)}
-                    <TableHead className="w-[90px]">Actions</TableHead>
+                  <TableRow className="bg-muted/50">
+                    {visibleCols.map(col => <TableHead key={col} className="text-xs font-semibold h-9">{columnLabels[col] || col}</TableHead>)}
+                    <TableHead className="w-[90px] h-9">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {submissions.map((s) => (
-                    <TableRow key={`${s.form_type}-${s.id}`}>
+                    <TableRow key={`${s.form_type}-${s.id}`} className="hover:bg-muted/30">
                       {visibleCols.map(col => (
                         <TableCell key={col} className={col === "id" ? "font-mono text-xs" : "text-sm"}>
                           {col === "form_type" ? (
-                            <span className="inline-block px-2 py-1 rounded-full text-xs bg-primary/10 text-primary">
+                            <span className="inline-block px-2 py-0.5 rounded-full text-xs bg-primary/10 text-primary">
                               {formTypes.find(f => f.value === String(s.form_type))?.label || String(s.form_type)}
                             </span>
                           ) : (
@@ -183,9 +175,9 @@ const Submissions = () => {
                         </TableCell>
                       ))}
                       <TableCell>
-                        <div className="flex gap-1">
-                          <Button variant="ghost" size="icon" onClick={() => setDetailRow(s)} title="View details"><Eye className="h-4 w-4" /></Button>
-                          <Button variant="ghost" size="icon" onClick={() => handleDelete(s.id, String(s.form_type))} className="text-destructive hover:text-destructive" title="Delete"><Trash2 className="h-4 w-4" /></Button>
+                        <div className="flex gap-0.5">
+                          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setDetailRow(s)} title="View"><Eye className="h-4 w-4" /></Button>
+                          <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive" onClick={() => handleDelete(s.id, String(s.form_type))} title="Delete"><Trash2 className="h-4 w-4" /></Button>
                         </div>
                       </TableCell>
                     </TableRow>
@@ -200,7 +192,7 @@ const Submissions = () => {
       {totalPages > 1 && (
         <div className="flex items-center justify-center gap-2">
           <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => setPage(p => p - 1)}><ChevronLeft className="h-4 w-4" /></Button>
-          <span className="text-sm">Page {page} of {totalPages}</span>
+          <span className="text-sm text-muted-foreground">Page {page} of {totalPages}</span>
           <Button variant="outline" size="sm" disabled={page >= totalPages} onClick={() => setPage(p => p + 1)}><ChevronRight className="h-4 w-4" /></Button>
         </div>
       )}

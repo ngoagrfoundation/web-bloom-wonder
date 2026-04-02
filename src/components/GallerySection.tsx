@@ -1,44 +1,32 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, ImageIcon } from "lucide-react";
 import { motion } from "framer-motion";
 import GalleryLightbox, { GalleryImage } from "./GalleryLightbox";
 import AnimatedSection, { StaggerContainer, StaggerItem } from "./AnimatedSection";
 import { fetchPublicGallery } from "@/lib/api";
-import biodegradableBag from "@/assets/gallery/biodegradable-bag.jpg";
-import treePlanting from "@/assets/generated/sustainability/tree-planting.jpg";
-import classroomChildren from "@/assets/generated/education/classroom-children.jpg";
-import healthCamp from "@/assets/generated/healthcare/health-camp.jpg";
-import awarenessProgram from "@/assets/generated/community/awareness-program.jpg";
-import reliefDistribution from "@/assets/generated/community/relief-distribution.jpg";
-
-const staticImages: GalleryImage[] = [
-  { id: "1", src: biodegradableBag, alt: "Biodegradable bag", category: "sustainability", caption: "Handcrafted biodegradable bags as sustainable alternatives to plastic" },
-  { id: "2", src: treePlanting, alt: "Tree plantation drive", category: "sustainability", caption: "Community tree plantation drive to increase green cover" },
-  { id: "3", src: classroomChildren, alt: "Children in classroom", category: "education", caption: "Students engaged in interactive learning at our education center" },
-  { id: "4", src: healthCamp, alt: "Health camp", category: "healthcare", caption: "Free health check-up camp in rural community" },
-  { id: "5", src: awarenessProgram, alt: "Community gathering", category: "community", caption: "Community members participating in awareness program" },
-  { id: "6", src: reliefDistribution, alt: "Relief distribution", category: "community", caption: "Emergency relief distribution supporting families in need" },
-];
 
 const GallerySection = () => {
-  const [images, setImages] = useState<GalleryImage[]>(staticImages);
+  const [images, setImages] = useState<GalleryImage[]>([]);
+  const [loading, setLoading] = useState(true);
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   useEffect(() => {
-    fetchPublicGallery().then((data) => {
-      if (data && data.length > 0) {
-        const mapped = data.map((img: Record<string, unknown>, i: number) => ({
-          id: String(img.id || i),
-          src: String(img.src || ''),
-          alt: String(img.alt || ''),
-          category: String(img.category || 'general'),
-          caption: String(img.caption || ''),
-        }));
-        setImages(mapped);
-      }
-    });
+    fetchPublicGallery()
+      .then((data) => {
+        if (data && data.length > 0) {
+          const mapped = data.map((img: Record<string, unknown>, i: number) => ({
+            id: String(img.id || i),
+            src: String(img.src || ''),
+            alt: String(img.alt || ''),
+            category: String(img.category || 'general'),
+            caption: String(img.caption || ''),
+          }));
+          setImages(mapped);
+        }
+      })
+      .finally(() => setLoading(false));
   }, []);
 
   const openLightbox = (index: number) => {
@@ -55,19 +43,32 @@ const GallerySection = () => {
           <p className="text-muted-foreground max-w-xl mx-auto">Explore moments captured from our programs and community events.</p>
         </AnimatedSection>
 
-        <StaggerContainer className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-14">
-          {images.slice(0, 6).map((image, index) => (
-            <StaggerItem key={image.id}>
-              <motion.button onClick={() => openLightbox(index)} className="relative overflow-hidden rounded-xl group aspect-square w-full" whileHover={{ scale: 1.02 }} transition={{ duration: 0.2 }}>
-                <img src={image.src} alt={image.alt} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" loading="lazy" onError={(e) => { e.currentTarget.src = "/placeholder.svg"; }} />
-                <div className="absolute inset-0 bg-gradient-to-t from-foreground/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                <div className="absolute bottom-0 left-0 right-0 p-4 text-primary-foreground transform translate-y-full group-hover:translate-y-0 transition-transform duration-300">
-                  <p className="text-sm font-medium line-clamp-2">{image.caption}</p>
-                </div>
-              </motion.button>
-            </StaggerItem>
-          ))}
-        </StaggerContainer>
+        {loading ? (
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-14">
+            {[...Array(6)].map((_, i) => (
+              <div key={i} className="aspect-square rounded-xl bg-muted animate-pulse" />
+            ))}
+          </div>
+        ) : images.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-16 text-muted-foreground gap-3 mb-14">
+            <ImageIcon className="h-12 w-12 text-muted-foreground/40" />
+            <p className="text-sm">Gallery images coming soon</p>
+          </div>
+        ) : (
+          <StaggerContainer className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-14">
+            {images.slice(0, 6).map((image, index) => (
+              <StaggerItem key={image.id}>
+                <motion.button onClick={() => openLightbox(index)} className="relative overflow-hidden rounded-xl group aspect-square w-full" whileHover={{ scale: 1.02 }} transition={{ duration: 0.2 }}>
+                  <img src={image.src} alt={image.alt} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" loading="lazy" onError={(e) => { e.currentTarget.src = "/placeholder.svg"; }} />
+                  <div className="absolute inset-0 bg-gradient-to-t from-foreground/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                  <div className="absolute bottom-0 left-0 right-0 p-4 text-primary-foreground transform translate-y-full group-hover:translate-y-0 transition-transform duration-300">
+                    <p className="text-sm font-medium line-clamp-2">{image.caption}</p>
+                  </div>
+                </motion.button>
+              </StaggerItem>
+            ))}
+          </StaggerContainer>
+        )}
 
         <AnimatedSection className="text-center">
           <Link to="/gallery" className="inline-flex items-center gap-2 text-primary hover:text-primary/80 font-medium transition-colors group">

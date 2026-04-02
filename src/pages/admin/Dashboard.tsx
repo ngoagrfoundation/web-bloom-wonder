@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 import { Link } from "react-router-dom";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
@@ -91,28 +92,16 @@ const Dashboard = () => {
 
   const formTypeBadge = (type: string) => {
     const colors: Record<string, string> = {
-      contact: "bg-blue-100 text-blue-800",
-      volunteer: "bg-green-100 text-green-800",
-      partner: "bg-purple-100 text-purple-800",
-      adopt_student: "bg-amber-100 text-amber-800",
-      report_challenge: "bg-red-100 text-red-800",
-      event_registration: "bg-rose-100 text-rose-800",
-      sanskrit_registration: "bg-indigo-100 text-indigo-800",
-      dental_registration: "bg-teal-100 text-teal-800",
+      contact: "bg-blue-100 text-blue-800", volunteer: "bg-green-100 text-green-800",
+      partner: "bg-purple-100 text-purple-800", adopt_student: "bg-amber-100 text-amber-800",
+      report_challenge: "bg-red-100 text-red-800", event_registration: "bg-rose-100 text-rose-800",
+      sanskrit_registration: "bg-indigo-100 text-indigo-800", dental_registration: "bg-teal-100 text-teal-800",
     };
     return colors[type] || "bg-muted text-muted-foreground";
   };
 
-  const formatChartDate = (date: string) => {
-    const d = new Date(date);
-    return `${d.getDate()}/${d.getMonth() + 1}`;
-  };
-
-  const formatChartMonth = (month: string) => {
-    const [y, m] = month.split("-");
-    const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-    return `${months[parseInt(m) - 1]} ${y.slice(2)}`;
-  };
+  const formatChartDate = (date: string) => { const d = new Date(date); return `${d.getDate()}/${d.getMonth() + 1}`; };
+  const formatChartMonth = (month: string) => { const [y, m] = month.split("-"); const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"]; return `${months[parseInt(m)-1]} ${y.slice(2)}`; };
 
   return (
     <div className="space-y-6">
@@ -130,7 +119,7 @@ const Dashboard = () => {
       </div>
 
       {/* System Status */}
-      <Card className="border-green-200 bg-green-50/50">
+      <Card className="border-green-200 bg-green-50/50 rounded-xl shadow-sm">
         <CardContent className="py-3">
           <div className="flex items-center justify-between flex-wrap gap-2">
             <div className="flex items-center gap-3">
@@ -153,7 +142,7 @@ const Dashboard = () => {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {statCards.map((stat) => (
           <Link key={stat.title} to={stat.path}>
-            <Card className="relative overflow-hidden hover:shadow-lg transition-all duration-200 cursor-pointer group hover:-translate-y-0.5">
+            <Card className="relative overflow-hidden rounded-xl shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer group hover:-translate-y-0.5">
               <CardContent className="p-5">
                 <div className="flex items-center justify-between mb-3">
                   <div className={`inline-flex p-2.5 rounded-xl ${stat.bg} group-hover:scale-110 transition-transform`}>
@@ -161,7 +150,11 @@ const Dashboard = () => {
                   </div>
                   <TrendingUp className="h-4 w-4 text-muted-foreground/40" />
                 </div>
-                <div className="text-2xl font-bold">{loading ? "—" : stat.value}</div>
+                {loading ? (
+                  <Skeleton className="h-8 w-20 mb-1" />
+                ) : (
+                  <div className="text-2xl font-bold">{stat.value}</div>
+                )}
                 <p className="text-xs text-muted-foreground mt-1">{stat.title}</p>
               </CardContent>
             </Card>
@@ -171,40 +164,38 @@ const Dashboard = () => {
 
       {/* Analytics Charts */}
       <div className="grid lg:grid-cols-2 gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg flex items-center gap-2">
-              <TrendingUp className="h-5 w-5 text-blue-600" />
-              Submission Trends (30 Days)
+        <Card className="rounded-xl shadow-sm">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base flex items-center gap-2">
+              <TrendingUp className="h-4 w-4 text-blue-600" /> Submission Trends (30 Days)
             </CardTitle>
           </CardHeader>
           <CardContent>
             {submissionTrends.length > 0 ? (
-              <ResponsiveContainer width="100%" height={220}>
+              <ResponsiveContainer width="100%" height={200}>
                 <AreaChart data={submissionTrends}>
                   <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                   <XAxis dataKey="date" tickFormatter={formatChartDate} tick={{ fontSize: 11 }} interval={4} />
                   <YAxis tick={{ fontSize: 11 }} allowDecimals={false} />
                   <Tooltip labelFormatter={(v) => new Date(v).toLocaleDateString("en-IN")} />
-                  <Area type="monotone" dataKey="count" stroke="hsl(var(--primary))" fill="hsl(var(--primary) / 0.2)" strokeWidth={2} name="Submissions" />
+                  <Area type="monotone" dataKey="count" stroke="hsl(var(--primary))" fill="hsl(var(--primary) / 0.15)" strokeWidth={2} name="Submissions" />
                 </AreaChart>
               </ResponsiveContainer>
             ) : (
-              <p className="text-sm text-muted-foreground py-8 text-center">No data yet</p>
+              <div className="flex items-center justify-center py-12 text-sm text-muted-foreground">No data yet</div>
             )}
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg flex items-center gap-2">
-              <IndianRupee className="h-5 w-5 text-green-600" />
-              Donation Growth (12 Months)
+        <Card className="rounded-xl shadow-sm">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base flex items-center gap-2">
+              <IndianRupee className="h-4 w-4 text-green-600" /> Donation Growth (12 Months)
             </CardTitle>
           </CardHeader>
           <CardContent>
             {donationTrends.length > 0 ? (
-              <ResponsiveContainer width="100%" height={220}>
+              <ResponsiveContainer width="100%" height={200}>
                 <BarChart data={donationTrends}>
                   <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                   <XAxis dataKey="month" tickFormatter={formatChartMonth} tick={{ fontSize: 11 }} />
@@ -214,7 +205,7 @@ const Dashboard = () => {
                 </BarChart>
               </ResponsiveContainer>
             ) : (
-              <p className="text-sm text-muted-foreground py-8 text-center">No data yet</p>
+              <div className="flex items-center justify-center py-12 text-sm text-muted-foreground">No data yet</div>
             )}
           </CardContent>
         </Card>
@@ -222,20 +213,21 @@ const Dashboard = () => {
 
       <div className="grid lg:grid-cols-3 gap-6">
         {/* Recent Activity */}
-        <Card className="lg:col-span-2">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-lg">
-              <Clock className="h-5 w-5 text-muted-foreground" />
-              Recent Submissions
+        <Card className="lg:col-span-2 rounded-xl shadow-sm">
+          <CardHeader className="pb-2">
+            <CardTitle className="flex items-center gap-2 text-base">
+              <Clock className="h-4 w-4 text-muted-foreground" /> Recent Submissions
             </CardTitle>
           </CardHeader>
           <CardContent>
-            {recentActivity.length > 0 ? (
-              <div className="space-y-1">
+            {loading ? (
+              <div className="space-y-3">{[...Array(3)].map((_, i) => <Skeleton key={i} className="h-12 w-full" />)}</div>
+            ) : recentActivity.length > 0 ? (
+              <div className="space-y-0.5">
                 {recentActivity.map((item, i) => (
-                  <div key={i} className="flex items-center justify-between py-3 px-3 rounded-lg hover:bg-muted/50 transition-colors">
+                  <div key={i} className="flex items-center justify-between py-2.5 px-3 rounded-lg hover:bg-muted/50 transition-colors">
                     <div className="flex items-center gap-3">
-                      <div className="w-2 h-2 rounded-full bg-primary" />
+                      <div className="w-2 h-2 rounded-full bg-primary flex-shrink-0" />
                       <Badge variant="secondary" className={`${formTypeBadge(item.form_type as string)} text-xs`}>
                         {(item.form_type as string || "unknown").replace(/_/g, " ")}
                       </Badge>
@@ -259,14 +251,14 @@ const Dashboard = () => {
         </Card>
 
         {/* Quick Actions */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">Quick Actions</CardTitle>
+        <Card className="rounded-xl shadow-sm">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base">Quick Actions</CardTitle>
           </CardHeader>
           <CardContent className="grid grid-cols-2 gap-2">
             {quickActions.map((action) => (
               <Link key={action.title} to={action.path}>
-                <div className="flex flex-col items-center gap-2 p-4 rounded-xl border hover:bg-muted/50 hover:shadow-sm transition-all cursor-pointer text-center">
+                <div className="flex flex-col items-center gap-2 p-3 rounded-xl border hover:bg-muted/50 hover:shadow-sm transition-all cursor-pointer text-center">
                   <action.icon className={`h-5 w-5 ${action.color}`} />
                   <span className="text-xs font-medium">{action.title}</span>
                 </div>
@@ -277,12 +269,10 @@ const Dashboard = () => {
       </div>
 
       {/* Security */}
-      <Card>
-        <CardHeader>
+      <Card className="rounded-xl shadow-sm">
+        <CardHeader className="pb-2">
           <div className="flex items-center justify-between">
-            <CardTitle className="flex items-center gap-2">
-              <KeyRound className="h-5 w-5" /> Account Security
-            </CardTitle>
+            <CardTitle className="flex items-center gap-2 text-base"><KeyRound className="h-4 w-4" /> Account Security</CardTitle>
             <Button variant="outline" size="sm" onClick={() => setShowPasswordForm(!showPasswordForm)}>
               {showPasswordForm ? "Cancel" : "Change Password"}
             </Button>

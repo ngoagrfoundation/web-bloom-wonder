@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef } from "react";
+import { fetchPublicSettings } from "@/lib/api";
 
-const stats = [
+const defaultStats = [
   { value: 1500, suffix: "+", label: "Beneficiaries Reached" },
   { value: 30, suffix: "+", label: "Programs Running" },
   { value: 150, suffix: "+", label: "Volunteers Active" },
@@ -51,7 +52,23 @@ const AnimatedCounter = ({
 
 const ImpactSection = () => {
   const [isVisible, setIsVisible] = useState(false);
+  const [stats, setStats] = useState(defaultStats);
   const sectionRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    fetchPublicSettings().then((settings) => {
+      if (!settings) return;
+      const newStats = defaultStats.map((stat, i) => {
+        const idx = i + 1;
+        return {
+          value: parseInt(settings[`impact_stat_${idx}_value`]) || stat.value,
+          suffix: settings[`impact_stat_${idx}_suffix`] ?? stat.suffix,
+          label: settings[`impact_stat_${idx}_label`] || stat.label,
+        };
+      });
+      setStats(newStats);
+    });
+  }, []);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -74,7 +91,6 @@ const ImpactSection = () => {
   return (
     <section id="impact" className="py-24 bg-background" ref={sectionRef}>
       <div className="container mx-auto px-4">
-        {/* Section Header */}
         <div className="text-center mb-16">
           <h2 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-4">
             Our Impact in Numbers
@@ -85,14 +101,10 @@ const ImpactSection = () => {
           </p>
         </div>
 
-        {/* Stats Grid - Cleaner with subtle dividers */}
         <div className="max-w-4xl mx-auto">
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-0 lg:divide-x lg:divide-border">
             {stats.map((stat) => (
-              <div
-                key={stat.label}
-                className="text-center px-4"
-              >
+              <div key={stat.label} className="text-center px-4">
                 <div className="font-display text-4xl md:text-5xl font-bold text-primary mb-2">
                   <AnimatedCounter
                     value={stat.value}
@@ -100,9 +112,7 @@ const ImpactSection = () => {
                     isVisible={isVisible}
                   />
                 </div>
-                <p className="text-muted-foreground text-sm">
-                  {stat.label}
-                </p>
+                <p className="text-muted-foreground text-sm">{stat.label}</p>
               </div>
             ))}
           </div>

@@ -1,14 +1,12 @@
 import { useEffect, useState } from "react";
 import { getTableList, getTableData } from "@/lib/admin-api";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Database, Search, Download, ChevronLeft, ChevronRight, RefreshCw } from "lucide-react";
+import { Database, Search, Download, ChevronLeft, ChevronRight, RefreshCw, TableIcon, Inbox } from "lucide-react";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 
 interface TableInfo {
   name: string;
@@ -22,6 +20,9 @@ const tableGroups: Record<string, string[]> = {
   "System": ["admin_users", "donations", "site_settings"],
 };
 
+const formatTableName = (name: string) =>
+  name.replace(/_/g, " ").replace(/\b\w/g, l => l.toUpperCase());
+
 const DatabaseBrowser = () => {
   const [tables, setTables] = useState<TableInfo[]>([]);
   const [selectedTable, setSelectedTable] = useState("");
@@ -33,8 +34,6 @@ const DatabaseBrowser = () => {
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
   const [dataLoading, setDataLoading] = useState(false);
-  const [dateFrom, setDateFrom] = useState("");
-  const [dateTo, setDateTo] = useState("");
 
   const fetchTables = async () => {
     setLoading(true);
@@ -63,21 +62,12 @@ const DatabaseBrowser = () => {
     if (selectedTable) {
       setPage(1);
       setSearch("");
-      setDateFrom("");
-      setDateTo("");
       fetchData(selectedTable, 1, "");
     }
   }, [selectedTable]);
 
-  const handleSearch = () => {
-    setPage(1);
-    fetchData(selectedTable, 1, search);
-  };
-
-  const handlePageChange = (newPage: number) => {
-    setPage(newPage);
-    fetchData(selectedTable, newPage, search);
-  };
+  const handleSearch = () => { setPage(1); fetchData(selectedTable, 1, search); };
+  const handlePageChange = (newPage: number) => { setPage(newPage); fetchData(selectedTable, newPage, search); };
 
   const exportCSV = () => {
     if (!data.length || !columns.length) return;
@@ -85,166 +75,182 @@ const DatabaseBrowser = () => {
       const val = row[col];
       return typeof val === "object" ? JSON.stringify(val) : String(val ?? "");
     }));
-    const csv = [
-      columns.join(","),
-      ...rows.map(r => r.map(c => `"${c.replace(/"/g, '""')}"`).join(","))
-    ].join("\n");
+    const csv = [columns.join(","), ...rows.map(r => r.map(c => `"${c.replace(/"/g, '""')}"`).join(","))].join("\n");
     const blob = new Blob([csv], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
-    a.href = url;
-    a.download = `${selectedTable}_${new Date().toISOString().slice(0, 10)}.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
+    a.href = url; a.download = `${selectedTable}_${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click(); URL.revokeObjectURL(url);
   };
-
-  const formatTableName = (name: string) =>
-    name.replace(/_/g, " ").replace(/\b\w/g, l => l.toUpperCase());
 
   const getTableInfo = (name: string) => tables.find(t => t.name === name);
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <p className="text-sm text-muted-foreground">
-          {tables.length} tables • {tables.reduce((s, t) => s + t.rows, 0)} total rows
-        </p>
-        <Button variant="outline" size="sm" onClick={fetchTables}>
-          <RefreshCw className="h-4 w-4 mr-2" /> Refresh
-        </Button>
-      </div>
+    <div className="flex h-[calc(100vh-8rem)] gap-0 -m-4 lg:-m-6">
+      {/* Left sidebar - table list */}
+      <div className="w-64 flex-shrink-0 border-r bg-muted/30 overflow-y-auto">
+        <div className="p-3 border-b bg-background/80 backdrop-blur-sm sticky top-0 z-10">
+          <div className="flex items-center justify-between mb-1">
+            <h3 className="font-semibold text-sm flex items-center gap-1.5">
+              <Database className="h-4 w-4 text-primary" /> Tables
+            </h3>
+            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={fetchTables}>
+              <RefreshCw className="h-3.5 w-3.5" />
+            </Button>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            {tables.length} tables • {tables.reduce((s, t) => s + t.rows, 0)} rows
+          </p>
+        </div>
 
-      {/* Table selector dropdown */}
-      <Card>
-        <CardContent className="py-4">
-          <div className="flex flex-col sm:flex-row gap-3">
-            <div className="flex-1">
-              <Label className="text-xs text-muted-foreground mb-1 block">Select Table</Label>
-              <Select value={selectedTable} onValueChange={setSelectedTable}>
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder={loading ? "Loading tables..." : "Choose a table..."} />
-                </SelectTrigger>
-                <SelectContent>
-                  {Object.entries(tableGroups).map(([group, tableNames]) => {
-                    const availableTables = tableNames.filter(n => tables.some(t => t.name === n && !t.error));
-                    if (!availableTables.length) return null;
+        {loading ? (
+          <div className="p-4 text-center text-sm text-muted-foreground">Loading...</div>
+        ) : (
+          <div className="py-2">
+            {Object.entries(tableGroups).map(([group, tableNames]) => {
+              const available = tableNames.filter(n => tables.some(t => t.name === n && !t.error));
+              if (!available.length) return null;
+              return (
+                <div key={group} className="mb-1">
+                  <div className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-muted-foreground/70">
+                    {group}
+                  </div>
+                  {available.map(name => {
+                    const info = getTableInfo(name);
+                    const active = selectedTable === name;
                     return (
-                      <SelectGroup key={group}>
-                        <SelectLabel className="text-xs font-semibold uppercase text-muted-foreground">{group}</SelectLabel>
-                        {availableTables.map(name => {
-                          const info = getTableInfo(name);
-                          return (
-                            <SelectItem key={name} value={name}>
-                              <span className="flex items-center gap-2">
-                                <Database className="h-3 w-3 text-muted-foreground" />
-                                {formatTableName(name)}
-                                <Badge variant="secondary" className="text-xs ml-auto">{info?.rows ?? 0}</Badge>
-                              </span>
-                            </SelectItem>
-                          );
-                        })}
-                      </SelectGroup>
+                      <button
+                        key={name}
+                        onClick={() => setSelectedTable(name)}
+                        className={cn(
+                          "w-full flex items-center justify-between px-3 py-2 text-left text-sm transition-colors",
+                          active
+                            ? "bg-primary text-primary-foreground"
+                            : "hover:bg-muted text-foreground"
+                        )}
+                      >
+                        <span className="flex items-center gap-2 truncate">
+                          <TableIcon className="h-3.5 w-3.5 flex-shrink-0" />
+                          <span className="truncate">{formatTableName(name)}</span>
+                        </span>
+                        <Badge
+                          variant={active ? "outline" : "secondary"}
+                          className={cn("text-[10px] h-5 min-w-[24px] justify-center", active && "border-primary-foreground/30 text-primary-foreground")}
+                        >
+                          {info?.rows ?? 0}
+                        </Badge>
+                      </button>
                     );
                   })}
-                  {/* Ungrouped tables */}
-                  {tables.filter(t => !Object.values(tableGroups).flat().includes(t.name) && !t.error).map(t => (
-                    <SelectItem key={t.name} value={t.name}>
-                      <span className="flex items-center gap-2">
-                        <Database className="h-3 w-3 text-muted-foreground" />
-                        {formatTableName(t.name)}
-                        <Badge variant="secondary" className="text-xs ml-auto">{t.rows}</Badge>
-                      </span>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+                </div>
+              );
+            })}
+            {/* Ungrouped */}
+            {tables.filter(t => !Object.values(tableGroups).flat().includes(t.name) && !t.error).map(t => (
+              <button
+                key={t.name}
+                onClick={() => setSelectedTable(t.name)}
+                className={cn(
+                  "w-full flex items-center justify-between px-3 py-2 text-left text-sm transition-colors",
+                  selectedTable === t.name ? "bg-primary text-primary-foreground" : "hover:bg-muted"
+                )}
+              >
+                <span className="flex items-center gap-2 truncate">
+                  <TableIcon className="h-3.5 w-3.5" />
+                  <span className="truncate">{formatTableName(t.name)}</span>
+                </span>
+                <Badge variant="secondary" className="text-[10px] h-5">{t.rows}</Badge>
+              </button>
+            ))}
           </div>
-        </CardContent>
-      </Card>
+        )}
+      </div>
 
-      {/* Data view */}
-      {selectedTable && (
-        <Card>
-          <CardHeader className="pb-3">
-            <div className="flex flex-col gap-3">
-              <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
-                <CardTitle className="text-lg flex items-center gap-2">
-                  <Database className="h-5 w-5" />
-                  {formatTableName(selectedTable)}
-                  <Badge variant="outline">{total} rows</Badge>
-                </CardTitle>
-                <Button variant="outline" size="sm" onClick={exportCSV} disabled={!data.length}>
-                  <Download className="h-4 w-4 mr-1" /> CSV
+      {/* Right content - data view */}
+      <div className="flex-1 overflow-y-auto min-w-0">
+        {!selectedTable ? (
+          <div className="flex flex-col items-center justify-center h-full text-muted-foreground gap-3">
+            <Inbox className="h-12 w-12 text-muted-foreground/40" />
+            <p className="text-sm">Select a table from the sidebar</p>
+          </div>
+        ) : (
+          <div className="flex flex-col h-full">
+            {/* Toolbar */}
+            <div className="sticky top-0 z-10 bg-background border-b p-3 flex flex-wrap items-center gap-2">
+              <h3 className="font-semibold text-sm flex items-center gap-2 mr-auto">
+                <Database className="h-4 w-4 text-primary" />
+                {formatTableName(selectedTable)}
+                <Badge variant="outline" className="text-xs">{total} rows</Badge>
+              </h3>
+              <div className="flex gap-1">
+                <Input
+                  placeholder="Search..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+                  className="w-40 h-8 text-sm"
+                />
+                <Button variant="outline" size="sm" className="h-8" onClick={handleSearch}>
+                  <Search className="h-3.5 w-3.5" />
                 </Button>
               </div>
-              <div className="flex flex-wrap gap-2 items-end">
-                <div className="flex gap-1">
-                  <Input
-                    placeholder="Search..."
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                    onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-                    className="w-48 h-8"
-                  />
-                  <Button variant="outline" size="sm" onClick={handleSearch}>
-                    <Search className="h-4 w-4" />
-                  </Button>
-                </div>
-                <div className="flex gap-1 items-center">
-                  <Input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} className="h-8 w-36" />
-                  <span className="text-xs text-muted-foreground">to</span>
-                  <Input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} className="h-8 w-36" />
-                </div>
-              </div>
+              <Button variant="outline" size="sm" className="h-8" onClick={exportCSV} disabled={!data.length}>
+                <Download className="h-3.5 w-3.5 mr-1" /> CSV
+              </Button>
             </div>
-          </CardHeader>
-          <CardContent className="p-0">
-            {dataLoading ? (
-              <div className="p-8 text-center text-muted-foreground">Loading...</div>
-            ) : data.length === 0 ? (
-              <div className="p-8 text-center text-muted-foreground">No data found</div>
-            ) : (
-              <div className="overflow-x-auto">
-                <Table className="min-w-max">
-                  <TableHeader>
-                    <TableRow>
-                      {columns.map(col => (
-                        <TableHead key={col} className="whitespace-nowrap text-xs">
-                          {col.replace(/_/g, " ").replace(/\b\w/g, l => l.toUpperCase())}
-                        </TableHead>
-                      ))}
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {data.map((row, i) => (
-                      <TableRow key={i}>
+
+            {/* Table data */}
+            <div className="flex-1 overflow-auto">
+              {dataLoading ? (
+                <div className="p-8 text-center text-muted-foreground text-sm">Loading...</div>
+              ) : data.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-16 text-muted-foreground gap-2">
+                  <Inbox className="h-8 w-8 text-muted-foreground/40" />
+                  <p className="text-sm">No data found</p>
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <Table className="min-w-max">
+                    <TableHeader>
+                      <TableRow className="bg-muted/50">
                         {columns.map(col => (
-                          <TableCell key={col} className="text-xs max-w-[250px] truncate whitespace-nowrap">
-                            {row[col] === null ? <span className="text-muted-foreground italic">null</span> : String(row[col])}
-                          </TableCell>
+                          <TableHead key={col} className="whitespace-nowrap text-xs font-semibold h-9">
+                            {col.replace(/_/g, " ").replace(/\b\w/g, l => l.toUpperCase())}
+                          </TableHead>
                         ))}
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+                    </TableHeader>
+                    <TableBody>
+                      {data.map((row, i) => (
+                        <TableRow key={i} className="hover:bg-muted/30">
+                          {columns.map(col => (
+                            <TableCell key={col} className="text-xs max-w-[250px] truncate whitespace-nowrap py-2">
+                              {row[col] === null ? <span className="text-muted-foreground/50 italic">null</span> : String(row[col])}
+                            </TableCell>
+                          ))}
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              )}
+            </div>
+
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <div className="sticky bottom-0 bg-background border-t p-2 flex items-center justify-center gap-2">
+                <Button variant="outline" size="sm" className="h-7" disabled={page <= 1} onClick={() => handlePageChange(page - 1)}>
+                  <ChevronLeft className="h-3.5 w-3.5" />
+                </Button>
+                <span className="text-xs text-muted-foreground">Page {page} of {totalPages}</span>
+                <Button variant="outline" size="sm" className="h-7" disabled={page >= totalPages} onClick={() => handlePageChange(page + 1)}>
+                  <ChevronRight className="h-3.5 w-3.5" />
+                </Button>
               </div>
             )}
-          </CardContent>
-        </Card>
-      )}
-
-      {selectedTable && totalPages > 1 && (
-        <div className="flex items-center justify-center gap-2">
-          <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => handlePageChange(page - 1)}>
-            <ChevronLeft className="h-4 w-4" />
-          </Button>
-          <span className="text-sm">Page {page} of {totalPages}</span>
-          <Button variant="outline" size="sm" disabled={page >= totalPages} onClick={() => handlePageChange(page + 1)}>
-            <ChevronRight className="h-4 w-4" />
-          </Button>
-        </div>
-      )}
+          </div>
+        )}
+      </div>
     </div>
   );
 };
