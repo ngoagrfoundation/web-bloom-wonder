@@ -17,6 +17,7 @@ const formTypes = [
   { value: "report_challenge", label: "Report Challenge" },
   { value: "sanskrit_registration", label: "Sanskrit Registration" },
   { value: "dental_registration", label: "Dental Registration" },
+  { value: "event_registration", label: "Event Registration" },
 ];
 
 const columnLabels: Record<string, string> = {
