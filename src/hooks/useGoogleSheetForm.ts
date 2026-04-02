@@ -78,7 +78,12 @@ export const useGoogleSheetForm = (options: UseGoogleSheetFormOptions): UseGoogl
       // The response type will be "opaque" which means we can't check status
       security.recordSubmission();
       setIsSuccess(true);
-      
+
+      // Also submit to PHP/MySQL API (fire-and-forget)
+      if (formType) {
+        submitFormToAPI(formType, data).catch(() => {});
+      }
+
       toast({
         title: "Submitted successfully!",
         description: "Thank you for reaching out. We'll get back to you soon.",
