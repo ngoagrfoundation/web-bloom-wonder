@@ -45,6 +45,9 @@ const GalleryManager = lazy(() => import("./pages/admin/GalleryManager"));
 const EventsManager = lazy(() => import("./pages/admin/EventsManager"));
 const NewsManager = lazy(() => import("./pages/admin/NewsManager"));
 const DatabaseBrowser = lazy(() => import("./pages/admin/DatabaseBrowser"));
+const ReelsManager = lazy(() => import("./pages/admin/ReelsManager"));
+const TestimonialsManager = lazy(() => import("./pages/admin/TestimonialsManager"));
+const SiteSettingsPage = lazy(() => import("./pages/admin/SiteSettings"));
 const queryClient = new QueryClient();
 
 const AdminFallback = () => (
