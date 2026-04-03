@@ -46,6 +46,7 @@ const Index = () => {
         {isEnabled("gallery") && <GallerySection />}
         {isEnabled("partners") && <PartnersSection />}
         {isEnabled("sponsors") && <SponsorsSection />}
+        {isEnabled("youtube") && <YouTubeSection />}
         {isEnabled("contact") && <ContactSection />}
       </main>
     </MobileLayout>

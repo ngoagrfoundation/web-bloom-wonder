@@ -48,7 +48,11 @@ const Header = () => {
     { label: "Causes", dropdown: causes },
     { label: "Events", href: "/events" },
     { label: "News", href: "/news" },
-    { label: "Gallery", href: "/gallery" },
+    { label: "Gallery", dropdown: [
+      { label: "Reels", href: "/gallery?tab=reels" },
+      { label: "Photos", href: "/gallery?tab=photos" },
+      { label: "Videos", href: "/gallery?tab=videos" },
+    ] },
     { label: "Contact", href: "/#contact" },
   ];
 
