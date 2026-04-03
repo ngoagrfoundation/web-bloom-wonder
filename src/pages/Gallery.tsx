@@ -125,6 +125,13 @@ const Gallery = () => {
                 Photos {galleryImages.length > 0 && `(${galleryImages.length})`}
               </button>
               <button
+                onClick={() => setActiveTab("reels")}
+                className={`px-5 py-2 rounded-full text-sm font-medium flex items-center gap-2 transition-colors ${activeTab === "reels" ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:bg-muted/80"}`}
+              >
+                <Video className="w-4 h-4" />
+                Reels
+              </button>
+              <button
                 onClick={() => setActiveTab("videos")}
                 className={`px-5 py-2 rounded-full text-sm font-medium flex items-center gap-2 transition-colors ${activeTab === "videos" ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:bg-muted/80"}`}
               >
