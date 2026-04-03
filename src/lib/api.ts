@@ -1,9 +1,7 @@
 // API configuration for cPanel PHP backend
-const PRODUCTION_API = 'https://agrfoundation.ngo/api';
+const isLovablePreview = window.location.hostname.includes('lovable.app') || window.location.hostname.includes('lovableproject.com') || window.location.hostname === 'localhost';
 
-const isPreview = window.location.hostname.includes('lovable.app') || window.location.hostname.includes('lovableproject.com') || window.location.hostname === 'localhost';
-
-export const API_BASE_URL = isPreview ? '/api' : PRODUCTION_API;
+export const API_BASE_URL = isLovablePreview ? 'https://agrfoundation.ngo/api' : '/api';
 
 export const submitFormToAPI = async (formType: string, data: Record<string, unknown>): Promise<boolean> => {
   try {
