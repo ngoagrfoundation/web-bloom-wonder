@@ -26,7 +26,9 @@ const Gallery = () => {
   const [activeVideo, setActiveVideo] = useState<VideoItem | null>(null);
   const [loading, setLoading] = useState(true);
   const [categories, setCategories] = useState([{ id: "all", label: "All" }]);
-  const [activeTab, setActiveTab] = useState<"photos" | "videos">("photos");
+  const [searchParams] = useSearchParams();
+  const initialTab = (searchParams.get("tab") as "photos" | "videos" | "reels") || "photos";
+  const [activeTab, setActiveTab] = useState<"photos" | "videos" | "reels">(initialTab);
 
   useEffect(() => {
     Promise.all([
