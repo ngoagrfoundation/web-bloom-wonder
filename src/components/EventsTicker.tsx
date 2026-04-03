@@ -51,13 +51,13 @@ const EventsTicker = () => {
               <Link
                 key={`${event.id}-${i}`}
                 to="/events"
-                className="inline-flex items-center gap-2 px-6 text-sm hover:text-primary-foreground/80 transition-colors"
+                className="inline-flex items-center gap-2 px-6 text-sm hover:text-white/80 transition-colors"
               >
                 <span className="font-medium">{event.title}</span>
-                <span className="text-primary-foreground/60 text-xs">
+                <span className="text-white/60 text-xs">
                   {new Date(event.date).toLocaleDateString("en-IN", { day: "numeric", month: "short" })}
                 </span>
-                <span className="text-primary-foreground/30">•</span>
+                <span className="text-white/30">•</span>
               </Link>
             ))}
           </div>
