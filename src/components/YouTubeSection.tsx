@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Play, Youtube } from "lucide-react";
 import { fetchYouTubeVideos, YouTubeVideo } from "@/lib/api";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 
 const YouTubeSection = () => {
   const [videos, setVideos] = useState<YouTubeVideo[]>([]);
