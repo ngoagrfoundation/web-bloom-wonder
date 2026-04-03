@@ -52,8 +52,8 @@ const AdminLayout = () => {
 
   useEffect(() => {
     if (isAuthenticated) {
-      getSubmissionCounts().then((counts) => {
-        const total = Object.values(counts).reduce((a: number, b: unknown) => a + Number(b || 0), 0);
+      getSubmissionCounts().then((counts: Record<string, number>) => {
+        const total = Object.values(counts).reduce((a, b) => a + (Number(b) || 0), 0);
         setSubmissionCount(total);
       });
     }
