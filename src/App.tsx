@@ -48,6 +48,9 @@ const DatabaseBrowser = lazy(() => import("./pages/admin/DatabaseBrowser"));
 const ReelsManager = lazy(() => import("./pages/admin/ReelsManager"));
 const TestimonialsManager = lazy(() => import("./pages/admin/TestimonialsManager"));
 const SiteSettingsPage = lazy(() => import("./pages/admin/SiteSettings"));
+const PartnersManager = lazy(() => import("./pages/admin/PartnersManager"));
+const SponsorsManager = lazy(() => import("./pages/admin/SponsorsManager"));
+const LandingPageControls = lazy(() => import("./pages/admin/LandingPageControls"));
 const queryClient = new QueryClient();
 
 const AdminFallback = () => (
@@ -106,6 +109,9 @@ const App = () => (
               <Route path="/admin/reels" element={<Suspense fallback={<AdminFallback />}><ReelsManager /></Suspense>} />
               <Route path="/admin/testimonials" element={<Suspense fallback={<AdminFallback />}><TestimonialsManager /></Suspense>} />
               <Route path="/admin/settings" element={<Suspense fallback={<AdminFallback />}><SiteSettingsPage /></Suspense>} />
+              <Route path="/admin/partners" element={<Suspense fallback={<AdminFallback />}><PartnersManager /></Suspense>} />
+              <Route path="/admin/sponsors" element={<Suspense fallback={<AdminFallback />}><SponsorsManager /></Suspense>} />
+              <Route path="/admin/landing-page" element={<Suspense fallback={<AdminFallback />}><LandingPageControls /></Suspense>} />
             </Route>
             
             <Route path="*" element={<NotFound />} />

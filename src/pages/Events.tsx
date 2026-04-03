@@ -8,22 +8,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { ScrollArea } from "@/components/ui/scroll-area";
 import EventRegistrationForm from "@/components/forms/EventRegistrationForm";
 import { fetchPublicEvents } from "@/lib/api";
-import healthCamp from "@/assets/generated/healthcare/health-camp.jpg";
-import tailoringTraining from "@/assets/generated/livelihood/tailoring-training.jpg";
-import cleanupDrive from "@/assets/generated/sustainability/cleanup-drive.jpg";
-import fundraiserGala from "@/assets/generated/events/fundraiser-gala.jpg";
-import schoolSupplies from "@/assets/generated/education/school-supplies.jpg";
-import elderlyCare from "@/assets/generated/healthcare/elderly-care.jpg";
-import communityKitchen from "@/assets/generated/community/community-kitchen.jpg";
-
-const staticEvents: Event[] = [
-  { id: "1", title: "Annual Health Camp 2026", description: "Free health check-ups including eye tests, dental care, and general consultation for the entire community.", date: "2026-02-15", time: "9:00 AM - 5:00 PM", location: "AGR Community Center, Kukatpally, Hyderabad", category: "health-camp", image: healthCamp, attendees: 150, isFeatured: true },
-  { id: "2", title: "Women Empowerment Workshop", description: "Learn essential skills for financial independence including tailoring, computer basics, and entrepreneurship.", date: "2026-02-20", time: "10:00 AM - 4:00 PM", location: "Skill Development Center, Kukatpally, Hyderabad", category: "workshop", image: tailoringTraining, attendees: 45 },
-  { id: "3", title: "Community Clean-Up Drive", description: "Join us in making our neighborhood cleaner and greener. Equipment and refreshments will be provided.", date: "2026-02-25", time: "7:00 AM - 12:00 PM", location: "Various locations across Hyderabad", category: "community", image: cleanupDrive, attendees: 200 },
-  { id: "4", title: "Charity Fundraiser Gala", description: "An evening of celebration, performances, and giving. All proceeds support our education initiatives.", date: "2026-03-05", time: "6:00 PM - 10:00 PM", location: "Grand Ballroom, Taj Hotel, Hyderabad", category: "fundraiser", image: fundraiserGala, attendees: 300, isFeatured: true },
-  { id: "5", title: "Back to School Campaign", description: "Distribution of school supplies and uniforms to underprivileged children for the new academic year.", date: "2026-03-10", time: "10:00 AM - 2:00 PM", location: "AGR Foundation Office, Kukatpally, Hyderabad", category: "education", image: schoolSupplies, attendees: 100 },
-  { id: "6", title: "Senior Citizens Health Awareness", description: "Special program focused on health issues affecting seniors with free consultations and medicine distribution.", date: "2026-03-15", time: "9:00 AM - 1:00 PM", location: "Community Hall, KPHB, Hyderabad", category: "health-camp", image: elderlyCare, attendees: 80 },
-];
 
 const categories = [
   { id: "all", label: "All Events" },
@@ -39,26 +23,29 @@ const Events = () => {
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [showRegModal, setShowRegModal] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
-  const [events, setEvents] = useState<Event[]>(staticEvents);
+  const [events, setEvents] = useState<Event[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchPublicEvents().then((data) => {
-      if (data && data.length > 0) {
-        const mapped: Event[] = data.map((e: Record<string, unknown>) => ({
-          id: String(e.id || ''),
-          title: String(e.title || ''),
-          description: String(e.description || ''),
-          date: String(e.date || ''),
-          time: String(e.time || ''),
-          location: String(e.location || ''),
-          category: String(e.category || 'community'),
-          image: String(e.image || ''),
-          attendees: Number(e.attendees || 0),
-          isFeatured: Boolean(Number(e.is_featured)),
-        }));
-        setEvents(mapped);
-      }
-    });
+    fetchPublicEvents()
+      .then((data) => {
+        if (data && data.length > 0) {
+          const mapped: Event[] = data.map((e: Record<string, unknown>) => ({
+            id: String(e.id || ''),
+            title: String(e.title || ''),
+            description: String(e.description || ''),
+            date: String(e.date || ''),
+            time: String(e.time || ''),
+            location: String(e.location || ''),
+            category: String(e.category || 'community'),
+            image: String(e.image || ''),
+            attendees: Number(e.attendees || 0),
+            isFeatured: Boolean(Number(e.is_featured)),
+          }));
+          setEvents(mapped);
+        }
+      })
+      .finally(() => setLoading(false));
   }, []);
 
   const handleRegister = (event: Event) => {
@@ -75,11 +62,7 @@ const Events = () => {
   return (
     <MobileLayout>
       <main className="pt-14 md:pt-20">
-        <section className="py-16 relative overflow-hidden">
-          <div className="absolute inset-0">
-            <img src={communityKitchen} alt="Events hero" className="w-full h-full object-cover" />
-          </div>
-          <div className="absolute inset-0 bg-primary/85" />
+        <section className="py-16 relative overflow-hidden bg-primary">
           <div className="container mx-auto px-4 relative z-10">
             <AnimatedSection className="text-center text-primary-foreground">
               <h1 className="text-4xl md:text-5xl font-display font-bold mb-4">Upcoming Events</h1>
@@ -107,31 +90,49 @@ const Events = () => {
           </div>
         </section>
 
-        {featuredEvents.length > 0 && (
+        {loading ? (
           <section className="py-12">
             <div className="container mx-auto px-4">
-              <AnimatedSection><h2 className="text-2xl font-display font-bold text-foreground mb-8 flex items-center gap-2"><Calendar className="text-secondary" />Featured Events</h2></AnimatedSection>
-              <StaggerContainer className={`grid gap-6 ${viewMode === "grid" ? "md:grid-cols-2" : "grid-cols-1"}`}>
-                {featuredEvents.map((event) => (<StaggerItem key={event.id}><EventCard event={event} onRegister={() => handleRegister(event)} /></StaggerItem>))}
-              </StaggerContainer>
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {[...Array(6)].map((_, i) => <div key={i} className="h-64 rounded-xl bg-muted animate-pulse" />)}
+              </div>
             </div>
           </section>
-        )}
-
-        <section className="py-12 section-cream">
-          <div className="container mx-auto px-4">
-            <AnimatedSection><h2 className="text-2xl font-display font-bold text-foreground mb-8">All Upcoming Events</h2></AnimatedSection>
-            {upcomingEvents.length > 0 ? (
-              <StaggerContainer className={`grid gap-6 ${viewMode === "grid" ? "md:grid-cols-2 lg:grid-cols-3" : "grid-cols-1 max-w-3xl"}`}>
-                {upcomingEvents.map((event) => (<StaggerItem key={event.id}><EventCard event={event} onRegister={() => handleRegister(event)} /></StaggerItem>))}
-              </StaggerContainer>
-            ) : (
-              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center py-12">
-                <p className="text-muted-foreground text-lg">No events found in this category. Check back soon!</p>
-              </motion.div>
+        ) : events.length === 0 ? (
+          <section className="py-20">
+            <div className="container mx-auto px-4 text-center">
+              <p className="text-muted-foreground text-lg">No events scheduled yet. Check back soon!</p>
+            </div>
+          </section>
+        ) : (
+          <>
+            {featuredEvents.length > 0 && (
+              <section className="py-12">
+                <div className="container mx-auto px-4">
+                  <AnimatedSection><h2 className="text-2xl font-display font-bold text-foreground mb-8 flex items-center gap-2"><Calendar className="text-secondary" />Featured Events</h2></AnimatedSection>
+                  <StaggerContainer className={`grid gap-6 ${viewMode === "grid" ? "md:grid-cols-2" : "grid-cols-1"}`}>
+                    {featuredEvents.map((event) => (<StaggerItem key={event.id}><EventCard event={event} onRegister={() => handleRegister(event)} /></StaggerItem>))}
+                  </StaggerContainer>
+                </div>
+              </section>
             )}
-          </div>
-        </section>
+
+            <section className="py-12 section-cream">
+              <div className="container mx-auto px-4">
+                <AnimatedSection><h2 className="text-2xl font-display font-bold text-foreground mb-8">All Upcoming Events</h2></AnimatedSection>
+                {upcomingEvents.length > 0 ? (
+                  <StaggerContainer className={`grid gap-6 ${viewMode === "grid" ? "md:grid-cols-2 lg:grid-cols-3" : "grid-cols-1 max-w-3xl"}`}>
+                    {upcomingEvents.map((event) => (<StaggerItem key={event.id}><EventCard event={event} onRegister={() => handleRegister(event)} /></StaggerItem>))}
+                  </StaggerContainer>
+                ) : (
+                  <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center py-12">
+                    <p className="text-muted-foreground text-lg">No events found in this filter. Check back soon!</p>
+                  </motion.div>
+                )}
+              </div>
+            </section>
+          </>
+        )}
 
         <section className="py-16 bg-secondary/10">
           <div className="container mx-auto px-4">
@@ -147,11 +148,7 @@ const Events = () => {
           <DialogContent className="max-w-2xl max-h-[90vh] p-0">
             <DialogHeader className="sr-only"><DialogTitle>Event Registration</DialogTitle></DialogHeader>
             <ScrollArea className="max-h-[85vh]">
-              <EventRegistrationForm
-                eventTitle={selectedEvent?.title}
-                eventCategory={selectedEvent?.category}
-                onSuccess={() => setShowRegModal(false)}
-              />
+              <EventRegistrationForm eventTitle={selectedEvent?.title} eventCategory={selectedEvent?.category} onSuccess={() => setShowRegModal(false)} />
             </ScrollArea>
           </DialogContent>
         </Dialog>

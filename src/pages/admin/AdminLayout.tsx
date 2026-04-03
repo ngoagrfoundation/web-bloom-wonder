@@ -16,21 +16,60 @@ import {
   Film,
   MessageSquareQuote,
   Settings,
+  ChevronDown,
+  ExternalLink,
+  Sliders,
+  Users,
+  Handshake,
+  Heart,
 } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 
-const navItems = [
-  { title: "Dashboard", path: "/admin/dashboard", icon: LayoutDashboard },
-  { title: "Submissions", path: "/admin/submissions", icon: FileText },
-  { title: "Donations", path: "/admin/donations", icon: CreditCard },
-  { title: "Gallery", path: "/admin/gallery", icon: Image },
-  { title: "Events", path: "/admin/events", icon: CalendarDays },
-  { title: "News", path: "/admin/news", icon: Newspaper },
-  { title: "Reels", path: "/admin/reels", icon: Film },
-  { title: "Testimonials", path: "/admin/testimonials", icon: MessageSquareQuote },
-  { title: "Database", path: "/admin/database", icon: Database },
-  { title: "Site Settings", path: "/admin/settings", icon: Settings },
+interface NavItem {
+  title: string;
+  path: string;
+  icon: React.ElementType;
+}
+
+interface NavGroup {
+  label: string;
+  items: NavItem[];
+}
+
+const navGroups: NavGroup[] = [
+  {
+    label: "Overview",
+    items: [
+      { title: "Dashboard", path: "/admin/dashboard", icon: LayoutDashboard },
+    ],
+  },
+  {
+    label: "Content Management",
+    items: [
+      { title: "Gallery", path: "/admin/gallery", icon: Image },
+      { title: "Reels", path: "/admin/reels", icon: Film },
+      { title: "News", path: "/admin/news", icon: Newspaper },
+      { title: "Events", path: "/admin/events", icon: CalendarDays },
+      { title: "Testimonials", path: "/admin/testimonials", icon: MessageSquareQuote },
+      { title: "Partners", path: "/admin/partners", icon: Handshake },
+      { title: "Sponsors", path: "/admin/sponsors", icon: Heart },
+    ],
+  },
+  {
+    label: "User Interactions",
+    items: [
+      { title: "Submissions", path: "/admin/submissions", icon: FileText },
+      { title: "Donations", path: "/admin/donations", icon: CreditCard },
+    ],
+  },
+  {
+    label: "Website Control",
+    items: [
+      { title: "Landing Page", path: "/admin/landing-page", icon: Sliders },
+      { title: "Site Settings", path: "/admin/settings", icon: Settings },
+    ],
+  },
 ];
 
 const AdminLayout = () => {
@@ -60,9 +99,11 @@ const AdminLayout = () => {
     navigate("/admin");
   };
 
+  const currentTitle = navGroups.flatMap(g => g.items).find(i => i.path === location.pathname)?.title || "Admin";
+
   return (
     <div className="h-screen flex overflow-hidden bg-muted/20">
-      {/* Sidebar - independently scrollable */}
+      {/* Sidebar */}
       <aside
         className={cn(
           "fixed inset-y-0 left-0 z-50 w-64 bg-background border-r flex flex-col transform transition-transform duration-200 lg:translate-x-0 lg:static lg:flex-shrink-0",
@@ -78,22 +119,29 @@ const AdminLayout = () => {
             <X className="h-4 w-4" />
           </Button>
         </div>
-        <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
-          {navItems.map((item) => (
-            <Link
-              key={item.path}
-              to={item.path}
-              onClick={() => setSidebarOpen(false)}
-              className={cn(
-                "flex items-center gap-3 px-3 py-2.5 rounded-md text-sm transition-colors",
-                location.pathname === item.path
-                  ? "bg-primary text-primary-foreground"
-                  : "hover:bg-muted"
-              )}
-            >
-              <item.icon className="h-4 w-4" />
-              {item.title}
-            </Link>
+        <nav className="flex-1 p-3 space-y-4 overflow-y-auto">
+          {navGroups.map((group) => (
+            <div key={group.label}>
+              <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70 px-3 mb-1">{group.label}</p>
+              <div className="space-y-0.5">
+                {group.items.map((item) => (
+                  <Link
+                    key={item.path}
+                    to={item.path}
+                    onClick={() => setSidebarOpen(false)}
+                    className={cn(
+                      "flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors",
+                      location.pathname === item.path
+                        ? "bg-primary text-primary-foreground"
+                        : "hover:bg-muted text-muted-foreground hover:text-foreground"
+                    )}
+                  >
+                    <item.icon className="h-4 w-4" />
+                    {item.title}
+                  </Link>
+                ))}
+              </div>
+            </div>
           ))}
         </nav>
         <div className="p-4 border-t space-y-2 flex-shrink-0">
@@ -111,18 +159,28 @@ const AdminLayout = () => {
         <div className="fixed inset-0 bg-black/50 z-40 lg:hidden" onClick={() => setSidebarOpen(false)} />
       )}
 
-      {/* Main content - independently scrollable */}
+      {/* Main content */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         <header className="flex-shrink-0 bg-background border-b px-4 py-3 flex items-center gap-4 lg:px-6">
           <Button variant="ghost" size="icon" className="lg:hidden" onClick={() => setSidebarOpen(true)}>
             <Menu className="h-5 w-5" />
           </Button>
-          <h1 className="text-lg font-semibold">
-            {navItems.find((i) => i.path === location.pathname)?.title || "Admin"}
-          </h1>
-          <span className="ml-auto text-xs text-muted-foreground hidden sm:block">
-            {new Date().toLocaleDateString("en-IN", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}
-          </span>
+          <h1 className="text-lg font-semibold">{currentTitle}</h1>
+          <div className="ml-auto flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-1.5 text-xs"
+              onClick={() => window.open("/admin/database", "_blank")}
+            >
+              <Database className="h-3.5 w-3.5" />
+              Database
+              <ExternalLink className="h-3 w-3" />
+            </Button>
+            <span className="text-xs text-muted-foreground hidden sm:block">
+              {new Date().toLocaleDateString("en-IN", { weekday: "short", month: "short", day: "numeric" })}
+            </span>
+          </div>
         </header>
         <main className="flex-1 overflow-y-auto p-4 lg:p-6">
           <Outlet />
