@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Play, ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import { fetchPublicReels, fetchPublicSettings } from "@/lib/api";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 
 interface Reel {
   id: number | string;
