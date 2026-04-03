@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Play, ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import { fetchPublicReels, fetchPublicSettings } from "@/lib/api";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 
 interface Reel {
   id: number | string;
@@ -105,6 +105,8 @@ const ReelsSection = () => {
 
       <Dialog open={!!activeReel} onOpenChange={() => setActiveReel(null)}>
         <DialogContent className="sm:max-w-[720px] p-0 bg-black border-none">
+          <DialogTitle className="sr-only">{activeReel?.title || "Reel"}</DialogTitle>
+          <DialogDescription className="sr-only">Playing reel video</DialogDescription>
           {activeReel && (
             <div className="aspect-video w-full">
               {isDirectVideo(activeReel.video_url) ? (

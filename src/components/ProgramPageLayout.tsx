@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { ArrowLeft, Heart } from "lucide-react";
 import { MobileLayout } from "./mobile";
 import AnimatedSection, { StaggerContainer, StaggerItem } from "./AnimatedSection";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "./ui/dialog";
 import { ScrollArea } from "./ui/scroll-area";
 import VolunteerForm from "./forms/VolunteerForm";
 import DonationForm from "./DonationForm";
@@ -226,6 +226,7 @@ const ProgramPageLayout = ({
           <DialogContent className="max-w-2xl max-h-[90vh] p-0">
             <DialogHeader className="sr-only">
               <DialogTitle>Register as a Volunteer</DialogTitle>
+              <DialogDescription>Fill out the form to register as a volunteer</DialogDescription>
             </DialogHeader>
             <ScrollArea className="max-h-[70vh]">
               <VolunteerForm onSuccess={() => setShowVolunteerModal(false)} />

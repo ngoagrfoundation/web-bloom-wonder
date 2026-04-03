@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Play, Youtube } from "lucide-react";
 import { fetchYouTubeVideos, YouTubeVideo } from "@/lib/api";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 
 const YouTubeSection = () => {
   const [videos, setVideos] = useState<YouTubeVideo[]>([]);
@@ -77,6 +77,8 @@ const YouTubeSection = () => {
 
       <Dialog open={!!activeVideo} onOpenChange={() => setActiveVideo(null)}>
         <DialogContent className="sm:max-w-[720px] p-0 bg-black border-none">
+          <DialogTitle className="sr-only">{activeVideo?.title || "Video"}</DialogTitle>
+          <DialogDescription className="sr-only">Playing YouTube video</DialogDescription>
           {activeVideo && (
             <div className="aspect-video w-full">
               <iframe

@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import useEmblaCarousel from "embla-carousel-react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -135,7 +135,7 @@ const HeroSection = () => {
 
       <Dialog open={showSanskritForm} onOpenChange={setShowSanskritForm}>
         <DialogContent className="sm:max-w-md">
-          <DialogHeader><DialogTitle className="text-xl font-bold text-primary">Register for Free Sanskrit Classes</DialogTitle></DialogHeader>
+          <DialogHeader><DialogTitle className="text-xl font-bold text-primary">Register for Free Sanskrit Classes</DialogTitle><DialogDescription className="sr-only">Fill out the form to register for free Sanskrit classes</DialogDescription></DialogHeader>
           <ScrollArea className="max-h-[70vh]">
             <form onSubmit={handleSanskritSubmit} className="space-y-4 p-1">
               <div className="space-y-2"><Label htmlFor="sanskrit-name">Name <span className="text-destructive">*</span></Label><Input id="sanskrit-name" placeholder="Enter your full name" value={sanskritForm.name} onChange={(e) => setSanskritForm(p => ({ ...p, name: e.target.value }))} /></div>
@@ -162,7 +162,7 @@ const HeroSection = () => {
 
       <Dialog open={showDentalForm} onOpenChange={setShowDentalForm}>
         <DialogContent className="sm:max-w-md">
-          <DialogHeader><DialogTitle className="text-xl font-bold text-primary">Register for Free Dental Treatment</DialogTitle></DialogHeader>
+          <DialogHeader><DialogTitle className="text-xl font-bold text-primary">Register for Free Dental Treatment</DialogTitle><DialogDescription className="sr-only">Fill out the form to register for free dental treatment</DialogDescription></DialogHeader>
           <ScrollArea className="max-h-[70vh]">
             <form onSubmit={handleDentalSubmit} className="space-y-4 p-1">
               <div className="space-y-2"><Label htmlFor="dental-name">Name <span className="text-destructive">*</span></Label><Input id="dental-name" placeholder="Enter your full name" value={dentalForm.name} onChange={(e) => setDentalForm(p => ({ ...p, name: e.target.value }))} /></div>
