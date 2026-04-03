@@ -185,7 +185,7 @@ const ReelsManager = () => {
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="max-w-lg">
-          <DialogHeader><DialogTitle>{editing ? "Edit Reel" : "Add Reel"}</DialogTitle></DialogHeader>
+          <DialogHeader><DialogTitle>{editing ? "Edit Reel" : "Add Reel"}</DialogTitle><DialogDescription className="sr-only">Manage reel details</DialogDescription></DialogHeader>
           <div className="space-y-4">
             <div><Label>Title *</Label><Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} /></div>
 

@@ -156,7 +156,7 @@ const NewsManager = () => {
 
       <Dialog open={showForm} onOpenChange={setShowForm}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader><DialogTitle>{editId ? "Edit Article" : "New Article"}</DialogTitle></DialogHeader>
+          <DialogHeader><DialogTitle>{editId ? "Edit Article" : "New Article"}</DialogTitle><DialogDescription className="sr-only">Manage article details</DialogDescription></DialogHeader>
           <div className="space-y-4">
             <div><Label>Title *</Label><Input value={form.title} onChange={(e) => setForm(f => ({ ...f, title: e.target.value, slug: generateSlug(e.target.value) }))} /></div>
             <div><Label>Slug</Label><Input value={form.slug} onChange={(e) => setForm(f => ({ ...f, slug: e.target.value }))} placeholder="auto-generated" /></div>
