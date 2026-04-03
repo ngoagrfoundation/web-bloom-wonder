@@ -5,7 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { toast } from "sonner";
-import { Save, Building2, Phone, Globe, Loader2, Bell, Upload, X, BarChart3, ImageIcon } from "lucide-react";
+import { Save, Building2, Phone, Globe, Loader2, Bell, Upload, X, BarChart3, ImageIcon, Youtube } from "lucide-react";
 import { API_BASE_URL } from "@/lib/api";
 import { uploadImage } from "@/lib/admin-api";
 

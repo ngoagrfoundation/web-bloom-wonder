@@ -1,15 +1,16 @@
 import { useState, useEffect } from "react";
 import { Play, ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
-import { fetchPublicReels, fetchPublicSettings } from "@/lib/api";
+import { fetchPublicReels, fetchPublicSettings, fetchYouTubeVideos, YouTubeVideo } from "@/lib/api";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 
 interface Reel {
-  id: number;
+  id: number | string;
   title: string;
   video_url: string;
   thumbnail: string;
   description?: string;
+  source?: "manual" | "youtube";
 }
 
 const ReelsSection = () => {
@@ -22,8 +23,23 @@ const ReelsSection = () => {
     Promise.all([
       fetchPublicReels(),
       fetchPublicSettings(),
-    ]).then(([data, settings]) => {
-      if (data && data.length > 0) setReels(data);
+      fetchYouTubeVideos(),
+    ]).then(([data, settings, ytVideos]) => {
+      const manualReels: Reel[] = (data || []).map((r: Reel) => ({ ...r, source: "manual" as const }));
+      const youtubeReels: Reel[] = (ytVideos || []).map((v: YouTubeVideo) => ({
+        id: v.id,
+        title: v.title,
+        video_url: v.video_url,
+        thumbnail: v.thumbnail,
+        description: v.description,
+        source: "youtube" as const,
+      }));
+
+      // Deduplicate: if a manual reel has the same YouTube URL, skip the YT version
+      const manualUrls = new Set(manualReels.map(r => r.video_url));
+      const uniqueYt = youtubeReels.filter(r => !manualUrls.has(r.video_url));
+      setReels([...manualReels, ...uniqueYt]);
+
       if (settings?.reels_homepage_count) setMaxCount(parseInt(settings.reels_homepage_count) || 10);
     }).finally(() => setLoading(false));
   }, []);
@@ -82,6 +98,9 @@ const ReelsSection = () => {
                     <Play className="w-6 h-6 text-primary-foreground fill-current ml-1" />
                   </div>
                 </div>
+                {reel.source === "youtube" && (
+                  <span className="absolute top-2 right-2 bg-red-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded">YT</span>
+                )}
               </div>
               <h3 className="font-semibold text-sm truncate">{reel.title}</h3>
               {reel.description && (

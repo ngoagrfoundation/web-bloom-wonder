@@ -127,3 +127,42 @@ export const fetchPublicSponsors = async () => {
     return result.data || [];
   } catch { return null; }
 };
+
+export interface YouTubeVideo {
+  id: string;
+  title: string;
+  thumbnail: string;
+  video_url: string;
+  description: string;
+  publishedAt: string;
+}
+
+export const fetchYouTubeVideos = async (): Promise<YouTubeVideo[]> => {
+  try {
+    const settings = await fetchPublicSettings();
+    if (!settings) return [];
+    const apiKey = settings.youtube_api_key;
+    const channelId = settings.youtube_channel_id;
+    if (!apiKey || !channelId) return [];
+    const maxResults = settings.youtube_max_results || '20';
+
+    const res = await fetch(
+      `https://www.googleapis.com/youtube/v3/search?part=snippet&channelId=${encodeURIComponent(channelId)}&key=${encodeURIComponent(apiKey)}&order=date&type=video&maxResults=${maxResults}`
+    );
+    if (!res.ok) return [];
+    const data = await res.json();
+    if (!data.items) return [];
+
+    return data.items.map((item: { id: { videoId: string }; snippet: { title: string; thumbnails: { high?: { url: string }; medium?: { url: string }; default?: { url: string } }; description: string; publishedAt: string } }) => ({
+      id: `yt-${item.id.videoId}`,
+      title: item.snippet.title,
+      thumbnail: item.snippet.thumbnails?.high?.url || item.snippet.thumbnails?.medium?.url || item.snippet.thumbnails?.default?.url || '',
+      video_url: `https://www.youtube.com/watch?v=${item.id.videoId}`,
+      description: item.snippet.description,
+      publishedAt: item.snippet.publishedAt,
+    }));
+  } catch {
+    console.log('YouTube fetch failed');
+    return [];
+  }
+};
