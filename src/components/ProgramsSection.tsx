@@ -1,11 +1,13 @@
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { GraduationCap, HeartPulse, Briefcase, ArrowRight, Stethoscope, BookOpen, HandHeart } from "lucide-react";
-import educationImage from "@/assets/education-program.jpg";
-import healthcareImage from "@/assets/healthcare-program.jpg";
-import livelihoodImage from "@/assets/livelihood-program.jpg";
-import dentalImage from "@/assets/generated/programs/dental-treatment.jpg";
-import sanskritImage from "@/assets/generated/programs/learning-sanskrit.jpg";
-import foodImage from "@/assets/generated/programs/food-distribution.jpg";
+import defaultEducationImage from "@/assets/education-program.jpg";
+import defaultHealthcareImage from "@/assets/healthcare-program.jpg";
+import defaultLivelihoodImage from "@/assets/livelihood-program.jpg";
+import defaultDentalImage from "@/assets/generated/programs/dental-treatment.jpg";
+import defaultSanskritImage from "@/assets/generated/programs/learning-sanskrit.jpg";
+import defaultFoodImage from "@/assets/generated/programs/food-distribution.jpg";
+import { fetchPublicSettings } from "@/lib/api";
 
 const programs = [
   {
