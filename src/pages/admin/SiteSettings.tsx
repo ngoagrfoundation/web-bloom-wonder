@@ -182,6 +182,30 @@ const SiteSettings = () => {
         </CardContent>
       </Card>
 
+      {/* YouTube Integration */}
+      <Card className="rounded-xl shadow-sm border-red-200">
+        <CardHeader className="pb-4">
+          <CardTitle className="flex items-center gap-2 text-lg"><Youtube className="w-5 h-5 text-red-600" />YouTube Auto-Sync</CardTitle>
+          <CardDescription>Connect your YouTube channel to auto-display videos on the website</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div>
+            <Label>YouTube API Key</Label>
+            <Input value={settings.youtube_api_key || ""} onChange={(e) => update("youtube_api_key", e.target.value)} placeholder="AIzaSy..." />
+            <p className="text-xs text-muted-foreground mt-1">Your Google Cloud YouTube Data API v3 key</p>
+          </div>
+          <div>
+            <Label>YouTube Channel ID</Label>
+            <Input value={settings.youtube_channel_id || ""} onChange={(e) => update("youtube_channel_id", e.target.value)} placeholder="UC..." />
+            <p className="text-xs text-muted-foreground mt-1">Find at youtube.com/account_advanced or from your channel URL</p>
+          </div>
+          <div>
+            <Label>Max Videos to Fetch</Label>
+            <Input type="number" value={settings.youtube_max_results || "20"} onChange={(e) => update("youtube_max_results", e.target.value)} placeholder="20" min="1" max="50" />
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Social Media */}
       <Card className="rounded-xl shadow-sm">
         <CardHeader className="pb-4">
