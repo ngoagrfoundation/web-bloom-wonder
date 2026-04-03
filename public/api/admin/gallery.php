@@ -10,7 +10,6 @@ if ($method === 'GET') {
     echo json_encode(['data' => $stmt->fetchAll()]);
     
 } elseif ($method === 'POST') {
-    // Handle image upload
     if (isset($_FILES['image'])) {
         $uploadDir = __DIR__ . '/../../uploads/gallery/';
         if (!is_dir($uploadDir)) {
@@ -46,10 +45,11 @@ if ($method === 'GET') {
         $alt = $_POST['alt'] ?? '';
         $category = $_POST['category'] ?? '';
         $caption = $_POST['caption'] ?? '';
+        $tags = $_POST['tags'] ?? '';
         $sortOrder = intval($_POST['sort_order'] ?? 0);
         
-        $stmt = $pdo->prepare("INSERT INTO gallery_images (src, alt, category, caption, sort_order) VALUES (?, ?, ?, ?, ?)");
-        $stmt->execute([$src, $alt, $category, $caption, $sortOrder]);
+        $stmt = $pdo->prepare("INSERT INTO gallery_images (src, alt, category, caption, tags, sort_order) VALUES (?, ?, ?, ?, ?, ?)");
+        $stmt->execute([$src, $alt, $category, $caption, $tags, $sortOrder]);
         
         echo json_encode(['success' => true, 'id' => $pdo->lastInsertId(), 'src' => $src]);
     } else {
@@ -69,7 +69,7 @@ if ($method === 'GET') {
     
     $fields = [];
     $params = [];
-    foreach (['alt', 'category', 'caption', 'sort_order'] as $field) {
+    foreach (['alt', 'category', 'caption', 'tags', 'sort_order'] as $field) {
         if (isset($data[$field])) {
             $fields[] = "$field = ?";
             $params[] = $data[$field];
@@ -95,7 +95,6 @@ if ($method === 'GET') {
         exit();
     }
     
-    // Get image path to delete file
     $stmt = $pdo->prepare("SELECT src FROM gallery_images WHERE id = ?");
     $stmt->execute([$id]);
     $image = $stmt->fetch();

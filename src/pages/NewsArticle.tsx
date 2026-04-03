@@ -5,45 +5,23 @@ import { MobileLayout } from "@/components/mobile";
 import AnimatedSection from "@/components/AnimatedSection";
 import { NewsArticle } from "@/components/NewsCard";
 import { sanitizeHTML, createShareUrl } from "@/lib/sanitize";
-import { fetchNewsBySlug } from "@/lib/api";
-
-const staticArticles: NewsArticle[] = [
-  {
-    id: "1", slug: "100-students-graduate-skill-program",
-    title: "100 Students Graduate from Our Skill Development Program",
-    excerpt: "A milestone celebration as our latest batch of students complete vocational training.",
-    content: `<p>In a heartwarming ceremony held at the AGR Foundation Community Center, 100 students received their certificates after completing our comprehensive skill development program.</p><h2>A Journey of Transformation</h2><p>The graduates, aged between 18 and 35, underwent six months of intensive training in various trades including computer skills, tailoring, electrical work, and beautician courses.</p><h2>Looking Ahead</h2><p>With this batch, AGR Foundation has now trained over 1,500 students since the program's inception in 2025.</p>`,
-    image: "https://images.unsplash.com/photo-1523580494863-6f3031224c94?w=1200",
-    author: "AGR Foundation", date: "2026-01-15", category: "success-story", readTime: 4,
-  },
-  {
-    id: "2", slug: "new-healthcare-initiative-launch",
-    title: "Launching Mobile Health Clinics in Rural Areas",
-    excerpt: "Our new initiative brings essential healthcare services directly to underserved communities.",
-    content: `<p>AGR Foundation is proud to announce the launch of our Mobile Health Clinic initiative.</p><h2>Healthcare at Your Doorstep</h2><p>Our fleet of three fully-equipped mobile clinics will travel to remote villages across Maharashtra.</p>`,
-    image: "https://images.unsplash.com/photo-1576091160399-112ba8d25d1f?w=1200",
-    author: "Dr. Priya Sharma", date: "2026-01-10", category: "announcement", readTime: 3,
-  },
-  {
-    id: "3", slug: "annual-fundraiser-gala-2026",
-    title: "Annual Charity Gala Raises Record ₹50 Lakhs",
-    excerpt: "Our community came together for an unforgettable evening of giving.",
-    content: `<p>The AGR Foundation Annual Charity Gala 2026 was a resounding success, raising a record-breaking ₹50 lakhs.</p><h2>Where the Funds Will Go</h2><ul><li>Education: Scholarships for 500 students</li><li>Healthcare: Expansion of mobile clinics</li><li>Livelihood: New vocational training center</li></ul>`,
-    image: "https://images.unsplash.com/photo-1511795409834-ef04bbd61622?w=1200",
-    author: "AGR Foundation", date: "2026-01-05", category: "event", readTime: 5,
-  },
-];
+import { fetchNewsBySlug, fetchPublicNews } from "@/lib/api";
 
 const NewsArticlePage = () => {
   const { slug } = useParams<{ slug: string }>();
   const [article, setArticle] = useState<NewsArticle | null>(null);
+  const [relatedArticles, setRelatedArticles] = useState<NewsArticle[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!slug) { setLoading(false); return; }
-    fetchNewsBySlug(slug).then((data) => {
+    
+    Promise.all([
+      fetchNewsBySlug(slug),
+      fetchPublicNews(),
+    ]).then(([data, allNews]) => {
       if (data) {
-        setArticle({
+        const mapped: NewsArticle = {
           id: String(data.id || ''),
           slug: String(data.slug || ''),
           title: String(data.title || ''),
@@ -54,14 +32,47 @@ const NewsArticlePage = () => {
           date: String(data.published_at || data.created_at || ''),
           category: (data.category as NewsArticle['category']) || 'announcement',
           readTime: Number(data.read_time || 3),
-        });
-      } else {
-        // Fallback to static
-        const found = staticArticles.find((a) => a.slug === slug);
-        setArticle(found || null);
+        };
+        setArticle(mapped);
+
+        // SEO meta tags
+        const metaTitle = String(data.meta_title || data.title || '');
+        const metaDesc = String(data.meta_description || data.excerpt || '');
+        document.title = `${metaTitle} | AGR Foundation`;
+        const descMeta = document.querySelector('meta[name="description"]');
+        if (descMeta) descMeta.setAttribute('content', metaDesc);
+        else {
+          const meta = document.createElement('meta');
+          meta.name = 'description';
+          meta.content = metaDesc;
+          document.head.appendChild(meta);
+        }
       }
+
+      // Related articles from API
+      if (allNews && Array.isArray(allNews)) {
+        const related = allNews
+          .filter((n: Record<string, unknown>) => String(n.slug) !== slug)
+          .slice(0, 3)
+          .map((n: Record<string, unknown>): NewsArticle => ({
+            id: String(n.id || ''),
+            slug: String(n.slug || ''),
+            title: String(n.title || ''),
+            excerpt: String(n.excerpt || ''),
+            content: '',
+            image: String(n.image || ''),
+            author: String(n.author || 'AGR Foundation'),
+            date: String(n.published_at || ''),
+            category: (n.category as NewsArticle['category']) || 'announcement',
+            readTime: Number(n.read_time || 3),
+          }));
+        setRelatedArticles(related);
+      }
+
       setLoading(false);
     });
+
+    return () => { document.title = 'AGR Foundation'; };
   }, [slug]);
 
   if (loading) {
@@ -134,19 +145,21 @@ const NewsArticlePage = () => {
           </AnimatedSection>
         </article>
 
-        <section className="py-16 section-cream mt-12">
-          <div className="container mx-auto px-4">
-            <h2 className="text-2xl font-display font-bold text-foreground mb-8 text-center">More Stories</h2>
-            <div className="grid md:grid-cols-3 gap-6 max-w-4xl mx-auto">
-              {staticArticles.filter((a) => a.slug !== article.slug).slice(0, 3).map((relatedArticle) => (
-                <Link key={relatedArticle.id} to={`/news/${relatedArticle.slug}`} className="card-elevated p-4 group">
-                  <img src={relatedArticle.image} alt={relatedArticle.title} className="w-full h-32 object-cover rounded-lg mb-3" />
-                  <h3 className="font-display font-semibold text-foreground group-hover:text-primary transition-colors line-clamp-2">{relatedArticle.title}</h3>
-                </Link>
-              ))}
+        {relatedArticles.length > 0 && (
+          <section className="py-16 section-cream mt-12">
+            <div className="container mx-auto px-4">
+              <h2 className="text-2xl font-display font-bold text-foreground mb-8 text-center">More Stories</h2>
+              <div className="grid md:grid-cols-3 gap-6 max-w-4xl mx-auto">
+                {relatedArticles.map((relatedArticle) => (
+                  <Link key={relatedArticle.id} to={`/news/${relatedArticle.slug}`} className="card-elevated p-4 group">
+                    {relatedArticle.image && <img src={relatedArticle.image} alt={relatedArticle.title} className="w-full h-32 object-cover rounded-lg mb-3" loading="lazy" />}
+                    <h3 className="font-display font-semibold text-foreground group-hover:text-primary transition-colors line-clamp-2">{relatedArticle.title}</h3>
+                  </Link>
+                ))}
+              </div>
             </div>
-          </div>
-        </section>
+          </section>
+        )}
       </main>
     </MobileLayout>
   );

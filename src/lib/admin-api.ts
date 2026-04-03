@@ -65,12 +65,13 @@ export const changeAdminPassword = async (currentPassword: string, newPassword: 
 };
 
 // Submissions
-export const getSubmissions = async (page = 1, limit = 20, formType = '', search = '', dateFrom = '', dateTo = '') => {
+export const getSubmissions = async (page = 1, limit = 20, formType = '', search = '', dateFrom = '', dateTo = '', status = '') => {
   const params = new URLSearchParams({ page: String(page), limit: String(limit) });
   if (formType) params.set('form_type', formType);
   if (search) params.set('search', search);
   if (dateFrom) params.set('date_from', dateFrom);
   if (dateTo) params.set('date_to', dateTo);
+  if (status) params.set('status', status);
   const res = await adminFetch(`${API_BASE_URL}/admin/submissions.php?${params}`);
   return safeJson(res);
 };
@@ -78,6 +79,22 @@ export const getSubmissions = async (page = 1, limit = 20, formType = '', search
 export const deleteSubmission = async (id: number, formType: string) => {
   const res = await adminFetch(`${API_BASE_URL}/admin/submissions.php?id=${id}&form_type=${formType}`, { method: 'DELETE' });
   return safeJson(res);
+};
+
+export const updateSubmissionStatus = async (id: number, formType: string, status: string) => {
+  const res = await adminFetch(`${API_BASE_URL}/admin/submissions.php`, {
+    method: 'PUT',
+    body: JSON.stringify({ id, form_type: formType, status }),
+  });
+  return safeJson(res);
+};
+
+export const getSubmissionCounts = async () => {
+  try {
+    const res = await adminFetch(`${API_BASE_URL}/admin/submissions.php?counts=1`);
+    const data = await safeJson(res);
+    return data.counts || {};
+  } catch { return {}; }
 };
 
 // Donations
@@ -111,7 +128,7 @@ export const uploadGalleryImage = async (formData: FormData) => {
   return safeJson(res);
 };
 
-export const updateGalleryImage = async (data: { id: number; alt?: string; category?: string; caption?: string; sort_order?: number }) => {
+export const updateGalleryImage = async (data: { id: number; alt?: string; category?: string; caption?: string; tags?: string; sort_order?: number }) => {
   const res = await adminFetch(`${API_BASE_URL}/admin/gallery.php`, {
     method: 'PUT',
     body: JSON.stringify(data),
@@ -214,7 +231,6 @@ export const seedStaticGallery = async () => {
         formData.append("alt", img.alt);
         formData.append("category", img.category);
         formData.append("caption", img.caption);
-        // These are placeholder entries without actual files - admin can replace later
       } catch { /* skip */ }
     }
     return { inserted };

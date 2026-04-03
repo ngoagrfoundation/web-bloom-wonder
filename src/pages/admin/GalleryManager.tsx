@@ -11,16 +11,16 @@ import { Badge } from "@/components/ui/badge";
 import { Plus, Trash2, Edit, Upload, X, FolderOpen, CheckSquare, Square, Inbox } from "lucide-react";
 import { toast } from "sonner";
 
-const defaultCategories = ["sustainability", "education", "healthcare", "community", "livelihood", "events", "volunteers", "others"];
+const defaultFolders = ["sustainability", "education", "healthcare", "community", "livelihood", "events", "volunteers", "others"];
 
-interface GalleryImage { id: number; src: string; alt: string; category: string; caption: string; sort_order: number; }
+interface GalleryImage { id: number; src: string; alt: string; category: string; caption: string; tags?: string; sort_order: number; }
 
 const GalleryManager = () => {
   const [images, setImages] = useState<GalleryImage[]>([]);
   const [loading, setLoading] = useState(true);
   const [showUpload, setShowUpload] = useState(false);
   const [editImage, setEditImage] = useState<GalleryImage | null>(null);
-  const [uploadForm, setUploadForm] = useState({ alt: "", category: "community", caption: "", customCategory: "" });
+  const [uploadForm, setUploadForm] = useState({ alt: "", category: "community", caption: "", tags: "", customCategory: "" });
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
   const [filterCategory, setFilterCategory] = useState("all");
@@ -31,13 +31,13 @@ const GalleryManager = () => {
   const fetchData = async () => { setLoading(true); try { const result = await getGalleryImages(); setImages(result.data || []); } catch { toast.error("Failed to load gallery"); } setLoading(false); };
   useEffect(() => { fetchData(); }, []);
 
-  const allCategories = Array.from(new Set([...defaultCategories, ...images.map(img => img.category).filter(c => c && !defaultCategories.includes(c))]));
+  const allFolders = Array.from(new Set([...defaultFolders, ...images.map(img => img.category).filter(c => c && !defaultFolders.includes(c))]));
   const filteredImages = images.filter(img => {
     if (filterCategory !== "all" && img.category !== filterCategory) return false;
-    if (searchQuery && !img.alt.toLowerCase().includes(searchQuery.toLowerCase()) && !img.caption?.toLowerCase().includes(searchQuery.toLowerCase())) return false;
+    if (searchQuery && !img.alt.toLowerCase().includes(searchQuery.toLowerCase()) && !img.caption?.toLowerCase().includes(searchQuery.toLowerCase()) && !(img.tags || "").toLowerCase().includes(searchQuery.toLowerCase())) return false;
     return true;
   });
-  const categoryCounts = images.reduce<Record<string, number>>((acc, img) => { acc[img.category] = (acc[img.category] || 0) + 1; return acc; }, {});
+  const folderCounts = images.reduce<Record<string, number>>((acc, img) => { acc[img.category] = (acc[img.category] || 0) + 1; return acc; }, {});
 
   const handleUpload = async () => {
     if (!selectedFile) { toast.error("Please select an image"); return; }
@@ -47,10 +47,11 @@ const GalleryManager = () => {
       const formData = new FormData();
       formData.append("image", selectedFile); formData.append("alt", uploadForm.alt);
       formData.append("category", category); formData.append("caption", uploadForm.caption);
+      formData.append("tags", uploadForm.tags);
       const result = await uploadGalleryImage(formData);
       if (result.error) { toast.error(result.error); } else {
         toast.success("Uploaded!"); setShowUpload(false); setSelectedFile(null);
-        setUploadForm({ alt: "", category: "community", caption: "", customCategory: "" }); fetchData();
+        setUploadForm({ alt: "", category: "community", caption: "", tags: "", customCategory: "" }); fetchData();
       }
     } catch { toast.error("Upload failed"); }
     setUploading(false);
@@ -59,7 +60,7 @@ const GalleryManager = () => {
   const handleUpdate = async () => {
     if (!editImage) return;
     const category = editImage.category === "others" ? editCustomCategory || "others" : editImage.category;
-    try { await updateGalleryImage({ id: editImage.id, alt: editImage.alt, category, caption: editImage.caption }); toast.success("Updated"); setEditImage(null); fetchData(); }
+    try { await updateGalleryImage({ id: editImage.id, alt: editImage.alt, category, caption: editImage.caption, tags: editImage.tags }); toast.success("Updated"); setEditImage(null); fetchData(); }
     catch { toast.error("Update failed"); }
   };
 
@@ -86,17 +87,17 @@ const GalleryManager = () => {
         </div>
       </div>
 
-      {/* Filters */}
+      {/* Folder Filters */}
       <Card className="rounded-xl shadow-sm">
         <CardContent className="py-3 flex flex-wrap gap-2 items-center">
-          <Input placeholder="Search alt/caption..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-52 h-9" />
+          <Input placeholder="Search alt/caption/tags..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-52 h-9" />
           <Button variant={filterCategory === "all" ? "default" : "outline"} size="sm" className="h-9 gap-1" onClick={() => setFilterCategory("all")}>
             <FolderOpen className="h-3 w-3" /> All <Badge variant="secondary" className="ml-1">{images.length}</Badge>
           </Button>
-          {allCategories.map(cat => (
-            <Button key={cat} variant={filterCategory === cat ? "default" : "outline"} size="sm" className="h-9 gap-1" onClick={() => setFilterCategory(cat)}>
-              {cat.charAt(0).toUpperCase() + cat.slice(1)}
-              {categoryCounts[cat] ? <Badge variant="secondary" className="ml-1">{categoryCounts[cat]}</Badge> : null}
+          {allFolders.map(folder => (
+            <Button key={folder} variant={filterCategory === folder ? "default" : "outline"} size="sm" className="h-9 gap-1" onClick={() => setFilterCategory(folder)}>
+              {folder.charAt(0).toUpperCase() + folder.slice(1)}
+              {folderCounts[folder] ? <Badge variant="secondary" className="ml-1">{folderCounts[folder]}</Badge> : null}
             </Button>
           ))}
         </CardContent>
@@ -116,7 +117,7 @@ const GalleryManager = () => {
           {filteredImages.map((img) => (
             <Card key={img.id} className={`overflow-hidden rounded-xl shadow-sm hover:shadow-md transition-shadow ${selectedIds.has(img.id) ? 'ring-2 ring-primary' : ''}`}>
               <div className="aspect-video relative">
-                <img src={img.src} alt={img.alt} className="w-full h-full object-cover" />
+                <img src={img.src} alt={img.alt} className="w-full h-full object-cover" loading="lazy" />
                 <div className="absolute top-2 left-2">
                   <Button size="icon" variant="secondary" className="h-7 w-7 rounded-lg" onClick={() => toggleSelect(img.id)}>
                     {selectedIds.has(img.id) ? <CheckSquare className="h-3 w-3" /> : <Square className="h-3 w-3" />}
@@ -129,7 +130,11 @@ const GalleryManager = () => {
               </div>
               <CardContent className="p-3">
                 <p className="text-sm font-medium truncate">{img.alt || "No title"}</p>
-                <p className="text-xs text-muted-foreground"><Badge variant="outline" className="text-[10px] mr-1">{img.category}</Badge>{img.caption?.slice(0, 40)}</p>
+                <div className="flex items-center gap-1 mt-1">
+                  <Badge variant="outline" className="text-[10px]">{img.category}</Badge>
+                  {img.tags && img.tags.split(",").filter(Boolean).map(t => <Badge key={t} variant="secondary" className="text-[10px]">{t.trim()}</Badge>)}
+                </div>
+                {img.caption && <p className="text-xs text-muted-foreground mt-1 truncate">{img.caption}</p>}
               </CardContent>
             </Card>
           ))}
@@ -153,12 +158,13 @@ const GalleryManager = () => {
             </div>
             <div><Label>Alt Text / Title</Label><Input value={uploadForm.alt} onChange={(e) => setUploadForm(f => ({ ...f, alt: e.target.value }))} placeholder="Describe the image" /></div>
             <div>
-              <Label>Category</Label>
+              <Label>Folder</Label>
               <Select value={uploadForm.category} onValueChange={(v) => setUploadForm(f => ({ ...f, category: v }))}><SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>{allCategories.map(c => <SelectItem key={c} value={c}>{c.charAt(0).toUpperCase() + c.slice(1)}</SelectItem>)}</SelectContent>
+                <SelectContent>{allFolders.map(c => <SelectItem key={c} value={c}>{c.charAt(0).toUpperCase() + c.slice(1)}</SelectItem>)}</SelectContent>
               </Select>
-              {uploadForm.category === "others" && <Input value={uploadForm.customCategory} onChange={(e) => setUploadForm(f => ({ ...f, customCategory: e.target.value }))} placeholder="Custom category name" className="mt-2" />}
+              {uploadForm.category === "others" && <Input value={uploadForm.customCategory} onChange={(e) => setUploadForm(f => ({ ...f, customCategory: e.target.value }))} placeholder="Custom folder name" className="mt-2" />}
             </div>
+            <div><Label>Tags (comma-separated)</Label><Input value={uploadForm.tags} onChange={(e) => setUploadForm(f => ({ ...f, tags: e.target.value }))} placeholder="e.g. outdoor, 2026, hyderabad" /></div>
             <div><Label>Caption</Label><Textarea value={uploadForm.caption} onChange={(e) => setUploadForm(f => ({ ...f, caption: e.target.value }))} placeholder="Short caption" rows={2} /></div>
             <Button onClick={handleUpload} disabled={uploading} className="w-full">{uploading ? "Uploading..." : "Upload"}</Button>
           </div>
@@ -174,13 +180,14 @@ const GalleryManager = () => {
               <img src={editImage.src} alt={editImage.alt} className="w-full h-40 object-cover rounded-lg" />
               <div><Label>Alt Text / Title</Label><Input value={editImage.alt} onChange={(e) => setEditImage({ ...editImage, alt: e.target.value })} /></div>
               <div>
-                <Label>Category</Label>
-                <Select value={allCategories.includes(editImage.category) ? editImage.category : "others"} onValueChange={(v) => { setEditImage({ ...editImage, category: v }); if (v !== "others") setEditCustomCategory(v); }}>
+                <Label>Folder</Label>
+                <Select value={allFolders.includes(editImage.category) ? editImage.category : "others"} onValueChange={(v) => { setEditImage({ ...editImage, category: v }); if (v !== "others") setEditCustomCategory(v); }}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>{allCategories.map(c => <SelectItem key={c} value={c}>{c.charAt(0).toUpperCase() + c.slice(1)}</SelectItem>)}</SelectContent>
+                  <SelectContent>{allFolders.map(c => <SelectItem key={c} value={c}>{c.charAt(0).toUpperCase() + c.slice(1)}</SelectItem>)}</SelectContent>
                 </Select>
-                {editImage.category === "others" && <Input value={editCustomCategory} onChange={(e) => setEditCustomCategory(e.target.value)} placeholder="Custom category" className="mt-2" />}
+                {editImage.category === "others" && <Input value={editCustomCategory} onChange={(e) => setEditCustomCategory(e.target.value)} placeholder="Custom folder" className="mt-2" />}
               </div>
+              <div><Label>Tags (comma-separated)</Label><Input value={editImage.tags || ""} onChange={(e) => setEditImage({ ...editImage, tags: e.target.value })} placeholder="e.g. outdoor, 2026" /></div>
               <div><Label>Caption</Label><Textarea value={editImage.caption} onChange={(e) => setEditImage({ ...editImage, caption: e.target.value })} rows={2} /></div>
               <Button onClick={handleUpdate} className="w-full">Save Changes</Button>
             </div>

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { getSubmissions, deleteSubmission } from "@/lib/admin-api";
+import { getSubmissions, deleteSubmission, updateSubmissionStatus } from "@/lib/admin-api";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,6 +8,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Trash2, ChevronLeft, ChevronRight, Download, Eye, Search, Inbox } from "lucide-react";
 import { toast } from "sonner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const formTypes = [
   { value: "", label: "All Types" },
@@ -32,21 +34,27 @@ const columnLabels: Record<string, string> = {
   age: "Age", batch: "Batch", problem: "Problem", ip_address: "IP Address",
   submitted_at: "Date", form_type: "Type", event_title: "Event",
   event_category: "Event Category", participants: "Participants",
-  special_requirements: "Special Requirements",
+  special_requirements: "Special Requirements", status: "Status",
 };
 
 const summaryColumns: Record<string, string[]> = {
-  contact: ["id", "name", "email", "phone", "submitted_at"],
-  volunteer: ["id", "full_name", "email", "phone", "location", "submitted_at"],
-  partner: ["id", "organization_name", "contact_person", "email", "submitted_at"],
-  adopt_student: ["id", "sponsor_name", "email", "phone", "city", "submitted_at"],
-  report_challenge: ["id", "name", "phone", "location", "challenge_type", "submitted_at"],
-  sanskrit_registration: ["id", "name", "mobile", "batch", "submitted_at"],
-  dental_registration: ["id", "name", "mobile", "submitted_at"],
-  event_registration: ["id", "event_title", "full_name", "email", "phone", "participants", "submitted_at"],
+  contact: ["id", "name", "email", "phone", "status", "submitted_at"],
+  volunteer: ["id", "full_name", "email", "phone", "location", "status", "submitted_at"],
+  partner: ["id", "organization_name", "contact_person", "email", "status", "submitted_at"],
+  adopt_student: ["id", "sponsor_name", "email", "phone", "city", "status", "submitted_at"],
+  report_challenge: ["id", "name", "phone", "location", "challenge_type", "status", "submitted_at"],
+  sanskrit_registration: ["id", "name", "mobile", "batch", "status", "submitted_at"],
+  dental_registration: ["id", "name", "mobile", "status", "submitted_at"],
+  event_registration: ["id", "event_title", "full_name", "email", "phone", "status", "submitted_at"],
 };
 
-interface Submission { id: number; form_type: string; [key: string]: unknown; }
+interface Submission { id: number; form_type: string; status?: string; [key: string]: unknown; }
+
+const statusColors: Record<string, string> = {
+  new: "bg-blue-100 text-blue-800",
+  reviewed: "bg-amber-100 text-amber-800",
+  closed: "bg-green-100 text-green-800",
+};
 
 const Submissions = () => {
   const [submissions, setSubmissions] = useState<Submission[]>([]);
@@ -59,11 +67,12 @@ const Submissions = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
+  const [statusFilter, setStatusFilter] = useState("");
 
   const fetchData = async () => {
     setLoading(true);
     try {
-      const result = await getSubmissions(page, 20, formType, searchQuery, dateFrom, dateTo);
+      const result = await getSubmissions(page, 20, formType, searchQuery, dateFrom, dateTo, statusFilter);
       setSubmissions(result.data || []);
       setTotalPages(result.pages || 1);
       setTotal(result.total || 0);
@@ -71,7 +80,7 @@ const Submissions = () => {
     setLoading(false);
   };
 
-  useEffect(() => { fetchData(); }, [page, formType]);
+  useEffect(() => { fetchData(); }, [page, formType, statusFilter]);
 
   const handleSearch = () => { setPage(1); fetchData(); };
 
@@ -81,9 +90,17 @@ const Submissions = () => {
     catch { toast.error("Failed to delete"); }
   };
 
+  const handleStatusChange = async (id: number, type: string, newStatus: string) => {
+    try {
+      await updateSubmissionStatus(id, type, newStatus);
+      toast.success(`Status updated to ${newStatus}`);
+      setSubmissions(prev => prev.map(s => s.id === id && s.form_type === type ? { ...s, status: newStatus } : s));
+    } catch { toast.error("Failed to update status"); }
+  };
+
   const getVisibleColumns = (): string[] => {
     if (formType && summaryColumns[formType]) return summaryColumns[formType];
-    return ["id", "form_type", "submitted_at"];
+    return ["id", "form_type", "status", "submitted_at"];
   };
 
   const formatValue = (key: string, value: unknown): string => {
@@ -110,7 +127,6 @@ const Submissions = () => {
 
   return (
     <div className="space-y-4">
-      {/* Filters */}
       <Card className="rounded-xl shadow-sm">
         <CardContent className="py-3">
           <div className="flex flex-wrap gap-3 items-center">
@@ -118,6 +134,15 @@ const Submissions = () => {
               <SelectTrigger className="w-[180px] h-9"><SelectValue placeholder="Filter by type" /></SelectTrigger>
               <SelectContent>
                 {formTypes.map(t => <SelectItem key={t.value} value={t.value || "all"}>{t.label}</SelectItem>)}
+              </SelectContent>
+            </Select>
+            <Select value={statusFilter || "all"} onValueChange={(v) => { setStatusFilter(v === "all" ? "" : v); setPage(1); }}>
+              <SelectTrigger className="w-[140px] h-9"><SelectValue placeholder="Status" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Status</SelectItem>
+                <SelectItem value="new">New</SelectItem>
+                <SelectItem value="reviewed">Reviewed</SelectItem>
+                <SelectItem value="closed">Closed</SelectItem>
               </SelectContent>
             </Select>
             <div className="flex gap-1">
@@ -145,7 +170,14 @@ const Submissions = () => {
       <Card className="rounded-xl shadow-sm overflow-hidden">
         <CardContent className="p-0">
           {loading ? (
-            <div className="p-8 text-center text-muted-foreground text-sm">Loading...</div>
+            <div className="p-4 space-y-2">
+              {[...Array(5)].map((_, i) => (
+                <div key={i} className="flex gap-4 items-center">
+                  {visibleCols.map((_, j) => <Skeleton key={j} className="h-8 flex-1" />)}
+                  <Skeleton className="h-8 w-20" />
+                </div>
+              ))}
+            </div>
           ) : submissions.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-16 text-muted-foreground gap-2">
               <Inbox className="h-8 w-8 text-muted-foreground/40" />
@@ -166,9 +198,22 @@ const Submissions = () => {
                       {visibleCols.map(col => (
                         <TableCell key={col} className={col === "id" ? "font-mono text-xs" : "text-sm"}>
                           {col === "form_type" ? (
-                            <span className="inline-block px-2 py-0.5 rounded-full text-xs bg-primary/10 text-primary">
+                            <Badge variant="secondary" className="text-xs">
                               {formTypes.find(f => f.value === String(s.form_type))?.label || String(s.form_type)}
-                            </span>
+                            </Badge>
+                          ) : col === "status" ? (
+                            <Select value={String(s.status || "new")} onValueChange={(v) => handleStatusChange(s.id, String(s.form_type), v)}>
+                              <SelectTrigger className="h-7 w-[100px] border-0 p-0">
+                                <Badge className={`${statusColors[String(s.status || "new")] || statusColors.new} text-xs cursor-pointer`}>
+                                  {String(s.status || "new").charAt(0).toUpperCase() + String(s.status || "new").slice(1)}
+                                </Badge>
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="new">New</SelectItem>
+                                <SelectItem value="reviewed">Reviewed</SelectItem>
+                                <SelectItem value="closed">Closed</SelectItem>
+                              </SelectContent>
+                            </Select>
                           ) : (
                             <span className="truncate max-w-[200px] block">{formatValue(col, s[col])}</span>
                           )}
@@ -209,7 +254,13 @@ const Submissions = () => {
               {Object.entries(detailRow).filter(([key]) => !hiddenKeys.includes(key)).map(([key, value]) => (
                 <div key={key} className="flex flex-col border-b border-border pb-2">
                   <span className="text-xs font-medium text-muted-foreground uppercase">{columnLabels[key] || key.replace(/_/g, " ")}</span>
-                  <span className="text-sm mt-0.5 whitespace-pre-wrap">{formatValue(key, value)}</span>
+                  {key === "status" ? (
+                    <Badge className={`${statusColors[String(value || "new")] || statusColors.new} text-xs w-fit mt-1`}>
+                      {String(value || "new").charAt(0).toUpperCase() + String(value || "new").slice(1)}
+                    </Badge>
+                  ) : (
+                    <span className="text-sm mt-0.5 whitespace-pre-wrap">{formatValue(key, value)}</span>
+                  )}
                 </div>
               ))}
             </div>
