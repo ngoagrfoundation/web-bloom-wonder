@@ -39,9 +39,9 @@ const EventsTicker = () => {
   const displayEvents = [...events, ...events];
 
   return (
-    <div className="bg-primary text-primary-foreground py-2 overflow-hidden">
+    <div className="bg-gray-900 text-white py-3 overflow-hidden">
       <div className="flex items-center">
-        <div className="flex-shrink-0 px-4 flex items-center gap-1.5 border-r border-primary-foreground/20">
+        <div className="flex-shrink-0 px-4 flex items-center gap-1.5 border-r border-white/20">
           <CalendarDays className="h-4 w-4" />
           <span className="text-xs font-semibold uppercase tracking-wide">Upcoming</span>
         </div>
@@ -51,13 +51,13 @@ const EventsTicker = () => {
               <Link
                 key={`${event.id}-${i}`}
                 to="/events"
-                className="inline-flex items-center gap-2 px-6 text-sm hover:text-primary-foreground/80 transition-colors"
+                className="inline-flex items-center gap-2 px-6 text-sm hover:text-white/80 transition-colors"
               >
                 <span className="font-medium">{event.title}</span>
-                <span className="text-primary-foreground/60 text-xs">
+                <span className="text-white/60 text-xs">
                   {new Date(event.date).toLocaleDateString("en-IN", { day: "numeric", month: "short" })}
                 </span>
-                <span className="text-primary-foreground/30">•</span>
+                <span className="text-white/30">•</span>
               </Link>
             ))}
           </div>

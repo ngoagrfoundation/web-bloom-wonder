@@ -3,9 +3,11 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
-import { Save, Loader2, Sliders, GripVertical } from "lucide-react";
+import { Save, Loader2, Sliders, GripVertical, Upload, X, Image as ImageIcon } from "lucide-react";
 import { API_BASE_URL } from "@/lib/api";
+import { uploadImage } from "@/lib/admin-api";
 
 const adminFetch = async (url: string, options: RequestInit = {}) => {
   const res = await fetch(url, { ...options, credentials: "include", headers: { "Content-Type": "application/json", ...options.headers } });
@@ -31,10 +33,22 @@ const sections = [
   { key: "contact", label: "Contact Section", desc: "Contact form and info" },
 ];
 
+const sectionImages = [
+  { key: "about_section_image", label: "About Section Image", desc: "Photo shown in the About section" },
+  { key: "programs_education_image", label: "Education Program", desc: "Education card image" },
+  { key: "programs_healthcare_image", label: "Healthcare Program", desc: "Healthcare card image" },
+  { key: "programs_livelihood_image", label: "Livelihood Program", desc: "Livelihood card image" },
+  { key: "programs_dental_image", label: "Dental Treatment", desc: "Dental card image" },
+  { key: "programs_sanskrit_image", label: "Learning Sanskrit", desc: "Sanskrit card image" },
+  { key: "programs_food_image", label: "Food Distribution", desc: "Annadanam card image" },
+  { key: "sustainability_bg_image", label: "Sustainability Background", desc: "Make a Difference section background" },
+];
+
 const LandingPageControls = () => {
   const [settings, setSettings] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [uploadingKey, setUploadingKey] = useState<string | null>(null);
 
   useEffect(() => {
     adminFetch(`${API_BASE_URL}/admin/settings.php`)
@@ -47,6 +61,26 @@ const LandingPageControls = () => {
   const toggleSection = (key: string) => {
     const settingKey = `section_${key}_enabled`;
     setSettings((prev) => ({ ...prev, [settingKey]: prev[settingKey] === "0" ? "1" : "0" }));
+  };
+
+  const handleImageUpload = async (file: File, key: string) => {
+    setUploadingKey(key);
+    try {
+      const result = await uploadImage(file, "general");
+      if (result.path) {
+        setSettings((prev) => ({ ...prev, [key]: result.path }));
+        toast.success("Image uploaded!");
+      } else {
+        toast.error("Upload failed");
+      }
+    } catch {
+      toast.error("Upload failed");
+    }
+    setUploadingKey(null);
+  };
+
+  const removeImage = (key: string) => {
+    setSettings((prev) => ({ ...prev, [key]: "" }));
   };
 
   const save = async () => {
@@ -62,10 +96,11 @@ const LandingPageControls = () => {
 
   return (
     <div className="space-y-6 max-w-3xl">
+      {/* Section Toggles */}
       <Card className="rounded-xl shadow-sm">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-lg"><Sliders className="w-5 h-5 text-primary" />Landing Page Sections</CardTitle>
-          <CardDescription>Enable or disable sections on the public landing page. Sections with no data are automatically hidden regardless of this setting.</CardDescription>
+          <CardDescription>Enable or disable sections on the public landing page.</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-1">
@@ -79,6 +114,58 @@ const LandingPageControls = () => {
                   </div>
                 </div>
                 <Switch checked={isEnabled(section.key)} onCheckedChange={() => toggleSection(section.key)} />
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Section Image Uploads */}
+      <Card className="rounded-xl shadow-sm">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-lg"><ImageIcon className="w-5 h-5 text-primary" />Section Images</CardTitle>
+          <CardDescription>Upload or replace images for landing page sections. Leave empty to use defaults.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            {sectionImages.map((img) => (
+              <div key={img.key} className="flex items-center gap-4 p-3 rounded-lg border border-border">
+                <div className="w-20 h-14 rounded-lg bg-muted overflow-hidden flex-shrink-0">
+                  {settings[img.key] ? (
+                    <img src={settings[img.key]} alt={img.label} className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center">
+                      <ImageIcon className="h-5 w-5 text-muted-foreground/40" />
+                    </div>
+                  )}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium">{img.label}</p>
+                  <p className="text-xs text-muted-foreground">{img.desc}</p>
+                </div>
+                <div className="flex gap-2 flex-shrink-0">
+                  {settings[img.key] && (
+                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => removeImage(img.key)}>
+                      <X className="h-4 w-4" />
+                    </Button>
+                  )}
+                  <label className="cursor-pointer">
+                    <Button variant="outline" size="sm" className="pointer-events-none" disabled={uploadingKey === img.key}>
+                      {uploadingKey === img.key ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : <Upload className="h-3 w-3 mr-1" />}
+                      {settings[img.key] ? "Replace" : "Upload"}
+                    </Button>
+                    <Input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) handleImageUpload(file, img.key);
+                        e.target.value = "";
+                      }}
+                    />
+                  </label>
+                </div>
               </div>
             ))}
           </div>

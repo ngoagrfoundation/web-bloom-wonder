@@ -34,6 +34,9 @@ const GallerySection = () => {
     setLightboxOpen(true);
   };
 
+  if (!loading && images.length === 0) return null;
+  if (loading) return null;
+
   return (
     <section className="py-24 section-cream">
       <div className="container mx-auto px-4">
@@ -43,32 +46,19 @@ const GallerySection = () => {
           <p className="text-muted-foreground max-w-xl mx-auto">Explore moments captured from our programs and community events.</p>
         </AnimatedSection>
 
-        {loading ? (
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-14">
-            {[...Array(6)].map((_, i) => (
-              <div key={i} className="aspect-square rounded-xl bg-muted animate-pulse" />
-            ))}
-          </div>
-        ) : images.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-16 text-muted-foreground gap-3 mb-14">
-            <ImageIcon className="h-12 w-12 text-muted-foreground/40" />
-            <p className="text-sm">Gallery images coming soon</p>
-          </div>
-        ) : (
-          <StaggerContainer className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-14">
-            {images.slice(0, 6).map((image, index) => (
-              <StaggerItem key={image.id}>
-                <motion.button onClick={() => openLightbox(index)} className="relative overflow-hidden rounded-xl group aspect-square w-full" whileHover={{ scale: 1.02 }} transition={{ duration: 0.2 }}>
-                  <img src={image.src} alt={image.alt} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" loading="lazy" onError={(e) => { e.currentTarget.src = "/placeholder.svg"; }} />
-                  <div className="absolute inset-0 bg-gradient-to-t from-foreground/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                  <div className="absolute bottom-0 left-0 right-0 p-4 text-primary-foreground transform translate-y-full group-hover:translate-y-0 transition-transform duration-300">
-                    <p className="text-sm font-medium line-clamp-2">{image.caption}</p>
-                  </div>
-                </motion.button>
-              </StaggerItem>
-            ))}
-          </StaggerContainer>
-        )}
+        <StaggerContainer className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-14">
+          {images.slice(0, 6).map((image, index) => (
+            <StaggerItem key={image.id}>
+              <motion.button onClick={() => openLightbox(index)} className="relative overflow-hidden rounded-xl group aspect-square w-full" whileHover={{ scale: 1.02 }} transition={{ duration: 0.2 }}>
+                <img src={image.src} alt={image.alt} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" loading="lazy" onError={(e) => { e.currentTarget.src = "/placeholder.svg"; }} />
+                <div className="absolute inset-0 bg-gradient-to-t from-foreground/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                <div className="absolute bottom-0 left-0 right-0 p-4 text-primary-foreground transform translate-y-full group-hover:translate-y-0 transition-transform duration-300">
+                  <p className="text-sm font-medium line-clamp-2">{image.caption}</p>
+                </div>
+              </motion.button>
+            </StaggerItem>
+          ))}
+        </StaggerContainer>
 
         <AnimatedSection className="text-center">
           <Link to="/gallery" className="inline-flex items-center gap-2 text-primary hover:text-primary/80 font-medium transition-colors group">

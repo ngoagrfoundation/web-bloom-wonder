@@ -1,6 +1,8 @@
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Shield, Users, Leaf, Wrench, Home } from "lucide-react";
-import heroImage from "@/assets/hero-volunteers.jpg";
+import defaultHeroImage from "@/assets/hero-volunteers.jpg";
+import { fetchPublicSettings } from "@/lib/api";
 
 const corePillars = [
   { icon: Shield, title: "Social Welfare", description: "Healthcare access, education, and essential social support for the vulnerable.", link: "/focus/social-welfare" },
@@ -11,6 +13,14 @@ const corePillars = [
 ];
 
 const AboutSection = () => {
+  const [heroImage, setHeroImage] = useState(defaultHeroImage);
+
+  useEffect(() => {
+    fetchPublicSettings().then((settings) => {
+      if (settings?.about_section_image) setHeroImage(settings.about_section_image);
+    });
+  }, []);
+
   return (
     <section id="about" className="py-24 bg-background">
       <div className="container mx-auto px-4">

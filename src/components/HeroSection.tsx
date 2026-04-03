@@ -103,7 +103,7 @@ const HeroSection = () => {
             {slides.map((slide, index) => (
               <div key={index} className="flex-[0_0_100%] min-w-0 h-full relative">
                 <img src={slide.image} alt={slide.alt} className="absolute inset-0 w-full h-full object-cover" />
-                <div className="absolute inset-0 bg-gradient-to-r from-primary/90 via-primary/70 to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/60 to-transparent" />
                 <div className="relative z-10 container mx-auto px-4 h-full flex items-center">
                   <div className="max-w-2xl">
                     <h1 className="font-display text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold text-white leading-tight">

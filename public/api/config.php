@@ -15,7 +15,8 @@ $allowed_origins = [
 ];
 
 $origin = isset($_SERVER['HTTP_ORIGIN']) ? $_SERVER['HTTP_ORIGIN'] : '';
-if (in_array($origin, $allowed_origins)) {
+if (in_array($origin, $allowed_origins) || 
+    (function_exists('str_contains') ? str_contains($origin, 'lovable.app') || str_contains($origin, 'lovableproject.com') : (strpos($origin, 'lovable.app') !== false || strpos($origin, 'lovableproject.com') !== false))) {
     header("Access-Control-Allow-Origin: $origin");
 }
 header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");
