@@ -193,6 +193,7 @@ const GetInvolvedSection = () => {
         <DialogContent className="max-w-2xl max-h-[90vh] p-0">
           <DialogHeader className="sr-only">
             <DialogTitle>Adopt a Student</DialogTitle>
+            <DialogDescription>Fill out the form to sponsor a student</DialogDescription>
           </DialogHeader>
           <ScrollArea className="max-h-[90vh]">
             <AdoptStudentForm onSuccess={closeModal} />
