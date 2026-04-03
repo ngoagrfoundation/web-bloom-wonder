@@ -135,7 +135,7 @@ const HeroSection = () => {
 
       <Dialog open={showSanskritForm} onOpenChange={setShowSanskritForm}>
         <DialogContent className="sm:max-w-md">
-          <DialogHeader><DialogTitle className="text-xl font-bold text-primary">Register for Free Sanskrit Classes</DialogTitle></DialogHeader>
+          <DialogHeader><DialogTitle className="text-xl font-bold text-primary">Register for Free Sanskrit Classes</DialogTitle><DialogDescription className="sr-only">Fill out the form to register for free Sanskrit classes</DialogDescription></DialogHeader>
           <ScrollArea className="max-h-[70vh]">
             <form onSubmit={handleSanskritSubmit} className="space-y-4 p-1">
               <div className="space-y-2"><Label htmlFor="sanskrit-name">Name <span className="text-destructive">*</span></Label><Input id="sanskrit-name" placeholder="Enter your full name" value={sanskritForm.name} onChange={(e) => setSanskritForm(p => ({ ...p, name: e.target.value }))} /></div>
