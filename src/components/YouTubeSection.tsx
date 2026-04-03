@@ -77,6 +77,8 @@ const YouTubeSection = () => {
 
       <Dialog open={!!activeVideo} onOpenChange={() => setActiveVideo(null)}>
         <DialogContent className="sm:max-w-[720px] p-0 bg-black border-none">
+          <DialogTitle className="sr-only">{activeVideo?.title || "Video"}</DialogTitle>
+          <DialogDescription className="sr-only">Playing YouTube video</DialogDescription>
           {activeVideo && (
             <div className="aspect-video w-full">
               <iframe

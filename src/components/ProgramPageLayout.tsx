@@ -226,6 +226,7 @@ const ProgramPageLayout = ({
           <DialogContent className="max-w-2xl max-h-[90vh] p-0">
             <DialogHeader className="sr-only">
               <DialogTitle>Register as a Volunteer</DialogTitle>
+              <DialogDescription>Fill out the form to register as a volunteer</DialogDescription>
             </DialogHeader>
             <ScrollArea className="max-h-[70vh]">
               <VolunteerForm onSuccess={() => setShowVolunteerModal(false)} />

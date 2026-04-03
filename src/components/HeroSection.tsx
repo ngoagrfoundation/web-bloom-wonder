@@ -162,7 +162,7 @@ const HeroSection = () => {
 
       <Dialog open={showDentalForm} onOpenChange={setShowDentalForm}>
         <DialogContent className="sm:max-w-md">
-          <DialogHeader><DialogTitle className="text-xl font-bold text-primary">Register for Free Dental Treatment</DialogTitle></DialogHeader>
+          <DialogHeader><DialogTitle className="text-xl font-bold text-primary">Register for Free Dental Treatment</DialogTitle><DialogDescription className="sr-only">Fill out the form to register for free dental treatment</DialogDescription></DialogHeader>
           <ScrollArea className="max-h-[70vh]">
             <form onSubmit={handleDentalSubmit} className="space-y-4 p-1">
               <div className="space-y-2"><Label htmlFor="dental-name">Name <span className="text-destructive">*</span></Label><Input id="dental-name" placeholder="Enter your full name" value={dentalForm.name} onChange={(e) => setDentalForm(p => ({ ...p, name: e.target.value }))} /></div>

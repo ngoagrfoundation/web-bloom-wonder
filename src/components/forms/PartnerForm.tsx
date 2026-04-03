@@ -75,7 +75,7 @@ const PartnerForm = ({ onSuccess: onSuccessCallback }: PartnerFormProps) => {
   const onSubmit = async (data: PartnerFormData) => {
     const orgTypeLabel = organizationTypes.find(t => t.id === data.organizationType)?.label || data.organizationType;
     await submitForm({
-      organization: data.organizationName,
+      organizationName: data.organizationName,
       contactPerson: data.contactPerson,
       email: data.email,
       phone: data.phone,

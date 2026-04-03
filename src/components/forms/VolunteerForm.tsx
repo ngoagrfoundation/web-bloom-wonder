@@ -67,7 +67,7 @@ const VolunteerForm = ({ onSuccess: onSuccessCallback }: VolunteerFormProps) => 
 
   const onSubmit = async (data: VolunteerFormData) => {
     await submitForm({
-      fullName: data.fullName,
+      full_name: data.fullName,
       email: data.email,
       phone: data.phone,
       location: data.location,
