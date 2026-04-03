@@ -98,6 +98,7 @@ const App = () => (
             
             {/* Admin Routes */}
             <Route path="/admin" element={<Suspense fallback={<AdminFallback />}><AdminLogin /></Suspense>} />
+            <Route path="/admin/database" element={<Suspense fallback={<AdminFallback />}><DatabaseBrowser /></Suspense>} />
             <Route element={<Suspense fallback={<AdminFallback />}><AdminLayout /></Suspense>}>
               <Route path="/admin/dashboard" element={<Suspense fallback={<AdminFallback />}><Dashboard /></Suspense>} />
               <Route path="/admin/submissions" element={<Suspense fallback={<AdminFallback />}><Submissions /></Suspense>} />
@@ -105,7 +106,6 @@ const App = () => (
               <Route path="/admin/gallery" element={<Suspense fallback={<AdminFallback />}><GalleryManager /></Suspense>} />
               <Route path="/admin/events" element={<Suspense fallback={<AdminFallback />}><EventsManager /></Suspense>} />
               <Route path="/admin/news" element={<Suspense fallback={<AdminFallback />}><NewsManager /></Suspense>} />
-              <Route path="/admin/database" element={<Suspense fallback={<AdminFallback />}><DatabaseBrowser /></Suspense>} />
               <Route path="/admin/reels" element={<Suspense fallback={<AdminFallback />}><ReelsManager /></Suspense>} />
               <Route path="/admin/testimonials" element={<Suspense fallback={<AdminFallback />}><TestimonialsManager /></Suspense>} />
               <Route path="/admin/settings" element={<Suspense fallback={<AdminFallback />}><SiteSettingsPage /></Suspense>} />
