@@ -4,7 +4,8 @@ import { MobileLayout } from "@/components/mobile";
 import GalleryLightbox, { GalleryImage } from "@/components/GalleryLightbox";
 import AnimatedSection, { StaggerContainer, StaggerItem } from "@/components/AnimatedSection";
 import { fetchPublicGallery, fetchPublicReels, fetchYouTubeVideos, YouTubeVideo } from "@/lib/api";
-import { ImageIcon, Play, Film } from "lucide-react";
+import { ImageIcon, Play, Film, Video } from "lucide-react";
+import { useSearchParams } from "react-router-dom";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 
 interface VideoItem {
@@ -25,7 +26,9 @@ const Gallery = () => {
   const [activeVideo, setActiveVideo] = useState<VideoItem | null>(null);
   const [loading, setLoading] = useState(true);
   const [categories, setCategories] = useState([{ id: "all", label: "All" }]);
-  const [activeTab, setActiveTab] = useState<"photos" | "videos">("photos");
+  const [searchParams] = useSearchParams();
+  const initialTab = (searchParams.get("tab") as "photos" | "videos" | "reels") || "photos";
+  const [activeTab, setActiveTab] = useState<"photos" | "videos" | "reels">(initialTab);
 
   useEffect(() => {
     Promise.all([
@@ -122,6 +125,13 @@ const Gallery = () => {
                 Photos {galleryImages.length > 0 && `(${galleryImages.length})`}
               </button>
               <button
+                onClick={() => setActiveTab("reels")}
+                className={`px-5 py-2 rounded-full text-sm font-medium flex items-center gap-2 transition-colors ${activeTab === "reels" ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:bg-muted/80"}`}
+              >
+                <Video className="w-4 h-4" />
+                Reels
+              </button>
+              <button
                 onClick={() => setActiveTab("videos")}
                 className={`px-5 py-2 rounded-full text-sm font-medium flex items-center gap-2 transition-colors ${activeTab === "videos" ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:bg-muted/80"}`}
               >
@@ -172,8 +182,40 @@ const Gallery = () => {
                   ))}
                 </StaggerContainer>
               )
+            ) : activeTab === "reels" ? (
+              /* Reels Tab - show manual reels only */
+              videos.filter(v => v.source === "manual").length === 0 ? (
+                <div className="text-center py-20">
+                  <Video className="h-12 w-12 mx-auto text-muted-foreground/30 mb-4" />
+                  <p className="text-muted-foreground text-lg">No reels available yet.</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                  {videos.filter(v => v.source === "manual").map((video) => (
+                    <motion.button
+                      key={video.id}
+                      onClick={() => setActiveVideo(video)}
+                      className="group text-left rounded-xl overflow-hidden bg-card border border-border hover:shadow-lg transition-shadow"
+                      whileHover={{ scale: 1.02 }}
+                      transition={{ duration: 0.2 }}
+                    >
+                      <div className="relative aspect-video">
+                        <img src={video.thumbnail || "/placeholder.svg"} alt={video.title} className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" loading="lazy" />
+                        <div className="absolute inset-0 bg-black/20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                          <div className="w-12 h-12 rounded-full bg-primary flex items-center justify-center">
+                            <Play className="w-5 h-5 text-primary-foreground fill-current ml-0.5" />
+                          </div>
+                        </div>
+                      </div>
+                      <div className="p-3">
+                        <h3 className="font-semibold text-sm line-clamp-2">{video.title}</h3>
+                      </div>
+                    </motion.button>
+                  ))}
+                </div>
+              )
             ) : (
-              /* Videos Tab */
+              /* Videos Tab - show YouTube videos */
               videos.length === 0 ? (
                 <div className="text-center py-20">
                   <Film className="h-12 w-12 mx-auto text-muted-foreground/30 mb-4" />

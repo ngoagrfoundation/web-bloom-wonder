@@ -14,6 +14,7 @@ import NewsSection from "@/components/NewsSection";
 import GallerySection from "@/components/GallerySection";
 import PartnersSection from "@/components/PartnersSection";
 import SponsorsSection from "@/components/SponsorsSection";
+import YouTubeSection from "@/components/YouTubeSection";
 import ContactSection from "@/components/ContactSection";
 import { fetchPublicSettings } from "@/lib/api";
 
@@ -45,6 +46,7 @@ const Index = () => {
         {isEnabled("gallery") && <GallerySection />}
         {isEnabled("partners") && <PartnersSection />}
         {isEnabled("sponsors") && <SponsorsSection />}
+        {isEnabled("youtube") && <YouTubeSection />}
         {isEnabled("contact") && <ContactSection />}
       </main>
     </MobileLayout>
