@@ -1,95 +1,128 @@
 
 
-## 6 Fixes: Reels Design, YouTube Section, Gallery Dropdown, Stray Images, Ticker Color, Partners/Sponsors
+## Fix Form Errors, Dialog Warnings, and Hero Height
 
 ### Root Cause Analysis
 
-| Issue | Root Cause |
-|-------|-----------|
-| 1. Reels section too tall | Uses `aspect-[9/16]` (portrait) cards with `py-24` padding |
-| 2. YouTube videos need separate section + admin control | Currently mixed into ReelsSection; no admin toggle for which YT videos to feature |
-| 3. Header "Gallery" is a single link | No dropdown with Reels/Photos/Videos sub-links |
-| 4. Stray images on landing page not in Gallery | Some sections (About, Programs, etc.) use bundled static images — these are section images, not gallery images. This is by design. |
-| 5. Ticker strip color | Currently `bg-gray-900` — not contrasting enough below dark hero |
-| 6. Partners & Sponsors not showing | PHP files `public-partners.php` and `public-sponsors.php` use `require_once __DIR__ . '/../config.php'` but config.php is in the same `api/` directory, so the path should be `__DIR__ . '/config.php'`. This causes a fatal PHP error. |
+| Issue | Cause | Fix |
+|-------|-------|-----|
+| Forms returning 500 | PHP `submit-form.php` crashes on the production server — likely missing database tables (`volunteer_submissions`, `partner_submissions`, `adopt_student_submissions`, `report_challenge_submissions`) | Provide SQL to create all required tables; also add `lovableproject.com` to `isPreview` check in `api.ts` |
+| "X-Frame-Options may only be set via meta" warning | `index.html` line 16 has `<meta http-equiv="X-Frame-Options">` which browsers ignore (must be an HTTP header) | Remove that meta tag |
+| "Missing Description for DialogContent" warning | Radix Dialog requires a `DialogDescription` inside `DialogContent` for accessibility | Add `DialogDescription` (visually hidden) to all 4 modals in `GetInvolvedSection.tsx` and any other dialogs missing it |
+| Hero section too short | Currently `h-[70vh] min-h-[500px]` | Increase to `h-[85vh] min-h-[600px]` |
 
 ---
 
 ### Implementation
 
-#### 1. Reels Section — Reduce Height + Enhance Design
+#### 1. Fix `index.html` — Remove invalid meta tag
 
-**File: `src/components/ReelsSection.tsx`**
-- Reduce section padding: `py-24` to `py-16`
-- Change card aspect ratio from `aspect-[9/16]` (portrait) to `aspect-video` (16:9 landscape)
-- Reduce card width from `w-[220px] md:w-[260px]` to `w-[280px] md:w-[320px]`
-- Add subtle gradient overlay on thumbnails for better text readability
-- Overall height reduction of ~40%
+**File: `index.html`** (line 16)
+- Remove `<meta http-equiv="X-Frame-Options" content="SAMEORIGIN" />` — this header is already set via `_headers` and `vercel.json`
 
-#### 2. YouTube Videos — Separate Section Above Footer + Admin Control
+#### 2. Fix Dialog accessibility warnings
 
-**File: `src/components/YouTubeSection.tsx`** (NEW)
-- New dedicated section showing YouTube channel videos in a grid
-- Fetches from `fetchYouTubeVideos()` (existing function)
-- Admin can mark specific YouTube videos to feature via Reels Manager (add a `is_featured_yt` flag concept — or simpler: admin sets which YT videos to show by adding them as reels with YouTube URLs)
-- Placed in Index.tsx between Sponsors and Contact sections
+**File: `src/components/GetInvolvedSection.tsx`**
+- Add `<DialogDescription className="sr-only">` inside each of the 4 dialog modals (Volunteer, Partner, Report, Adopt)
 
-**File: `src/pages/Index.tsx`**
-- Add `YouTubeSection` component before `ContactSection`
-- Add `isEnabled("youtube")` toggle
+#### 3. Fix API URL for Lovable preview
 
-#### 3. Header "Gallery" → Dropdown with Reels, Photos, Videos
+**File: `src/lib/api.ts`** (line 4)
+- Change: `window.location.hostname.includes('lovable.app')` 
+- To: `window.location.hostname.includes('lovable.app') || window.location.hostname.includes('lovableproject.com')`
 
-**File: `src/components/Header.tsx`**
-- Change `Gallery` from a plain link to a dropdown menu with 3 items:
-  - "Reels" → `/gallery?tab=reels` (or a scroll-to anchor)
-  - "Photos" → `/gallery?tab=photos`
-  - "Videos" → `/gallery?tab=videos`
+This ensures the preview correctly routes to the production API.
 
-**File: `src/components/mobile/MobileHeader.tsx`**
-- Same dropdown change for mobile nav
+#### 4. Increase hero section height
 
-**File: `src/pages/Gallery.tsx`**
-- Add a "Reels" tab alongside "Photos" and "Videos"
-- Read `?tab=` query param to set initial active tab
+**File: `src/components/HeroSection.tsx`** (line 100)
+- Change `h-[70vh] min-h-[500px]` to `h-[85vh] min-h-[600px]`
 
-#### 4. Stray Images Clarification
+#### 5. SQL tables you must verify exist
 
-The images you see on the landing page (About section photo, Program card images, Sustainability background) are **section images**, not gallery images. They are managed via **Admin → Landing Page Controls** where you can upload replacements. This is working as designed — they are not supposed to appear in the Gallery.
+The 500 error means your production database is missing one or more tables. Run this in phpMyAdmin (skip any that already exist):
 
-#### 5. Events Ticker — Yellow/Contrasting Color
+```sql
+CREATE TABLE IF NOT EXISTS volunteer_submissions (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  full_name VARCHAR(255), email VARCHAR(255), phone VARCHAR(50),
+  location VARCHAR(255), initiatives TEXT, availability TEXT,
+  experience TEXT, ip_address VARCHAR(45), status VARCHAR(20) DEFAULT 'new',
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
 
-**File: `src/components/EventsTicker.tsx`**
-- Change `bg-gray-900` to `bg-amber-500 text-black` (yellow strip)
-- Update text colors for contrast: labels in `text-black/70`, dots in `text-black/30`
+CREATE TABLE IF NOT EXISTS partner_submissions (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  organization_name VARCHAR(255), contact_person VARCHAR(255),
+  email VARCHAR(255), phone VARCHAR(50), organization_type VARCHAR(100),
+  partnership_interest TEXT, message TEXT, ip_address VARCHAR(45),
+  status VARCHAR(20) DEFAULT 'new', created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
 
-#### 6. Partners & Sponsors — Fix PHP Include Path
+CREATE TABLE IF NOT EXISTS adopt_student_submissions (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  sponsor_name VARCHAR(255), email VARCHAR(255), phone VARCHAR(50),
+  city VARCHAR(255), grade_level VARCHAR(100), duration VARCHAR(100),
+  message TEXT, ip_address VARCHAR(45), status VARCHAR(20) DEFAULT 'new',
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
 
-**File: `public/api/public-partners.php`**
-- Change `require_once __DIR__ . '/../config.php'` to `require_once __DIR__ . '/config.php'`
-- The file is in `public/api/` and `config.php` is also in `public/api/`, so `/../` goes one level too high
+CREATE TABLE IF NOT EXISTS report_challenge_submissions (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(255), phone VARCHAR(50), email VARCHAR(255),
+  location VARCHAR(255), challenge_type VARCHAR(100),
+  description TEXT, people_affected VARCHAR(100), ip_address VARCHAR(45),
+  status VARCHAR(20) DEFAULT 'new', created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
 
-**File: `public/api/public-sponsors.php`**
-- Same fix: `require_once __DIR__ . '/config.php'`
+CREATE TABLE IF NOT EXISTS contact_submissions (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(255), email VARCHAR(255), phone VARCHAR(50),
+  message TEXT, ip_address VARCHAR(45), status VARCHAR(20) DEFAULT 'new',
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
 
-This is the critical bug — the PHP fatal error means the API returns nothing, so the React components hide the sections.
+CREATE TABLE IF NOT EXISTS sanskrit_registrations (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(255), mobile VARCHAR(50), address TEXT,
+  age VARCHAR(10), batch VARCHAR(100), ip_address VARCHAR(45),
+  status VARCHAR(20) DEFAULT 'new', created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS dental_registrations (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(255), mobile VARCHAR(50), address TEXT,
+  problem TEXT, ip_address VARCHAR(45), status VARCHAR(20) DEFAULT 'new',
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS event_registrations (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  event_title VARCHAR(255), event_category VARCHAR(100),
+  full_name VARCHAR(255), email VARCHAR(255), phone VARCHAR(50),
+  participants INT DEFAULT 1, special_requirements TEXT,
+  ip_address VARCHAR(45), status VARCHAR(20) DEFAULT 'new',
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS form_submissions (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  form_type VARCHAR(100), data JSON, ip_address VARCHAR(45),
+  status VARCHAR(20) DEFAULT 'new', created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+```
 
 ---
 
-### Files Summary
+### Files Changed
 
 | File | Change |
 |------|--------|
-| `src/components/ReelsSection.tsx` | Reduce height, landscape cards, enhanced design |
-| `src/components/YouTubeSection.tsx` | NEW — dedicated YouTube section above footer |
-| `src/pages/Index.tsx` | Add YouTubeSection |
-| `src/components/Header.tsx` | Gallery → dropdown (Reels, Photos, Videos) |
-| `src/components/mobile/MobileHeader.tsx` | Same Gallery dropdown |
-| `src/pages/Gallery.tsx` | Add "Reels" tab, read `?tab=` param |
-| `src/components/EventsTicker.tsx` | Yellow/amber background |
-| `public/api/public-partners.php` | Fix config.php include path |
-| `public/api/public-sponsors.php` | Fix config.php include path |
+| `index.html` | Remove invalid X-Frame-Options meta tag |
+| `src/components/GetInvolvedSection.tsx` | Add `DialogDescription` to all 4 modals |
+| `src/lib/api.ts` | Add `lovableproject.com` to preview hostname check |
+| `src/components/HeroSection.tsx` | Increase hero height to 85vh |
 
-### After Deployment
-- Upload the fixed `public-partners.php` and `public-sponsors.php` to cPanel — Partners and Sponsors will immediately appear on the landing page
+### After Code Changes
+Run the SQL above in phpMyAdmin — the 500 errors will stop once all tables exist.
 
