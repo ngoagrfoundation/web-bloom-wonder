@@ -15,7 +15,8 @@ const programs = [
     title: "Education for All",
     description:
       "Providing access to quality education through community learning centers, scholarships, and after-school programs for underprivileged children.",
-    image: educationImage,
+    image: defaultEducationImage,
+    imageKey: "education",
     link: "/programs/education",
   },
   {
@@ -23,7 +24,8 @@ const programs = [
     title: "Healthcare Initiatives",
     description:
       "Organizing regular health camps, providing essential medical services, and ensuring healthcare reaches those who need it most in remote areas.",
-    image: healthcareImage,
+    image: defaultHealthcareImage,
+    imageKey: "healthcare",
     link: "/programs/healthcare",
   },
   {
@@ -31,7 +33,8 @@ const programs = [
     title: "Livelihood Support",
     description:
       "Empowering women and youth through skill development, vocational training, and self-help groups for sustainable income generation.",
-    image: livelihoodImage,
+    image: defaultLivelihoodImage,
+    imageKey: "livelihood",
     link: "/programs/livelihood",
   },
   {
@@ -39,7 +42,8 @@ const programs = [
     title: "Free Dental Treatment",
     description:
       "Monthly free dental clinic providing comprehensive dental care including check-ups, cleaning, fillings, root canals, and extractions.",
-    image: dentalImage,
+    image: defaultDentalImage,
+    imageKey: "dental",
     link: "/programs/dental-treatment",
   },
   {
@@ -47,7 +51,8 @@ const programs = [
     title: "Learning Sanskrit",
     description:
       "Free 21-day Sanskrit classes via Zoom — rediscover your roots, improve cognitive function, and unlock the wisdom of the Vedas.",
-    image: sanskritImage,
+    image: defaultSanskritImage,
+    imageKey: "sanskrit",
     link: "/programs/learning-sanskrit",
   },
   {
@@ -55,7 +60,8 @@ const programs = [
     title: "Annadanam (Food Distribution)",
     description:
       "Serving nourishment and sharing hope — identifying and feeding those in need across Hyderabad with fresh, nutritious meals.",
-    image: foodImage,
+    image: defaultFoodImage,
+    imageKey: "food",
     link: "/programs/food-distribution",
   },
 ];
