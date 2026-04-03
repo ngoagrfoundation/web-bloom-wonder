@@ -116,7 +116,7 @@ const ProgramsSection = () => {
               {/* Image */}
               <div className="relative h-52 overflow-hidden">
                 <img
-                  src={program.image}
+                  src={imageOverrides[program.imageKey] || program.image}
                   alt={program.title}
                   className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                   loading="lazy"

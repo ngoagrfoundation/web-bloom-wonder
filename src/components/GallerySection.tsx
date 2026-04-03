@@ -43,18 +43,7 @@ const GallerySection = () => {
           <p className="text-muted-foreground max-w-xl mx-auto">Explore moments captured from our programs and community events.</p>
         </AnimatedSection>
 
-        {loading ? (
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-14">
-            {[...Array(6)].map((_, i) => (
-              <div key={i} className="aspect-square rounded-xl bg-muted animate-pulse" />
-            ))}
-          </div>
-        ) : images.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-16 text-muted-foreground gap-3 mb-14">
-            <ImageIcon className="h-12 w-12 text-muted-foreground/40" />
-            <p className="text-sm">Gallery images coming soon</p>
-          </div>
-        ) : (
+        {loading ? null : images.length === 0 ? null : (
           <StaggerContainer className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-14">
             {images.slice(0, 6).map((image, index) => (
               <StaggerItem key={image.id}>
