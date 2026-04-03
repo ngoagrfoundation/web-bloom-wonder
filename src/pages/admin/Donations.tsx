@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Skeleton } from "@/components/ui/skeleton";
 import { ChevronLeft, ChevronRight, Download, IndianRupee, Search, Inbox, CreditCard } from "lucide-react";
 import { toast } from "sonner";
 
@@ -53,7 +54,6 @@ const Donations = () => {
 
   return (
     <div className="space-y-4">
-      {/* Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <Card className="rounded-xl shadow-sm">
           <CardContent className="p-5 flex items-center gap-4">
@@ -69,7 +69,6 @@ const Donations = () => {
         </Card>
       </div>
 
-      {/* Filters */}
       <Card className="rounded-xl shadow-sm">
         <CardContent className="py-3 flex flex-wrap gap-3 items-center">
           <Select value={statusFilter || "all"} onValueChange={(v) => { setStatusFilter(v === "all" ? "" : v); setPage(1); }}>
@@ -108,7 +107,18 @@ const Donations = () => {
       <Card className="rounded-xl shadow-sm overflow-hidden">
         <CardContent className="p-0">
           {loading ? (
-            <div className="p-8 text-center text-muted-foreground text-sm">Loading...</div>
+            <div className="p-4 space-y-2">
+              {[...Array(5)].map((_, i) => (
+                <div key={i} className="flex gap-4 items-center">
+                  <Skeleton className="h-8 w-32" />
+                  <Skeleton className="h-8 flex-1" />
+                  <Skeleton className="h-8 w-24" />
+                  <Skeleton className="h-8 w-20" />
+                  <Skeleton className="h-6 w-16 rounded-full" />
+                  <Skeleton className="h-8 w-24" />
+                </div>
+              ))}
+            </div>
           ) : donations.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-16 text-muted-foreground gap-2">
               <Inbox className="h-8 w-8 text-muted-foreground/40" />

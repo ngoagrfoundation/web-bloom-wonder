@@ -18,7 +18,7 @@ switch ($method) {
             echo json_encode(['error' => 'Title and slug are required']);
             exit();
         }
-        $stmt = $pdo->prepare('INSERT INTO news_articles (slug, title, excerpt, content, image, author, category, read_time, is_published) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)');
+        $stmt = $pdo->prepare('INSERT INTO news_articles (slug, title, excerpt, content, image, author, category, read_time, is_published, meta_title, meta_description) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
         $stmt->execute([
             $body['slug'],
             $body['title'],
@@ -29,6 +29,8 @@ switch ($method) {
             $body['category'] ?? 'announcement',
             (int)($body['read_time'] ?? 3),
             (int)($body['is_published'] ?? 1),
+            $body['meta_title'] ?? '',
+            $body['meta_description'] ?? '',
         ]);
         echo json_encode(['success' => true, 'id' => $pdo->lastInsertId()]);
         break;
@@ -42,7 +44,7 @@ switch ($method) {
         }
         $fields = [];
         $values = [];
-        foreach (['slug', 'title', 'excerpt', 'content', 'image', 'author', 'category', 'read_time', 'is_published'] as $f) {
+        foreach (['slug', 'title', 'excerpt', 'content', 'image', 'author', 'category', 'read_time', 'is_published', 'meta_title', 'meta_description'] as $f) {
             if (isset($body[$f])) {
                 $fields[] = "$f = ?";
                 $values[] = $f === 'read_time' || $f === 'is_published' ? (int)$body[$f] : $body[$f];

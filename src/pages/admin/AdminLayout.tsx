@@ -1,7 +1,8 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Outlet, useNavigate, Link, useLocation } from "react-router-dom";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import {
   LayoutDashboard,
   FileText,
@@ -16,20 +17,19 @@ import {
   Film,
   MessageSquareQuote,
   Settings,
-  ChevronDown,
   ExternalLink,
   Sliders,
-  Users,
   Handshake,
   Heart,
 } from "lucide-react";
-import { useState } from "react";
 import { cn } from "@/lib/utils";
+import { getSubmissionCounts } from "@/lib/admin-api";
 
 interface NavItem {
   title: string;
   path: string;
   icon: React.ElementType;
+  badge?: number;
 }
 
 interface NavGroup {
@@ -37,52 +37,27 @@ interface NavGroup {
   items: NavItem[];
 }
 
-const navGroups: NavGroup[] = [
-  {
-    label: "Overview",
-    items: [
-      { title: "Dashboard", path: "/admin/dashboard", icon: LayoutDashboard },
-    ],
-  },
-  {
-    label: "Content Management",
-    items: [
-      { title: "Gallery", path: "/admin/gallery", icon: Image },
-      { title: "Reels", path: "/admin/reels", icon: Film },
-      { title: "News", path: "/admin/news", icon: Newspaper },
-      { title: "Events", path: "/admin/events", icon: CalendarDays },
-      { title: "Testimonials", path: "/admin/testimonials", icon: MessageSquareQuote },
-      { title: "Partners", path: "/admin/partners", icon: Handshake },
-      { title: "Sponsors", path: "/admin/sponsors", icon: Heart },
-    ],
-  },
-  {
-    label: "User Interactions",
-    items: [
-      { title: "Submissions", path: "/admin/submissions", icon: FileText },
-      { title: "Donations", path: "/admin/donations", icon: CreditCard },
-    ],
-  },
-  {
-    label: "Website Control",
-    items: [
-      { title: "Landing Page", path: "/admin/landing-page", icon: Sliders },
-      { title: "Site Settings", path: "/admin/settings", icon: Settings },
-    ],
-  },
-];
-
 const AdminLayout = () => {
   const { isAuthenticated, isLoading, username, logout } = useAdminAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [submissionCount, setSubmissionCount] = useState(0);
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
       navigate("/admin");
     }
   }, [isLoading, isAuthenticated, navigate]);
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      getSubmissionCounts().then((counts: Record<string, number>) => {
+        const total = Object.values(counts).reduce((a, b) => a + (Number(b) || 0), 0);
+        setSubmissionCount(total);
+      });
+    }
+  }, [isAuthenticated]);
 
   if (isLoading) {
     return (
@@ -98,6 +73,41 @@ const AdminLayout = () => {
     await logout();
     navigate("/admin");
   };
+
+  const navGroups: NavGroup[] = [
+    {
+      label: "Overview",
+      items: [
+        { title: "Dashboard", path: "/admin/dashboard", icon: LayoutDashboard },
+      ],
+    },
+    {
+      label: "Content Management",
+      items: [
+        { title: "Gallery", path: "/admin/gallery", icon: Image },
+        { title: "Reels", path: "/admin/reels", icon: Film },
+        { title: "News", path: "/admin/news", icon: Newspaper },
+        { title: "Events", path: "/admin/events", icon: CalendarDays },
+        { title: "Testimonials", path: "/admin/testimonials", icon: MessageSquareQuote },
+        { title: "Partners", path: "/admin/partners", icon: Handshake },
+        { title: "Sponsors", path: "/admin/sponsors", icon: Heart },
+      ],
+    },
+    {
+      label: "User Interactions",
+      items: [
+        { title: "Submissions", path: "/admin/submissions", icon: FileText, badge: submissionCount || undefined },
+        { title: "Donations", path: "/admin/donations", icon: CreditCard },
+      ],
+    },
+    {
+      label: "Website Control",
+      items: [
+        { title: "Landing Page", path: "/admin/landing-page", icon: Sliders },
+        { title: "Site Settings", path: "/admin/settings", icon: Settings },
+      ],
+    },
+  ];
 
   const currentTitle = navGroups.flatMap(g => g.items).find(i => i.path === location.pathname)?.title || "Admin";
 
@@ -137,7 +147,12 @@ const AdminLayout = () => {
                     )}
                   >
                     <item.icon className="h-4 w-4" />
-                    {item.title}
+                    <span className="flex-1">{item.title}</span>
+                    {item.badge ? (
+                      <Badge variant="secondary" className="h-5 min-w-[20px] text-[10px] px-1.5">
+                        {item.badge}
+                      </Badge>
+                    ) : null}
                   </Link>
                 ))}
               </div>

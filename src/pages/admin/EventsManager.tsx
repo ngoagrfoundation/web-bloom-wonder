@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Switch } from "@/components/ui/switch";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Plus, Trash2, Edit, CalendarDays, Upload, X, Inbox } from "lucide-react";
 import { toast } from "sonner";
 
@@ -78,9 +79,9 @@ const EventsManager = () => {
         <CardContent className="py-3 flex flex-wrap gap-2 items-center">
           <Input placeholder="Search title..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-48 h-9" />
           <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-            <SelectTrigger className="w-[150px] h-9"><SelectValue placeholder="Category" /></SelectTrigger>
+            <SelectTrigger className="w-[150px] h-9"><SelectValue placeholder="Filter" /></SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All Categories</SelectItem>
+              <SelectItem value="all">All Filters</SelectItem>
               {eventCategories.map(c => <SelectItem key={c} value={c}>{c.replace(/-/g, " ").replace(/\b\w/g, l => l.toUpperCase())}</SelectItem>)}
             </SelectContent>
           </Select>
@@ -98,7 +99,19 @@ const EventsManager = () => {
       <Card className="rounded-xl shadow-sm overflow-hidden">
         <CardContent className="p-0">
           {loading ? (
-            <div className="p-8 text-center text-muted-foreground text-sm">Loading...</div>
+            <div className="p-4 space-y-2">
+              {[...Array(4)].map((_, i) => (
+                <div key={i} className="flex gap-4 items-center">
+                  <Skeleton className="h-10 w-16 rounded-lg" />
+                  <Skeleton className="h-8 flex-1" />
+                  <Skeleton className="h-6 w-24" />
+                  <Skeleton className="h-6 w-32" />
+                  <Skeleton className="h-6 w-20" />
+                  <Skeleton className="h-6 w-8" />
+                  <Skeleton className="h-8 w-20" />
+                </div>
+              ))}
+            </div>
           ) : filteredEvents.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-16 text-muted-foreground gap-2">
               <Inbox className="h-8 w-8 text-muted-foreground/40" />
@@ -113,7 +126,7 @@ const EventsManager = () => {
                     <TableHead className="h-9">Title</TableHead>
                     <TableHead className="h-9">Date</TableHead>
                     <TableHead className="h-9">Location</TableHead>
-                    <TableHead className="h-9">Category</TableHead>
+                    <TableHead className="h-9">Filter</TableHead>
                     <TableHead className="h-9">Featured</TableHead>
                     <TableHead className="w-[100px] h-9"></TableHead>
                   </TableRow>
@@ -154,7 +167,7 @@ const EventsManager = () => {
             </div>
             <div><Label>Location</Label><Input value={form.location} onChange={(e) => setForm(f => ({ ...f, location: e.target.value }))} placeholder="Event location" /></div>
             <div className="grid grid-cols-2 gap-4">
-              <div><Label>Category</Label>
+              <div><Label>Filter</Label>
                 <Select value={form.category} onValueChange={(v) => setForm(f => ({ ...f, category: v }))}><SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>{eventCategories.map(c => <SelectItem key={c} value={c}>{c.replace(/-/g, " ").replace(/\b\w/g, l => l.toUpperCase())}</SelectItem>)}</SelectContent>
                 </Select>
