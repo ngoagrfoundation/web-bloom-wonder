@@ -4,7 +4,8 @@ import { MobileLayout } from "@/components/mobile";
 import GalleryLightbox, { GalleryImage } from "@/components/GalleryLightbox";
 import AnimatedSection, { StaggerContainer, StaggerItem } from "@/components/AnimatedSection";
 import { fetchPublicGallery, fetchPublicReels, fetchYouTubeVideos, YouTubeVideo } from "@/lib/api";
-import { ImageIcon, Play, Film } from "lucide-react";
+import { ImageIcon, Play, Film, Video } from "lucide-react";
+import { useSearchParams } from "react-router-dom";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 
 interface VideoItem {
