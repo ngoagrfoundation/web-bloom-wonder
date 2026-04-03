@@ -1,123 +1,64 @@
 
 
-## Phases 3-4 Implementation + Remaining Scope Items
+## Admin Dashboard Fixes — Database Standalone + Feature Audit
 
-### What's Already Implemented (no changes needed)
+### Problem B: Database Opens Inside Admin Layout
 
-| Item | Status |
-|------|--------|
-| Admin sidebar grouped menus (Content, User Interactions, Website Control) | Done |
-| Database in header, opens new tab | Done |
-| Database Browser two-panel layout | Done |
-| Landing Page Controls (toggle sections) | Done |
-| Partners/Sponsors sections + admin managers | Done |
-| Partners/Sponsors PHP endpoints | Done |
-| Events ticker strip | Done |
-| Reels renamed to "Impact in Action" | Done |
-| Reels "Show More" link to gallery | Done |
-| Reels homepage count setting | Done (via `reels_homepage_count`) |
-| Reels video upload (URL + file) | Done |
-| Reels toggle visibility | Done |
-| All dynamic sections hide when empty | Done (NewsSection, ReelsSection, TestimonialsSection, GallerySection all return null when empty) |
-| Static data removed from News, Reels, Testimonials, Gallery | Done |
-| Testimonials carousel with auto-rotation | Done |
-| Hero slide admin control in Site Settings | Done |
-| Impact numbers admin control | Done |
-| Analytics charts (submission trends, donation growth) | Done |
-| Email notification on form submission | Done |
-| Filters on Submissions, Donations, Events, Gallery, Reels, News, Testimonials | Done |
-| CSV export on Submissions, Donations, Database Browser | Done |
-| Donations filters (status, type, search, date range) | Done |
-| About section text reduction | Done |
+**Root cause**: `/admin/database` is nested inside the `AdminLayout` route in `App.tsx` (line 108), so it renders with the admin sidebar and header.
 
-### What Still Needs Implementation
+**Fix**: Move the Database route outside the AdminLayout wrapper so it renders as a standalone full-page layout with its own auth check.
 
-**Phase 3 remaining:**
-
-1. **Submissions sub-navigation with count badges** — Currently Submissions is one page with a type dropdown. The plan calls for expandable sub-items in the sidebar (Contact, Volunteer, Partner, etc.) with count badges. This is a significant UX change. For practicality, we'll add count badges to the existing dropdown options and keep the single page approach (it's cleaner than 8 separate routes).
-
-2. **Status toggle (New/Reviewed/Closed) on submissions** — The submissions table needs a `status` column and the UI needs a status badge + toggle. PHP endpoint needs update too.
-
-3. **Rename "Categories" to "Filters/Tags" in Gallery, Events, News** — Label changes across admin and public pages.
-
-**Phase 4 remaining:**
-
-4. **Gallery Folders + Tags UX** — Rename category to "Folder" (primary) and add a "Tags" field (secondary). The current category filter buttons become folder navigation. This requires a schema addition (`tags` column on `gallery_images`).
-
-5. **SEO meta tags on News detail page** — Add `<title>` and `<meta>` from article data in `NewsArticle.tsx`.
-
-6. **Skeleton loaders for tables** — Replace "Loading..." text with proper skeleton rows in Submissions, Donations, and other admin pages.
-
-**Additional from the user's latest scope doc (not yet done):**
-
-7. **Programs section dynamic from admin** — Currently hardcoded. Making this fully admin-controlled requires a new `programs` table and manager, which is a large scope. We'll add image override support via site_settings (similar to hero slides) for now.
-
-8. **"Make a Difference" (Sustainability) admin-controlled images** — Add image settings in SiteSettings.
-
-9. **News SEO fields (meta title, meta description)** — Add columns to `news_articles` table and fields in NewsManager.
+**Files changed**:
+- `App.tsx` — Move `/admin/database` route outside the `AdminLayout` parent route
+- `DatabaseBrowser.tsx` — Add its own auth check (`useAdminAuth`), remove the negative margins (`-m-4 lg:-m-6`), make it truly full-screen `h-screen` with a minimal header (just "Database Browser" title + close button)
 
 ---
 
-### Implementation Plan
+### Problem A: Feature Audit — What's Already Implemented vs What Needs Fixing
 
-#### 1. Submissions Status System
-- **`public/api/admin/submissions.php`**: Add `status` update endpoint (PUT method), include status in queries
-- **`src/pages/admin/Submissions.tsx`**: Add status badge column, status dropdown to change status per row, filter by status
-- **`src/lib/admin-api.ts`**: Add `updateSubmissionStatus()` function
+| Feature | Status | Notes |
+|---------|--------|-------|
+| Database in top header (not sidebar) | Done | Button in header opens new tab (line 185-194 of AdminLayout) |
+| Grouped sidebar menus (Content, User Interactions, Website Control) | Done | Lines 77-109 of AdminLayout |
+| Submissions with search, filters, status toggle, CSV, detail modal | Done | In Submissions.tsx |
+| Submissions count badge | Done | Line 99 of AdminLayout |
+| Donations with filters, stats cards, CSV | Done | In Donations.tsx |
+| Gallery folders + tags + multi-select delete | Done | In GalleryManager.tsx |
+| Reels toggle visibility + sort order | Done | In ReelsManager.tsx |
+| Site Settings with image uploads | Done | In SiteSettings.tsx |
+| Landing Page Controls (enable/disable toggles) | Done | In LandingPageControls.tsx |
+| Partners + Sponsors managers | Done | Separate admin pages |
+| Testimonials manager | Done | In TestimonialsManager.tsx |
+| Analytics charts on Dashboard | Done | In Dashboard.tsx |
 
-#### 2. Rename Categories to Filters/Tags
-- **`src/pages/admin/GalleryManager.tsx`**: Change "Category" labels to "Folder"
-- **`src/pages/admin/EventsManager.tsx`**: Change "Category" labels to "Filter"
-- **`src/pages/admin/NewsManager.tsx`**: Change "Category" labels to "Filter"
-- **`src/pages/Gallery.tsx`**: Change filter tab labels from "Category" to "Filter"
-
-#### 3. SEO Meta Tags on News Article Page
-- **`src/pages/NewsArticle.tsx`**: Use `document.title` and meta tags from article data on mount
-
-#### 4. Skeleton Loaders
-- **All admin table pages**: Replace "Loading..." with `<Skeleton>` rows
-
-#### 5. Submissions Count Badges in Sidebar
-- **`src/pages/admin/AdminLayout.tsx`**: Fetch submission counts per type and display badges next to the Submissions menu item
+**Everything in section A is already implemented.** The only real issue is item B — the Database page showing inside the admin layout instead of standalone.
 
 ---
 
-### SQL to Run in phpMyAdmin
+### Implementation
 
-```sql
--- Add status column to all submission tables
-ALTER TABLE contact_submissions ADD COLUMN IF NOT EXISTS status VARCHAR(20) DEFAULT 'new';
-ALTER TABLE volunteer_submissions ADD COLUMN IF NOT EXISTS status VARCHAR(20) DEFAULT 'new';
-ALTER TABLE partner_submissions ADD COLUMN IF NOT EXISTS status VARCHAR(20) DEFAULT 'new';
-ALTER TABLE adopt_student_submissions ADD COLUMN IF NOT EXISTS status VARCHAR(20) DEFAULT 'new';
-ALTER TABLE report_challenge_submissions ADD COLUMN IF NOT EXISTS status VARCHAR(20) DEFAULT 'new';
-ALTER TABLE sanskrit_registrations ADD COLUMN IF NOT EXISTS status VARCHAR(20) DEFAULT 'new';
-ALTER TABLE dental_registrations ADD COLUMN IF NOT EXISTS status VARCHAR(20) DEFAULT 'new';
-ALTER TABLE event_registrations ADD COLUMN IF NOT EXISTS status VARCHAR(20) DEFAULT 'new';
+1. **`App.tsx`**: Move `/admin/database` route to be a standalone route (outside AdminLayout), same as `/admin` login page
+2. **`DatabaseBrowser.tsx`**: Add `useAdminAuth` hook for access control, add a minimal standalone header with "AGR Database Browser" title and a "Back to Admin" link, make layout `h-screen` with no margins
 
--- Add tags column to gallery
-ALTER TABLE gallery_images ADD COLUMN IF NOT EXISTS tags VARCHAR(500) DEFAULT '';
+### Technical Details
 
--- Add SEO columns to news
-ALTER TABLE news_articles ADD COLUMN IF NOT EXISTS meta_title VARCHAR(200) DEFAULT '';
-ALTER TABLE news_articles ADD COLUMN IF NOT EXISTS meta_description VARCHAR(500) DEFAULT '';
+```
+App.tsx routes:
+  /admin                → AdminLogin (standalone)
+  /admin/database       → DatabaseBrowser (standalone, new tab)  ← MOVE HERE
+  AdminLayout wrapper:
+    /admin/dashboard    → Dashboard
+    /admin/submissions  → Submissions
+    ... (all other admin pages stay)
 ```
 
-Note: MySQL does not support `IF NOT EXISTS` for `ALTER TABLE ADD COLUMN`. If columns already exist, the ALTER will fail harmlessly. Run each one individually.
-
-### Files Modified
-| File | Changes |
-|------|---------|
-| `AdminLayout.tsx` | Submission count badge |
-| `Submissions.tsx` | Status column, status toggle, status filter |
-| `GalleryManager.tsx` | Rename Category to Folder, add Tags field |
-| `EventsManager.tsx` | Rename Category to Filter |
-| `NewsManager.tsx` | Rename Category to Filter, add SEO fields |
-| `NewsArticle.tsx` | SEO meta tags on mount |
-| `Gallery.tsx` | Rename filter labels |
-| `admin/submissions.php` | Status update endpoint, status filter |
-| `admin/gallery.php` | Support tags field |
-| `admin/news.php` | Support meta_title, meta_description |
-| `admin-api.ts` | Add updateSubmissionStatus, getSubmissionCounts |
-| Multiple admin pages | Skeleton loaders |
+DatabaseBrowser gets a slim top bar:
+```
+┌─────────────────────────────────────────┐
+│ 🗄 AGR Database Browser    ← Back to Admin │
+├────────────┬────────────────────────────┤
+│ Tables     │ Data view                  │
+│ (scrolls)  │ (scrolls independently)    │
+└────────────┴────────────────────────────┘
+```
 
