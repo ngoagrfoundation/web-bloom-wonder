@@ -14,10 +14,13 @@ const corePillars = [
 
 const AboutSection = () => {
   const [heroImage, setHeroImage] = useState(defaultHeroImage);
+  const [content, setContent] = useState<Record<string, string>>({});
 
   useEffect(() => {
     fetchPublicSettings().then((settings) => {
-      if (settings?.about_section_image) setHeroImage(settings.about_section_image);
+      if (!settings) return;
+      if (settings.about_section_image) setHeroImage(settings.about_section_image);
+      setContent(settings);
     });
   }, []);
 
@@ -25,8 +28,12 @@ const AboutSection = () => {
     <section id="about" className="py-24 bg-background">
       <div className="container mx-auto px-4">
         <div className="text-center mb-16">
-          <h2 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-4">About AGR Foundation</h2>
-          <p className="text-muted-foreground max-w-xl mx-auto">Empowering Communities, Sustaining the Future.</p>
+          <h2 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-4">
+            {content.about_title || `About ${content.org_name || "AGR Foundation"}`}
+          </h2>
+          <p className="text-muted-foreground max-w-xl mx-auto">
+            {content.about_subtitle || content.tagline || "Empowering Communities, Sustaining the Future."}
+          </p>
         </div>
 
         <div className="grid lg:grid-cols-2 gap-16 items-start">
@@ -38,11 +45,11 @@ const AboutSection = () => {
 
           <div className="space-y-8">
             <div>
-              <h3 className="font-display text-2xl font-semibold text-foreground mb-4">Our Story</h3>
+              <h3 className="font-display text-2xl font-semibold text-foreground mb-4">
+                {content.about_story_title || "Our Story"}
+              </h3>
               <p className="text-muted-foreground leading-relaxed">
-                Founded with a vision to create lasting change, AGR Foundation is committed to the rural heartlands of India. 
-                We bridge traditional wisdom and modern sustainability, building a movement that empowers individuals while 
-                protecting the planet for future generations.
+                {content.about_story_text || content.about_text || "Founded with a vision to create lasting change, AGR Foundation is committed to the rural heartlands of India. We bridge traditional wisdom and modern sustainability, building a movement that empowers individuals while protecting the planet for future generations."}
               </p>
             </div>
 
@@ -60,14 +67,18 @@ const AboutSection = () => {
               </ul>
             </div>
 
-            <a href="#programs" className="btn-primary inline-block">Explore Our Work</a>
+            <a href="#programs" className="btn-primary inline-block">
+              {content.about_cta_label || "Explore Our Work"}
+            </a>
           </div>
         </div>
 
         <div className="mt-24 bg-muted/50 rounded-2xl p-10 md:p-14 text-center max-w-3xl mx-auto">
-          <h3 className="font-display text-xl font-semibold text-foreground mb-4">Our Vision</h3>
+          <h3 className="font-display text-xl font-semibold text-foreground mb-4">
+            {content.about_vision_title || "Our Vision"}
+          </h3>
           <blockquote className="font-display text-lg md:text-xl text-foreground italic leading-relaxed">
-            "To build a self-sustained and eco-friendly society where every individual has the opportunity to thrive in a safe and healthy environment."
+            "{content.about_vision_text || "To build a self-sustained and eco-friendly society where every individual has the opportunity to thrive in a safe and healthy environment."}"
           </blockquote>
           <cite className="text-primary font-medium not-italic block mt-4">— AGR Foundation</cite>
         </div>

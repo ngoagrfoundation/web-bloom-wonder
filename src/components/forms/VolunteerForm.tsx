@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Heart, Loader2, CheckCircle, Shield, Clock } from "lucide-react";
+import { Heart, Loader2, Shield, Clock } from "lucide-react";
 import { volunteerFormSchema, VolunteerFormData } from "@/lib/validation";
 import { useFormSubmit } from "@/hooks/useFormSubmit";
 import { Input } from "@/components/ui/input";
@@ -9,6 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
+import FormSuccessDialog from "@/components/forms/FormSuccessDialog";
 
 
 
@@ -36,13 +37,20 @@ interface VolunteerFormProps {
 
 const VolunteerForm = ({ onSuccess: onSuccessCallback }: VolunteerFormProps) => {
   const [showSuccess, setShowSuccess] = useState(false);
+  const handleSuccessDialogChange = (open: boolean) => {
+    setShowSuccess(open);
+
+    if (!open) {
+      onSuccessCallback?.();
+    }
+  };
 
   const { submitForm, isSubmitting, security } = useFormSubmit({
     formType: "volunteer",
+    showSuccessToast: false,
     onSuccess: () => {
       setShowSuccess(true);
       reset();
-      onSuccessCallback?.();
     },
   });
 
@@ -81,36 +89,16 @@ const VolunteerForm = ({ onSuccess: onSuccessCallback }: VolunteerFormProps) => 
     });
   };
 
-  if (showSuccess) {
-    return (
-      <div className="rounded-2xl overflow-hidden shadow-xl border border-border bg-background">
-        <div className="bg-gradient-to-r from-primary to-primary/80 px-6 py-4">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center">
-              <CheckCircle className="w-5 h-5 text-primary-foreground" />
-            </div>
-            <div>
-              <h3 className="font-semibold text-primary-foreground">Registration Complete!</h3>
-              <p className="text-sm text-primary-foreground/80">Welcome to the team</p>
-            </div>
-          </div>
-        </div>
-        <div className="p-8 text-center">
-          <CheckCircle className="w-16 h-16 text-primary mx-auto mb-4" />
-          <h4 className="text-xl font-semibold text-foreground mb-2">Thank You for Volunteering!</h4>
-          <p className="text-muted-foreground mb-6">
-            We're excited to have you on board. Our team will contact you within 48 hours with next steps.
-          </p>
-          <Button onClick={() => setShowSuccess(false)} variant="outline">
-            Register Another Volunteer
-          </Button>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="rounded-2xl overflow-hidden shadow-xl border border-border bg-background">
+    <>
+      <FormSuccessDialog
+        open={showSuccess}
+        onOpenChange={handleSuccessDialogChange}
+        title="Thank You for Volunteering!"
+        actionLabel="Register Another Volunteer"
+      />
+
+      <div className="rounded-2xl overflow-hidden shadow-xl border border-border bg-background">
       {/* Form Header */}
       <div className="bg-gradient-to-r from-primary to-primary/80 px-6 py-4">
         <div className="flex items-center gap-3">
@@ -317,11 +305,12 @@ const VolunteerForm = ({ onSuccess: onSuccessCallback }: VolunteerFormProps) => 
           </div>
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <Clock className="w-4 h-4 text-primary" />
-            <span>We'll contact you within 48 hours</span>
+            <span>We will get back to you within 24 hr.</span>
           </div>
         </div>
       </div>
-    </div>
+      </div>
+    </>
   );
 };
 

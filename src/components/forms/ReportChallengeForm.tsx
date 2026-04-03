@@ -1,13 +1,14 @@
 import { useState } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { AlertTriangle, Loader2, CheckCircle, Lock, Clock } from "lucide-react";
+import { AlertTriangle, Loader2, Lock, Clock } from "lucide-react";
 import { reportChallengeFormSchema, ReportChallengeFormData } from "@/lib/validation";
 import { useFormSubmit } from "@/hooks/useFormSubmit";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import FormSuccessDialog from "@/components/forms/FormSuccessDialog";
 import {
   Select,
   SelectContent,
@@ -35,13 +36,20 @@ interface ReportChallengeFormProps {
 
 const ReportChallengeForm = ({ onSuccess: onSuccessCallback }: ReportChallengeFormProps) => {
   const [showSuccess, setShowSuccess] = useState(false);
+  const handleSuccessDialogChange = (open: boolean) => {
+    setShowSuccess(open);
+
+    if (!open) {
+      onSuccessCallback?.();
+    }
+  };
 
   const { submitForm, isSubmitting, security } = useFormSubmit({
     formType: "report_challenge",
+    showSuccessToast: false,
     onSuccess: () => {
       setShowSuccess(true);
       reset();
-      onSuccessCallback?.();
     },
   });
 
@@ -72,36 +80,16 @@ const ReportChallengeForm = ({ onSuccess: onSuccessCallback }: ReportChallengeFo
     });
   };
 
-  if (showSuccess) {
-    return (
-      <div className="rounded-2xl overflow-hidden shadow-xl border border-border bg-background">
-        <div className="bg-gradient-to-r from-destructive/90 to-destructive/70 px-6 py-4">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center">
-              <CheckCircle className="w-5 h-5 text-destructive-foreground" />
-            </div>
-            <div>
-              <h3 className="font-semibold text-destructive-foreground">Report Received!</h3>
-              <p className="text-sm text-destructive-foreground/80">We're on it</p>
-            </div>
-          </div>
-        </div>
-        <div className="p-8 text-center">
-          <CheckCircle className="w-16 h-16 text-primary mx-auto mb-4" />
-          <h4 className="text-xl font-semibold text-foreground mb-2">Thank You for Reporting!</h4>
-          <p className="text-muted-foreground mb-6">
-            Your report has been received. Our team will review it within 24-48 hours and take appropriate action.
-          </p>
-          <Button onClick={() => setShowSuccess(false)} variant="outline">
-            Report Another Challenge
-          </Button>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="rounded-2xl overflow-hidden shadow-xl border border-border bg-background">
+    <>
+      <FormSuccessDialog
+        open={showSuccess}
+        onOpenChange={handleSuccessDialogChange}
+        title="Thank You for Reporting!"
+        actionLabel="Report Another Challenge"
+      />
+
+      <div className="rounded-2xl overflow-hidden shadow-xl border border-border bg-background">
       {/* Form Header */}
       <div className="bg-gradient-to-r from-destructive/90 to-destructive/70 px-6 py-4">
         <div className="flex items-center gap-3">
@@ -273,11 +261,12 @@ const ReportChallengeForm = ({ onSuccess: onSuccessCallback }: ReportChallengeFo
           </div>
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <Clock className="w-4 h-4 text-primary" />
-            <span>Reviewed within 24-48 hours</span>
+            <span>We will get back to you within 24 hr.</span>
           </div>
         </div>
       </div>
-    </div>
+      </div>
+    </>
   );
 };
 

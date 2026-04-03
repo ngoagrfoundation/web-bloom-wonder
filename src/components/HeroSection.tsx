@@ -41,6 +41,7 @@ const HeroSection = () => {
   const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true });
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [slides, setSlides] = useState<SlideData[]>(defaultSlides);
+  const [heroSettings, setHeroSettings] = useState<Record<string, string>>({});
   const [showSanskritForm, setShowSanskritForm] = useState(false);
   const [showDentalForm, setShowDentalForm] = useState(false);
   const [sanskritForm, setSanskritForm] = useState({ name: "", address: "", age: "", batch: "", mobile: "" });
@@ -64,9 +65,19 @@ const HeroSection = () => {
   useEffect(() => {
     fetchPublicSettings().then((settings) => {
       if (!settings) return;
+      setHeroSettings(settings);
       const updated = defaultSlides.map((slide, i) => {
-        const override = settings[`hero_slide_${i + 1}`];
-        return override ? { ...slide, image: override } : slide;
+        const slideIndex = i + 1;
+        const imageOverride = settings[`hero_slide_${slideIndex}`] || (slideIndex === 1 ? settings.hero_bg_url : "");
+
+        return {
+          ...slide,
+          image: imageOverride || slide.image,
+          title: settings[`hero_slide_${slideIndex}_title`] || slide.title,
+          subtitle: settings[`hero_slide_${slideIndex}_subtitle`] || slide.subtitle,
+          description: settings[`hero_slide_${slideIndex}_description`] || slide.description,
+          link: settings[`hero_slide_${slideIndex}_link`] || slide.link,
+        };
       });
       setSlides(updated);
     });
@@ -111,7 +122,9 @@ const HeroSection = () => {
                     </h1>
                     <p className="text-white/90 text-base md:text-lg lg:text-xl max-w-lg leading-relaxed mt-4 md:mt-6">{slide.description}</p>
                     <div className="flex flex-col sm:flex-row gap-4 mt-6 md:mt-8">
-                      <a href={slide.link} className="bg-white text-primary hover:bg-white/90 transition-all duration-200 px-6 py-3 rounded-lg font-medium text-center">Learn More</a>
+                      <a href={slide.link} className="bg-white text-primary hover:bg-white/90 transition-all duration-200 px-6 py-3 rounded-lg font-medium text-center">
+                        {heroSettings[`hero_slide_${index + 1}_cta_label`] || "Learn More"}
+                      </a>
                       {slide.hasRegister && slide.registerType ? (
                         <button onClick={() => handleRegisterClick(slide.registerType!)} className="border-2 border-white text-white hover:bg-white hover:text-foreground transition-all duration-200 px-6 py-3 rounded-lg font-medium text-center">Register Now</button>
                       ) : (

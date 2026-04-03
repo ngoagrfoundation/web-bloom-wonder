@@ -1,13 +1,14 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { GraduationCap, Loader2, CheckCircle, Shield, Heart } from "lucide-react";
+import { GraduationCap, Loader2, Shield, Heart } from "lucide-react";
 import { adoptStudentFormSchema, AdoptStudentFormData } from "@/lib/validation";
 import { useFormSubmit } from "@/hooks/useFormSubmit";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import FormSuccessDialog from "@/components/forms/FormSuccessDialog";
 import {
   Select,
   SelectContent,
@@ -38,13 +39,20 @@ interface AdoptStudentFormProps {
 
 const AdoptStudentForm = ({ onSuccess: onSuccessCallback }: AdoptStudentFormProps) => {
   const [showSuccess, setShowSuccess] = useState(false);
+  const handleSuccessDialogChange = (open: boolean) => {
+    setShowSuccess(open);
+
+    if (!open) {
+      onSuccessCallback?.();
+    }
+  };
 
   const { submitForm, isSubmitting, security } = useFormSubmit({
     formType: "adopt_student",
+    showSuccessToast: false,
     onSuccess: () => {
       setShowSuccess(true);
       reset();
-      onSuccessCallback?.();
     },
   });
 
@@ -86,36 +94,16 @@ const AdoptStudentForm = ({ onSuccess: onSuccessCallback }: AdoptStudentFormProp
     });
   };
 
-  if (showSuccess) {
-    return (
-      <div className="rounded-2xl overflow-hidden shadow-xl border border-border bg-background">
-        <div className="bg-gradient-to-r from-primary to-primary/80 px-6 py-4">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center">
-              <CheckCircle className="w-5 h-5 text-primary-foreground" />
-            </div>
-            <div>
-              <h3 className="font-semibold text-primary-foreground">Registration Complete!</h3>
-              <p className="text-sm text-primary-foreground/80">Thank you for your generosity</p>
-            </div>
-          </div>
-        </div>
-        <div className="p-8 text-center">
-          <Heart className="w-16 h-16 text-primary mx-auto mb-4" />
-          <h4 className="text-xl font-semibold text-foreground mb-2">Thank You for Adopting a Student!</h4>
-          <p className="text-muted-foreground mb-6">
-            Your sponsorship will transform a child's future. Our team will contact you within 48 hours with the student's details.
-          </p>
-          <Button onClick={() => setShowSuccess(false)} variant="outline">
-            Sponsor Another Student
-          </Button>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="rounded-2xl overflow-hidden shadow-xl border border-border bg-background">
+    <>
+      <FormSuccessDialog
+        open={showSuccess}
+        onOpenChange={handleSuccessDialogChange}
+        title="Thank You for Adopting a Student!"
+        actionLabel="Sponsor Another Student"
+      />
+
+      <div className="rounded-2xl overflow-hidden shadow-xl border border-border bg-background">
       {/* Form Header */}
       <div className="bg-gradient-to-r from-primary to-primary/80 px-6 py-4">
         <div className="flex items-center gap-3">
@@ -296,12 +284,19 @@ const AdoptStudentForm = ({ onSuccess: onSuccessCallback }: AdoptStudentFormProp
 
       {/* Form Footer */}
       <div className="px-6 py-4 bg-muted/50 border-t border-border">
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <Shield className="w-4 h-4 text-primary" />
-          <span>Your information is securely submitted</span>
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <Shield className="w-4 h-4 text-primary" />
+            <span>Your information is securely submitted</span>
+          </div>
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <Heart className="w-4 h-4 text-primary" />
+            <span>We will get back to you within 24 hr.</span>
+          </div>
         </div>
       </div>
-    </div>
+      </div>
+    </>
   );
 };
 

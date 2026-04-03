@@ -1,16 +1,21 @@
 import { useState, useEffect } from "react";
 import { Play, Youtube } from "lucide-react";
-import { fetchYouTubeVideos, YouTubeVideo } from "@/lib/api";
+import { fetchPublicSettings, fetchYouTubeVideos, YouTubeVideo } from "@/lib/api";
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 
 const YouTubeSection = () => {
   const [videos, setVideos] = useState<YouTubeVideo[]>([]);
   const [activeVideo, setActiveVideo] = useState<YouTubeVideo | null>(null);
   const [loading, setLoading] = useState(true);
+  const [sectionCopy, setSectionCopy] = useState<Record<string, string>>({});
 
   useEffect(() => {
-    fetchYouTubeVideos()
-      .then((data) => setVideos(data || []))
+    Promise.all([fetchYouTubeVideos(), fetchPublicSettings()])
+      .then(([data, settings]) => {
+        const maxVideos = parseInt(settings?.youtube_homepage_count || "8") || 8;
+        setVideos((data || []).slice(0, maxVideos));
+        if (settings) setSectionCopy(settings);
+      })
       .finally(() => setLoading(false));
   }, []);
 
@@ -37,15 +42,15 @@ const YouTubeSection = () => {
             <span className="font-medium text-sm uppercase tracking-wider">Our YouTube Channel</span>
           </div>
           <h2 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-3">
-            Latest Videos
+            {sectionCopy.youtube_title || "Latest Videos"}
           </h2>
           <p className="text-muted-foreground max-w-xl mx-auto text-sm">
-            Watch our latest content directly from our YouTube channel.
+            {sectionCopy.youtube_description || "Watch our latest content directly from our YouTube channel."}
           </p>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
-          {videos.slice(0, 8).map((video) => (
+          {videos.map((video) => (
             <button
               key={video.id}
               onClick={() => setActiveVideo(video)}

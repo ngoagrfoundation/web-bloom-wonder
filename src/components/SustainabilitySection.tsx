@@ -1,5 +1,7 @@
+import { useEffect, useState } from "react";
 import { Leaf, Recycle, TreePine, Droplets, Sun, Wind, Flame, RefreshCw } from "lucide-react";
 import AnimatedSection, { StaggerContainer, StaggerItem } from "./AnimatedSection";
+import { fetchPublicSettings } from "@/lib/api";
 
 const initiatives = [
   {
@@ -45,8 +47,28 @@ const initiatives = [
 ];
 
 const SustainabilitySection = () => {
+  const [backgroundImage, setBackgroundImage] = useState("");
+
+  useEffect(() => {
+    fetchPublicSettings().then((settings) => {
+      if (settings?.sustainability_bg_image) setBackgroundImage(settings.sustainability_bg_image);
+    });
+  }, []);
+
   return (
-    <section id="sustainability" className="py-24 bg-gradient-to-b from-primary/5 to-background">
+    <section
+      id="sustainability"
+      className="py-24 bg-gradient-to-b from-primary/5 to-background"
+      style={
+        backgroundImage
+          ? {
+              backgroundImage: `linear-gradient(rgba(255,255,255,0.92), rgba(255,255,255,0.96)), url(${backgroundImage})`,
+              backgroundSize: "cover",
+              backgroundPosition: "center",
+            }
+          : undefined
+      }
+    >
       <div className="container mx-auto px-4">
         {/* Section Header */}
         <AnimatedSection className="text-center mb-16">

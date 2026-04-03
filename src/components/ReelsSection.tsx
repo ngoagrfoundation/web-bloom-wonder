@@ -17,6 +17,7 @@ const ReelsSection = () => {
   const [activeReel, setActiveReel] = useState<Reel | null>(null);
   const [loading, setLoading] = useState(true);
   const [maxCount, setMaxCount] = useState(10);
+  const [sectionCopy, setSectionCopy] = useState<Record<string, string>>({});
 
   useEffect(() => {
     Promise.all([
@@ -25,7 +26,10 @@ const ReelsSection = () => {
     ]).then(([data, settings]) => {
       const manualReels: Reel[] = (data || []).map((r: Reel) => ({ ...r }));
       setReels(manualReels);
-      if (settings?.reels_homepage_count) setMaxCount(parseInt(settings.reels_homepage_count) || 10);
+      if (settings) {
+        setSectionCopy(settings);
+        if (settings.reels_homepage_count) setMaxCount(parseInt(settings.reels_homepage_count) || 10);
+      }
     }).finally(() => setLoading(false));
   }, []);
 
@@ -57,10 +61,10 @@ const ReelsSection = () => {
         <div className="text-center mb-10">
           <span className="text-background/50 font-medium text-sm uppercase tracking-wider">Watch Our Work</span>
           <h2 className="font-display text-3xl md:text-4xl font-bold mb-3 mt-2">
-            Impact in Action
+            {sectionCopy.reels_title || "Impact in Action"}
           </h2>
           <p className="text-background/70 max-w-xl mx-auto text-sm">
-            See our programs and community initiatives making real differences.
+            {sectionCopy.reels_description || "See our programs and community initiatives making real differences."}
           </p>
         </div>
 

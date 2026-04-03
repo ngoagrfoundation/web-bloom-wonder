@@ -1,9 +1,13 @@
 <?php
 require_once __DIR__ . '/config.php';
 
+function sendJsonResponse(int $statusCode, array $payload): void {
+    http_response_code($statusCode);
+    echo json_encode($payload);
+}
+
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    http_response_code(405);
-    echo json_encode(['error' => 'Method not allowed']);
+    sendJsonResponse(405, ['error' => 'Method not allowed']);
     exit();
 }
 
@@ -133,11 +137,23 @@ try {
 
     $insertId = $pdo->lastInsertId();
 
-    // Send email notification
+    sendJsonResponse(200, [
+        'success' => true,
+        'id' => $insertId,
+        'message' => 'We will get back to you within 24 hr.'
+    ]);
+
+    if (function_exists('fastcgi_finish_request')) {
+        fastcgi_finish_request();
+    }
+
+    ignore_user_abort(true);
+
+    // Send email notification without affecting the form response
     try {
         $settingsStmt = $pdo->query("SELECT setting_value FROM site_settings WHERE setting_key = 'notification_email'");
         $notifEmail = $settingsStmt ? $settingsStmt->fetchColumn() : null;
-        
+
         if (!$notifEmail) {
             $settingsStmt = $pdo->query("SELECT setting_value FROM site_settings WHERE setting_key = 'email'");
             $notifEmail = $settingsStmt ? $settingsStmt->fetchColumn() : null;
@@ -146,7 +162,7 @@ try {
         if ($notifEmail) {
             $formLabel = ucwords(str_replace('_', ' ', $formType));
             $subject = "New $formLabel Submission - AGR Foundation";
-            
+
             $body = "New form submission received:\n\n";
             $body .= "Form Type: $formLabel\n";
             $body .= "Submission ID: $insertId\n";
@@ -154,7 +170,9 @@ try {
             $body .= "IP: $ip\n\n";
             $body .= "--- Details ---\n";
             foreach ($formData as $key => $value) {
-                if (is_array($value)) $value = implode(', ', $value);
+                if (is_array($value)) {
+                    $value = implode(', ', $value);
+                }
                 $body .= ucwords(str_replace('_', ' ', $key)) . ": $value\n";
             }
             $body .= "\n---\nView in admin: https://agrfoundation.ngo/admin/submissions\n";
@@ -162,15 +180,12 @@ try {
             $headers = "From: noreply@agrfoundation.ngo\r\n";
             $headers .= "Reply-To: noreply@agrfoundation.ngo\r\n";
             $headers .= "X-Mailer: PHP/" . phpversion();
-            
+
             @mail($notifEmail, $subject, $body, $headers);
         }
-    } catch (Exception $e) {
-        // Email failure should not affect form submission
+    } catch (Throwable $e) {
+        // Never fail the request after the submission is already saved
     }
-
-    echo json_encode(['success' => true, 'id' => $insertId]);
-} catch (PDOException $e) {
-    http_response_code(500);
-    echo json_encode(['error' => 'Failed to save submission', 'debug' => $e->getMessage()]);
+} catch (Throwable $e) {
+    sendJsonResponse(500, ['error' => 'Failed to save submission', 'debug' => $e->getMessage()]);
 }

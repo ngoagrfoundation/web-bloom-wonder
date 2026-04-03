@@ -100,7 +100,7 @@ if ($method === 'GET') {
 
         echo json_encode([
             'data' => $rows,
-            'columns' => $info['columns'],
+            'columns' => array_values(array_filter($info['columns'], fn($column) => $column !== 'status')),
             'total' => intval($total),
             'page' => $page,
             'limit' => $limit,
@@ -113,13 +113,32 @@ if ($method === 'GET') {
         foreach ($tableMap as $type => $info) {
             $table = $info['table'];
             try {
-                $countStmt = $pdo->prepare("SELECT COUNT(*) FROM `$table`");
-                $countStmt->execute();
+                $where = [];
+                $params = [];
+
+                if ($search) {
+                    $searchCols = array_filter($info['columns'], fn($c) => !in_array($c, ['id', 'ip_address', 'submitted_at', 'status']));
+                    $searchParts = [];
+                    foreach ($searchCols as $col) {
+                        $searchParts[] = "`$col` LIKE ?";
+                        $params[] = "%$search%";
+                    }
+                    if ($searchParts) $where[] = '(' . implode(' OR ', $searchParts) . ')';
+                }
+
+                if ($dateFrom) { $where[] = 'submitted_at >= ?'; $params[] = $dateFrom . ' 00:00:00'; }
+                if ($dateTo) { $where[] = 'submitted_at <= ?'; $params[] = $dateTo . ' 23:59:59'; }
+                if ($statusFilter) { $where[] = 'status = ?'; $params[] = $statusFilter; }
+
+                $whereClause = $where ? 'WHERE ' . implode(' AND ', $where) : '';
+
+                $countStmt = $pdo->prepare("SELECT COUNT(*) FROM `$table` $whereClause");
+                $countStmt->execute($params);
                 $count = intval($countStmt->fetchColumn());
                 $grandTotal += $count;
 
-                $stmt = $pdo->prepare("SELECT *, ? as form_type FROM `$table` ORDER BY submitted_at DESC LIMIT 100");
-                $stmt->execute([$type]);
+                $stmt = $pdo->prepare("SELECT *, ? as form_type FROM `$table` $whereClause ORDER BY submitted_at DESC");
+                $stmt->execute(array_merge([$type], $params));
                 $rows = $stmt->fetchAll();
                 $allRows = array_merge($allRows, $rows);
             } catch (PDOException $e) { continue; }
@@ -134,7 +153,7 @@ if ($method === 'GET') {
 
         echo json_encode([
             'data' => $paged,
-            'columns' => ['id', 'form_type', 'status', 'submitted_at'],
+            'columns' => ['id', 'form_type', 'submitted_at'],
             'total' => $grandTotal,
             'page' => $page,
             'limit' => $limit,

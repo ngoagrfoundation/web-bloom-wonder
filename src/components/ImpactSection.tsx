@@ -53,11 +53,13 @@ const AnimatedCounter = ({
 const ImpactSection = () => {
   const [isVisible, setIsVisible] = useState(false);
   const [stats, setStats] = useState(defaultStats);
+  const [content, setContent] = useState<Record<string, string>>({});
   const sectionRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     fetchPublicSettings().then((settings) => {
       if (!settings) return;
+      setContent(settings);
       const newStats = defaultStats.map((stat, i) => {
         const idx = i + 1;
         return {
@@ -93,11 +95,10 @@ const ImpactSection = () => {
       <div className="container mx-auto px-4">
         <div className="text-center mb-16">
           <h2 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-4">
-            Our Impact in Numbers
+            {content.impact_title || "Our Impact in Numbers"}
           </h2>
           <p className="text-muted-foreground max-w-2xl mx-auto">
-            Since our inception, we have been working tirelessly to make a difference 
-            in the lives of thousands of people across India.
+            {content.impact_description || "Since our inception, we have been working tirelessly to make a difference in the lives of thousands of people across India."}
           </p>
         </div>
 

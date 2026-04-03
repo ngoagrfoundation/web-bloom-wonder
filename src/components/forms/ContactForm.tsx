@@ -1,19 +1,21 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Send, Loader2, CheckCircle, Shield } from "lucide-react";
+import { Send, Loader2, Shield } from "lucide-react";
 import { contactFormSchema, ContactFormData } from "@/lib/validation";
 import { useFormSubmit } from "@/hooks/useFormSubmit";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import FormSuccessDialog from "@/components/forms/FormSuccessDialog";
 
 const ContactForm = () => {
   const [showSuccess, setShowSuccess] = useState(false);
   
   const { submitForm, isSubmitting, security } = useFormSubmit({
     formType: "contact",
+    showSuccessToast: false,
     onSuccess: () => {
       setShowSuccess(true);
       reset();
@@ -39,36 +41,16 @@ const ContactForm = () => {
     await submitForm(data);
   };
 
-  if (showSuccess) {
-    return (
-      <div className="rounded-2xl overflow-hidden shadow-xl border border-border bg-background">
-        <div className="bg-gradient-to-r from-primary to-primary/80 px-6 py-4">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center">
-              <CheckCircle className="w-5 h-5 text-primary-foreground" />
-            </div>
-            <div>
-              <h3 className="font-semibold text-primary-foreground">Message Sent!</h3>
-              <p className="text-sm text-primary-foreground/80">Thank you for reaching out</p>
-            </div>
-          </div>
-        </div>
-        <div className="p-8 text-center">
-          <CheckCircle className="w-16 h-16 text-primary mx-auto mb-4" />
-          <h4 className="text-xl font-semibold text-foreground mb-2">Thank You!</h4>
-          <p className="text-muted-foreground mb-6">
-            We've received your message and will get back to you within 24-48 hours.
-          </p>
-          <Button onClick={() => setShowSuccess(false)} variant="outline">
-            Send Another Message
-          </Button>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="rounded-2xl overflow-hidden shadow-xl border border-border bg-background">
+    <>
+      <FormSuccessDialog
+        open={showSuccess}
+        onOpenChange={setShowSuccess}
+        title="Thank You!"
+        actionLabel="Send Another Message"
+      />
+
+      <div className="rounded-2xl overflow-hidden shadow-xl border border-border bg-background">
       {/* Form Header */}
       <div className="bg-gradient-to-r from-primary to-primary/80 px-6 py-4">
         <div className="flex items-center gap-3">
@@ -175,10 +157,11 @@ const ContactForm = () => {
       <div className="px-6 py-4 bg-muted/50 border-t border-border">
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
           <Shield className="w-4 h-4 text-primary" />
-          <span>Your information is securely submitted</span>
+          <span>We will get back to you within 24 hr.</span>
         </div>
       </div>
-    </div>
+      </div>
+    </>
   );
 };
 

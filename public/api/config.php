@@ -15,12 +15,28 @@ $allowed_origins = [
 ];
 
 $origin = isset($_SERVER['HTTP_ORIGIN']) ? $_SERVER['HTTP_ORIGIN'] : '';
-if (in_array($origin, $allowed_origins) || 
-    (function_exists('str_contains') ? str_contains($origin, 'lovable.app') || str_contains($origin, 'lovableproject.com') : (strpos($origin, 'lovable.app') !== false || strpos($origin, 'lovableproject.com') !== false))) {
+$isTrustedPreviewOrigin = false;
+if ($origin) {
+    $trustedPatterns = ['lovable.app', 'lovableproject.com', 'vercel.app'];
+    foreach ($trustedPatterns as $pattern) {
+        if (function_exists('str_contains')) {
+            if (str_contains($origin, $pattern)) {
+                $isTrustedPreviewOrigin = true;
+                break;
+            }
+        } elseif (strpos($origin, $pattern) !== false) {
+            $isTrustedPreviewOrigin = true;
+            break;
+        }
+    }
+}
+
+if (in_array($origin, $allowed_origins) || $isTrustedPreviewOrigin) {
     header("Access-Control-Allow-Origin: $origin");
+    header("Vary: Origin");
 }
 header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");
-header("Access-Control-Allow-Headers: Content-Type, Authorization");
+header("Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With");
 header("Access-Control-Allow-Credentials: true");
 header("Content-Type: application/json; charset=UTF-8");
 

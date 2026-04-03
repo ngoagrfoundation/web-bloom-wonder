@@ -11,7 +11,26 @@ export const submitFormToAPI = async (formType: string, data: Record<string, unk
       credentials: 'include',
       body: JSON.stringify({ form_type: formType, data }),
     });
-    return response.ok;
+
+    const responseText = await response.text();
+    let parsed: Record<string, unknown> | null = null;
+
+    try {
+      parsed = responseText ? JSON.parse(responseText) : null;
+    } catch {
+      parsed = null;
+    }
+
+    if (response.ok) {
+      return parsed?.success !== false;
+    }
+
+    // Some hosts may still persist the submission even if the response status/body is imperfect.
+    if (parsed?.success === true || responseText.includes('"success":true')) {
+      return true;
+    }
+
+    return false;
   } catch {
     console.log('API submission failed');
     return false;

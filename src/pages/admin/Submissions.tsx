@@ -1,15 +1,25 @@
-import { useEffect, useState } from "react";
-import { getSubmissions, deleteSubmission, updateSubmissionStatus } from "@/lib/admin-api";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Trash2, ChevronLeft, ChevronRight, Download, Eye, Search, Inbox } from "lucide-react";
-import { toast } from "sonner";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { useEffect, useMemo, useState } from "react";
+import { deleteSubmission, getSubmissions } from "@/lib/admin-api";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Download, Eye, Inbox, Search, Trash2 } from "lucide-react";
+import { toast } from "sonner";
 
 const formTypes = [
   { value: "", label: "All Types" },
@@ -23,42 +33,157 @@ const formTypes = [
   { value: "event_registration", label: "Event Registration" },
 ];
 
+const rowOptions = ["25", "50", "100", "200"];
+
 const columnLabels: Record<string, string> = {
-  id: "ID", name: "Name", full_name: "Full Name", sponsor_name: "Sponsor Name",
-  contact_person: "Contact Person", organization_name: "Organization", email: "Email",
-  phone: "Phone", mobile: "Mobile", message: "Message", location: "Location",
-  city: "City", initiatives: "Initiatives", availability: "Availability",
-  experience: "Experience", organization_type: "Org Type", partnership_interest: "Interests",
-  grade_level: "Grade Level", duration: "Duration", challenge_type: "Challenge Type",
-  description: "Description", people_affected: "People Affected", address: "Address",
-  age: "Age", batch: "Batch", problem: "Problem", ip_address: "IP Address",
-  submitted_at: "Date", form_type: "Type", event_title: "Event",
-  event_category: "Event Category", participants: "Participants",
-  special_requirements: "Special Requirements", status: "Status",
+  id: "ID",
+  form_type: "Type",
+  submitter: "Submitter",
+  summary: "Summary",
+  name: "Name",
+  full_name: "Full Name",
+  sponsor_name: "Sponsor Name",
+  contact_person: "Contact Person",
+  organization_name: "Organization",
+  email: "Email",
+  phone: "Phone",
+  mobile: "Mobile",
+  location: "Location",
+  city: "City",
+  message: "Message",
+  initiatives: "Initiatives",
+  availability: "Availability",
+  experience: "Experience",
+  organization_type: "Org Type",
+  partnership_interest: "Interests",
+  grade_level: "Grade Level",
+  duration: "Duration",
+  challenge_type: "Challenge Type",
+  description: "Description",
+  people_affected: "People Affected",
+  address: "Address",
+  age: "Age",
+  batch: "Batch",
+  problem: "Problem",
+  event_title: "Event",
+  event_category: "Category",
+  participants: "Participants",
+  special_requirements: "Special Requirements",
+  submitted_at: "Submitted",
 };
 
 const summaryColumns: Record<string, string[]> = {
-  contact: ["id", "name", "email", "phone", "status", "submitted_at"],
-  volunteer: ["id", "full_name", "email", "phone", "location", "status", "submitted_at"],
-  partner: ["id", "organization_name", "contact_person", "email", "status", "submitted_at"],
-  adopt_student: ["id", "sponsor_name", "email", "phone", "city", "status", "submitted_at"],
-  report_challenge: ["id", "name", "phone", "location", "challenge_type", "status", "submitted_at"],
-  sanskrit_registration: ["id", "name", "mobile", "batch", "status", "submitted_at"],
-  dental_registration: ["id", "name", "mobile", "status", "submitted_at"],
-  event_registration: ["id", "event_title", "full_name", "email", "phone", "status", "submitted_at"],
+  all: ["id", "form_type", "submitter", "email", "phone", "location", "summary", "submitted_at"],
+  contact: ["id", "name", "email", "phone", "message", "submitted_at"],
+  volunteer: ["id", "full_name", "email", "phone", "location", "initiatives", "availability", "experience", "submitted_at"],
+  partner: ["id", "organization_name", "contact_person", "email", "phone", "organization_type", "partnership_interest", "message", "submitted_at"],
+  adopt_student: ["id", "sponsor_name", "email", "phone", "city", "grade_level", "duration", "message", "submitted_at"],
+  report_challenge: ["id", "name", "phone", "email", "location", "challenge_type", "people_affected", "description", "submitted_at"],
+  sanskrit_registration: ["id", "name", "mobile", "address", "age", "batch", "submitted_at"],
+  dental_registration: ["id", "name", "mobile", "address", "problem", "submitted_at"],
+  event_registration: ["id", "event_title", "event_category", "full_name", "email", "phone", "participants", "special_requirements", "submitted_at"],
 };
 
-interface Submission { id: number; form_type: string; status?: string; [key: string]: unknown; }
+interface Submission {
+  id: number;
+  form_type: string;
+  [key: string]: unknown;
+}
 
-const statusColors: Record<string, string> = {
-  new: "bg-blue-100 text-blue-800",
-  reviewed: "bg-amber-100 text-amber-800",
-  closed: "bg-green-100 text-green-800",
+const hiddenDetailKeys = ["ip_address", "status"];
+
+const getRowKey = (submission: Submission) => `${submission.form_type}-${submission.id}`;
+
+const getTypeLabel = (formType: string) => {
+  return formTypes.find((item) => item.value === formType)?.label || formType;
+};
+
+const getSubmitter = (submission: Submission) => {
+  return String(
+    submission.full_name ||
+      submission.name ||
+      submission.sponsor_name ||
+      submission.contact_person ||
+      submission.organization_name ||
+      "-",
+  );
+};
+
+const getLocation = (submission: Submission) => {
+  return String(submission.location || submission.city || submission.address || "-");
+};
+
+const getSummary = (submission: Submission) => {
+  return String(
+    submission.message ||
+      submission.description ||
+      submission.problem ||
+      submission.partnership_interest ||
+      submission.special_requirements ||
+      submission.initiatives ||
+      submission.availability ||
+      "-",
+  );
+};
+
+const formatValue = (key: string, value: unknown, submission?: Submission): string => {
+  if (key === "submitter" && submission) return getSubmitter(submission);
+  if (key === "location" && submission) return getLocation(submission);
+  if (key === "summary" && submission) return getSummary(submission);
+  if (key === "form_type" && submission) return getTypeLabel(submission.form_type);
+  if (Array.isArray(value)) return value.join(", ");
+  if (value === null || value === undefined || value === "") return "-";
+
+  if (key === "submitted_at") {
+    return new Date(String(value)).toLocaleString("en-IN", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  }
+
+  return String(value);
+};
+
+const getVisibleColumns = (formType: string) => {
+  return summaryColumns[formType || "all"] || summaryColumns.all;
+};
+
+const getPageNumbers = (page: number, totalPages: number) => {
+  if (totalPages <= 7) {
+    return Array.from({ length: totalPages }, (_, index) => index + 1);
+  }
+
+  const pages = [1];
+  const start = Math.max(2, page - 1);
+  const end = Math.min(totalPages - 1, page + 1);
+
+  if (start > 2) pages.push(-1);
+  for (let current = start; current <= end; current += 1) pages.push(current);
+  if (end < totalPages - 1) pages.push(-2);
+
+  pages.push(totalPages);
+  return pages;
+};
+
+const getColumnCellClassName = (column: string) => {
+  if (["message", "description", "summary", "special_requirements", "experience"].includes(column)) {
+    return "min-w-[260px]";
+  }
+
+  if (["form_type", "organization_type", "challenge_type", "grade_level"].includes(column)) {
+    return "min-w-[160px]";
+  }
+
+  return "min-w-[140px]";
 };
 
 const Submissions = () => {
   const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(50);
   const [totalPages, setTotalPages] = useState(1);
   const [total, setTotal] = useState(0);
   const [formType, setFormType] = useState("");
@@ -67,119 +192,290 @@ const Submissions = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
-  const [statusFilter, setStatusFilter] = useState("");
+  const [selectedKeys, setSelectedKeys] = useState<string[]>([]);
+  const [isDeleting, setIsDeleting] = useState(false);
 
-  const fetchData = async () => {
+  const visibleColumns = useMemo(() => getVisibleColumns(formType), [formType]);
+  const activeFilterCount = useMemo(
+    () => [formType, searchQuery, dateFrom, dateTo].filter(Boolean).length,
+    [dateFrom, dateTo, formType, searchQuery],
+  );
+  const selectedRows = useMemo(
+    () => submissions.filter((submission) => selectedKeys.includes(getRowKey(submission))),
+    [selectedKeys, submissions],
+  );
+  const allSelectedOnPage = submissions.length > 0 && selectedRows.length === submissions.length;
+
+  const fetchData = async (
+    nextPage = page,
+    nextPageSize = pageSize,
+    nextFormType = formType,
+    nextSearch = searchQuery,
+    nextDateFrom = dateFrom,
+    nextDateTo = dateTo,
+  ) => {
     setLoading(true);
+
     try {
-      const result = await getSubmissions(page, 20, formType, searchQuery, dateFrom, dateTo, statusFilter);
+      const result = await getSubmissions(nextPage, nextPageSize, nextFormType, nextSearch, nextDateFrom, nextDateTo, "");
       setSubmissions(result.data || []);
       setTotalPages(result.pages || 1);
       setTotal(result.total || 0);
-    } catch { toast.error("Failed to load submissions"); }
-    setLoading(false);
+      setSelectedKeys([]);
+    } catch {
+      toast.error("Failed to load submissions");
+    } finally {
+      setLoading(false);
+    }
   };
 
-  useEffect(() => { fetchData(); }, [page, formType, statusFilter]);
+  useEffect(() => {
+    void fetchData();
+  }, [page, formType, pageSize]);
 
-  const handleSearch = () => { setPage(1); fetchData(); };
+  const handleSearch = () => {
+    setPage(1);
+    void fetchData(1, pageSize, formType, searchQuery, dateFrom, dateTo);
+  };
 
-  const handleDelete = async (id: number, type: string) => {
+  const handleClearDates = () => {
+    setDateFrom("");
+    setDateTo("");
+    setPage(1);
+    void fetchData(1, pageSize, formType, searchQuery, "", "");
+  };
+
+  const toggleSelection = (rowKey: string, checked: boolean) => {
+    setSelectedKeys((prev) => (
+      checked ? [...prev, rowKey] : prev.filter((key) => key !== rowKey)
+    ));
+  };
+
+  const toggleSelectAll = (checked: boolean) => {
+    setSelectedKeys(checked ? submissions.map(getRowKey) : []);
+  };
+
+  const handleDeleteSingle = async (submission: Submission) => {
     if (!confirm("Delete this submission?")) return;
-    try { await deleteSubmission(id, type); toast.success("Submission deleted"); fetchData(); }
-    catch { toast.error("Failed to delete"); }
-  };
 
-  const handleStatusChange = async (id: number, type: string, newStatus: string) => {
     try {
-      await updateSubmissionStatus(id, type, newStatus);
-      toast.success(`Status updated to ${newStatus}`);
-      setSubmissions(prev => prev.map(s => s.id === id && s.form_type === type ? { ...s, status: newStatus } : s));
-    } catch { toast.error("Failed to update status"); }
+      await deleteSubmission(submission.id, submission.form_type);
+      toast.success("Submission deleted");
+      await fetchData();
+    } catch {
+      toast.error("Failed to delete submission");
+    }
   };
 
-  const getVisibleColumns = (): string[] => {
-    if (formType && summaryColumns[formType]) return summaryColumns[formType];
-    return ["id", "form_type", "status", "submitted_at"];
-  };
+  const handleBulkDelete = async () => {
+    if (!selectedRows.length) return;
+    if (!confirm(`Delete ${selectedRows.length} selected submissions?`)) return;
 
-  const formatValue = (key: string, value: unknown): string => {
-    if (value === null || value === undefined) return "—";
-    if (key === "submitted_at") return new Date(String(value)).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
-    return String(value);
+    setIsDeleting(true);
+
+    try {
+      const results = await Promise.allSettled(
+        selectedRows.map((row) => deleteSubmission(row.id, row.form_type)),
+      );
+      const failedCount = results.filter((result) => result.status === "rejected").length;
+      const deletedCount = results.length - failedCount;
+
+      if (deletedCount) {
+        toast.success(`${deletedCount} submissions deleted`);
+      }
+
+      if (failedCount) {
+        toast.error(`${failedCount} submissions could not be deleted`);
+      }
+
+      await fetchData();
+    } catch {
+      toast.error("Failed to delete selected submissions");
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
   const exportCSV = () => {
     if (!submissions.length) return;
-    const allKeys = new Set<string>();
-    submissions.forEach(s => Object.keys(s).forEach(k => allKeys.add(k)));
-    const headers = Array.from(allKeys);
-    const rows = submissions.map(s => headers.map(k => { const val = s[k]; return typeof val === "object" ? JSON.stringify(val) : String(val ?? ""); }));
-    const csv = [headers.map(h => columnLabels[h] || h).join(","), ...rows.map(r => r.map(c => `"${c.replace(/"/g, '""')}"`).join(","))].join("\n");
+
+    const headers = visibleColumns;
+    const rows = submissions.map((submission) =>
+      headers.map((column) => formatValue(column, submission[column], submission)),
+    );
+
+    const csv = [
+      headers.map((header) => columnLabels[header] || header).join(","),
+      ...rows.map((row) => row.map((cell) => `"${cell.replace(/"/g, '""')}"`).join(",")),
+    ].join("\n");
+
     const blob = new Blob([csv], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement("a"); a.href = url; a.download = `submissions_${formType || "all"}_${new Date().toISOString().slice(0, 10)}.csv`;
-    a.click(); URL.revokeObjectURL(url);
+    const anchor = document.createElement("a");
+    anchor.href = url;
+    anchor.download = `submissions_${formType || "all"}_${new Date().toISOString().slice(0, 10)}.csv`;
+    anchor.click();
+    URL.revokeObjectURL(url);
   };
 
-  const visibleCols = getVisibleColumns();
-  const hiddenKeys = ["id", "ip_address", "form_type"];
+  const paginationPages = getPageNumbers(page, totalPages);
 
   return (
     <div className="space-y-4">
+      <div className="grid gap-4 md:grid-cols-4">
+        <Card className="rounded-xl border border-border/70 shadow-sm">
+          <CardContent className="space-y-1 py-4">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Total</p>
+            <p className="text-2xl font-semibold text-foreground">{total}</p>
+            <p className="text-sm text-muted-foreground">Submissions in current result set</p>
+          </CardContent>
+        </Card>
+
+        <Card className="rounded-xl border border-border/70 shadow-sm">
+          <CardContent className="space-y-1 py-4">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Selected</p>
+            <p className="text-2xl font-semibold text-foreground">{selectedRows.length}</p>
+            <p className="text-sm text-muted-foreground">Ready for bulk delete</p>
+          </CardContent>
+        </Card>
+
+        <Card className="rounded-xl border border-border/70 shadow-sm">
+          <CardContent className="space-y-1 py-4">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Page</p>
+            <p className="text-2xl font-semibold text-foreground">{page} / {Math.max(totalPages, 1)}</p>
+            <p className="text-sm text-muted-foreground">{pageSize} rows per page</p>
+          </CardContent>
+        </Card>
+
+        <Card className="rounded-xl border border-border/70 shadow-sm">
+          <CardContent className="space-y-1 py-4">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Filters</p>
+            <p className="text-2xl font-semibold text-foreground">{activeFilterCount}</p>
+            <p className="text-sm text-muted-foreground">{formType ? getTypeLabel(formType) : "All form types"}</p>
+          </CardContent>
+        </Card>
+      </div>
+
       <Card className="rounded-xl shadow-sm">
         <CardContent className="py-3">
-          <div className="flex flex-wrap gap-3 items-center">
-            <Select value={formType || "all"} onValueChange={(v) => { setFormType(v === "all" ? "" : v); setPage(1); }}>
-              <SelectTrigger className="w-[180px] h-9"><SelectValue placeholder="Filter by type" /></SelectTrigger>
+          <div className="flex flex-wrap items-center gap-3">
+            <Select
+              value={formType || "all"}
+              onValueChange={(value) => {
+                const nextFormType = value === "all" ? "" : value;
+                setFormType(nextFormType);
+                setPage(1);
+              }}
+            >
+              <SelectTrigger className="h-9 w-[190px]">
+                <SelectValue placeholder="Filter by type" />
+              </SelectTrigger>
               <SelectContent>
-                {formTypes.map(t => <SelectItem key={t.value} value={t.value || "all"}>{t.label}</SelectItem>)}
+                {formTypes.map((type) => (
+                  <SelectItem key={type.value || "all"} value={type.value || "all"}>
+                    {type.label}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
-            <Select value={statusFilter || "all"} onValueChange={(v) => { setStatusFilter(v === "all" ? "" : v); setPage(1); }}>
-              <SelectTrigger className="w-[140px] h-9"><SelectValue placeholder="Status" /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Status</SelectItem>
-                <SelectItem value="new">New</SelectItem>
-                <SelectItem value="reviewed">Reviewed</SelectItem>
-                <SelectItem value="closed">Closed</SelectItem>
-              </SelectContent>
-            </Select>
+
             <div className="flex gap-1">
-              <Input placeholder="Search name/email..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} onKeyDown={(e) => e.key === "Enter" && handleSearch()} className="w-52 h-9" />
-              <Button variant="outline" size="sm" className="h-9" onClick={handleSearch}><Search className="h-4 w-4" /></Button>
+              <Input
+                placeholder="Search submissions..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+                className="h-9 w-60"
+              />
+              <Button variant="outline" size="sm" className="h-9" onClick={handleSearch}>
+                <Search className="h-4 w-4" />
+              </Button>
             </div>
-            <div className="flex gap-1 items-center">
-              <Input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} className="h-9 w-36" />
+
+            <div className="flex items-center gap-2">
+              <Input
+                type="date"
+                value={dateFrom}
+                onChange={(e) => setDateFrom(e.target.value)}
+                className="h-9 w-36"
+              />
               <span className="text-xs text-muted-foreground">to</span>
-              <Input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} className="h-9 w-36" />
+              <Input
+                type="date"
+                value={dateTo}
+                onChange={(e) => setDateTo(e.target.value)}
+                className="h-9 w-36"
+              />
+              <Button variant="outline" size="sm" className="h-9" onClick={handleSearch}>
+                Apply
+              </Button>
               {(dateFrom || dateTo) && (
-                <Button variant="ghost" size="sm" onClick={() => { setDateFrom(""); setDateTo(""); setPage(1); setTimeout(fetchData, 0); }} className="text-xs h-9">Clear</Button>
+                <Button variant="ghost" size="sm" className="h-9" onClick={handleClearDates}>
+                  Clear
+                </Button>
               )}
             </div>
-            <div className="ml-auto flex items-center gap-2">
-              <span className="text-sm text-muted-foreground">{total} total</span>
+
+            <div className="ml-auto flex flex-wrap items-center gap-2">
+              {selectedRows.length ? (
+                <Badge variant="secondary" className="h-9 rounded-lg px-3 text-xs">
+                  {selectedRows.length} selected
+                </Badge>
+              ) : null}
+
+              <Select
+                value={String(pageSize)}
+                onValueChange={(value) => {
+                  setPageSize(Number(value));
+                  setPage(1);
+                }}
+              >
+                <SelectTrigger className="h-9 w-[130px]">
+                  <SelectValue placeholder="Rows" />
+                </SelectTrigger>
+                <SelectContent>
+                  {rowOptions.map((option) => (
+                    <SelectItem key={option} value={option}>
+                      {option} rows
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
               <Button variant="outline" size="sm" className="h-9" onClick={exportCSV} disabled={!submissions.length}>
-                <Download className="h-4 w-4 mr-1" /> CSV
+                <Download className="mr-1 h-4 w-4" />
+                CSV
+              </Button>
+
+              <Button
+                variant="destructive"
+                size="sm"
+                className="h-9"
+                onClick={handleBulkDelete}
+                disabled={!selectedRows.length || isDeleting}
+              >
+                <Trash2 className="mr-1 h-4 w-4" />
+                {isDeleting ? "Deleting..." : `Delete Selected (${selectedRows.length})`}
               </Button>
             </div>
           </div>
         </CardContent>
       </Card>
 
-      <Card className="rounded-xl shadow-sm overflow-hidden">
+      <Card className="overflow-hidden rounded-xl shadow-sm">
         <CardContent className="p-0">
           {loading ? (
-            <div className="p-4 space-y-2">
-              {[...Array(5)].map((_, i) => (
-                <div key={i} className="flex gap-4 items-center">
-                  {visibleCols.map((_, j) => <Skeleton key={j} className="h-8 flex-1" />)}
-                  <Skeleton className="h-8 w-20" />
+            <div className="space-y-2 p-4">
+              {[...Array(6)].map((_, index) => (
+                <div key={index} className="flex gap-3">
+                  {[...Array(visibleColumns.length + 2)].map((__, cellIndex) => (
+                    <Skeleton key={cellIndex} className="h-10 flex-1" />
+                  ))}
                 </div>
               ))}
             </div>
           ) : submissions.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-16 text-muted-foreground gap-2">
+            <div className="flex flex-col items-center justify-center gap-2 py-16 text-muted-foreground">
               <Inbox className="h-8 w-8 text-muted-foreground/40" />
               <p className="text-sm">No submissions found</p>
             </div>
@@ -187,46 +483,75 @@ const Submissions = () => {
             <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
-                  <TableRow className="bg-muted/50">
-                    {visibleCols.map(col => <TableHead key={col} className="text-xs font-semibold h-9">{columnLabels[col] || col}</TableHead>)}
-                    <TableHead className="w-[90px] h-9">Actions</TableHead>
+                  <TableRow className="bg-muted/40">
+                    <TableHead className="w-12">
+                      <Checkbox
+                        checked={allSelectedOnPage}
+                        onCheckedChange={(checked) => toggleSelectAll(Boolean(checked))}
+                        aria-label="Select all rows"
+                      />
+                    </TableHead>
+
+                    {visibleColumns.map((column) => (
+                      <TableHead
+                        key={column}
+                        className={`h-10 whitespace-nowrap text-xs font-semibold ${getColumnCellClassName(column)}`}
+                      >
+                        {columnLabels[column] || column}
+                      </TableHead>
+                    ))}
+
+                    <TableHead className="h-10 w-24 whitespace-nowrap text-xs font-semibold">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
+
                 <TableBody>
-                  {submissions.map((s) => (
-                    <TableRow key={`${s.form_type}-${s.id}`} className="hover:bg-muted/30">
-                      {visibleCols.map(col => (
-                        <TableCell key={col} className={col === "id" ? "font-mono text-xs" : "text-sm"}>
-                          {col === "form_type" ? (
-                            <Badge variant="secondary" className="text-xs">
-                              {formTypes.find(f => f.value === String(s.form_type))?.label || String(s.form_type)}
-                            </Badge>
-                          ) : col === "status" ? (
-                            <Select value={String(s.status || "new")} onValueChange={(v) => handleStatusChange(s.id, String(s.form_type), v)}>
-                              <SelectTrigger className="h-7 w-[100px] border-0 p-0">
-                                <Badge className={`${statusColors[String(s.status || "new")] || statusColors.new} text-xs cursor-pointer`}>
-                                  {String(s.status || "new").charAt(0).toUpperCase() + String(s.status || "new").slice(1)}
-                                </Badge>
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="new">New</SelectItem>
-                                <SelectItem value="reviewed">Reviewed</SelectItem>
-                                <SelectItem value="closed">Closed</SelectItem>
-                              </SelectContent>
-                            </Select>
-                          ) : (
-                            <span className="truncate max-w-[200px] block">{formatValue(col, s[col])}</span>
-                          )}
+                  {submissions.map((submission) => {
+                    const rowKey = getRowKey(submission);
+                    const isSelected = selectedKeys.includes(rowKey);
+
+                    return (
+                      <TableRow key={rowKey} data-state={isSelected ? "selected" : undefined}>
+                        <TableCell className="w-12 align-top">
+                          <Checkbox
+                            checked={isSelected}
+                            onCheckedChange={(checked) => toggleSelection(rowKey, Boolean(checked))}
+                            aria-label={`Select submission ${submission.id}`}
+                          />
                         </TableCell>
-                      ))}
-                      <TableCell>
-                        <div className="flex gap-0.5">
-                          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setDetailRow(s)} title="View"><Eye className="h-4 w-4" /></Button>
-                          <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive" onClick={() => handleDelete(s.id, String(s.form_type))} title="Delete"><Trash2 className="h-4 w-4" /></Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
+
+                        {visibleColumns.map((column) => (
+                          <TableCell key={column} className={`align-top text-sm ${getColumnCellClassName(column)}`}>
+                            {column === "form_type" ? (
+                              <Badge variant="secondary" className="whitespace-nowrap text-xs">
+                                {getTypeLabel(submission.form_type)}
+                              </Badge>
+                            ) : (
+                              <span className="block whitespace-pre-wrap break-words">
+                                {formatValue(column, submission[column], submission)}
+                              </span>
+                            )}
+                          </TableCell>
+                        ))}
+
+                        <TableCell className="align-top">
+                          <div className="flex gap-1">
+                            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setDetailRow(submission)}>
+                              <Eye className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8 text-destructive hover:text-destructive"
+                              onClick={() => handleDeleteSingle(submission)}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
                 </TableBody>
               </Table>
             </div>
@@ -234,37 +559,83 @@ const Submissions = () => {
         </CardContent>
       </Card>
 
-      {totalPages > 1 && (
-        <div className="flex items-center justify-center gap-2">
-          <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => setPage(p => p - 1)}><ChevronLeft className="h-4 w-4" /></Button>
-          <span className="text-sm text-muted-foreground">Page {page} of {totalPages}</span>
-          <Button variant="outline" size="sm" disabled={page >= totalPages} onClick={() => setPage(p => p + 1)}><ChevronRight className="h-4 w-4" /></Button>
+      <div className="flex flex-col gap-3 rounded-xl border border-border bg-background px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="text-sm text-muted-foreground">
+          Showing {submissions.length ? (page - 1) * pageSize + 1 : 0} to {Math.min(page * pageSize, total)} of {total} submissions
         </div>
-      )}
+
+        {totalPages > 1 ? (
+          <Pagination className="mx-0 w-auto justify-end">
+            <PaginationContent>
+              <PaginationItem>
+                <PaginationPrevious
+                  href="#"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    if (page > 1) setPage(page - 1);
+                  }}
+                  className={page <= 1 ? "pointer-events-none opacity-50" : ""}
+                />
+              </PaginationItem>
+
+              {paginationPages.map((pageNumber, index) => (
+                <PaginationItem key={`${pageNumber}-${index}`}>
+                  {pageNumber < 0 ? (
+                    <PaginationEllipsis />
+                  ) : (
+                    <PaginationLink
+                      href="#"
+                      isActive={pageNumber === page}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        setPage(pageNumber);
+                      }}
+                    >
+                      {pageNumber}
+                    </PaginationLink>
+                  )}
+                </PaginationItem>
+              ))}
+
+              <PaginationItem>
+                <PaginationNext
+                  href="#"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    if (page < totalPages) setPage(page + 1);
+                  }}
+                  className={page >= totalPages ? "pointer-events-none opacity-50" : ""}
+                />
+              </PaginationItem>
+            </PaginationContent>
+          </Pagination>
+        ) : null}
+      </div>
 
       <Dialog open={!!detailRow} onOpenChange={(open) => !open && setDetailRow(null)}>
-        <DialogContent className="max-w-lg max-h-[80vh] overflow-y-auto">
+        <DialogContent className="max-h-[80vh] max-w-2xl overflow-y-auto">
           <DialogHeader>
             <DialogTitle>
-              {detailRow && (formTypes.find(f => f.value === String(detailRow.form_type))?.label || String(detailRow.form_type))} — #{detailRow?.id}
+              {detailRow ? `${getTypeLabel(detailRow.form_type)} - #${detailRow.id}` : "Submission"}
             </DialogTitle>
           </DialogHeader>
-          {detailRow && (
-            <div className="space-y-3">
-              {Object.entries(detailRow).filter(([key]) => !hiddenKeys.includes(key)).map(([key, value]) => (
-                <div key={key} className="flex flex-col border-b border-border pb-2">
-                  <span className="text-xs font-medium text-muted-foreground uppercase">{columnLabels[key] || key.replace(/_/g, " ")}</span>
-                  {key === "status" ? (
-                    <Badge className={`${statusColors[String(value || "new")] || statusColors.new} text-xs w-fit mt-1`}>
-                      {String(value || "new").charAt(0).toUpperCase() + String(value || "new").slice(1)}
-                    </Badge>
-                  ) : (
-                    <span className="text-sm mt-0.5 whitespace-pre-wrap">{formatValue(key, value)}</span>
-                  )}
-                </div>
-              ))}
+
+          {detailRow ? (
+            <div className="grid gap-4 sm:grid-cols-2">
+              {Object.entries(detailRow)
+                .filter(([key]) => !hiddenDetailKeys.includes(key))
+                .map(([key, value]) => (
+                  <div key={key} className="rounded-xl border border-border p-3">
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                      {columnLabels[key] || key.replace(/_/g, " ")}
+                    </p>
+                    <p className="mt-2 whitespace-pre-wrap break-words text-sm">
+                      {formatValue(key, value, detailRow)}
+                    </p>
+                  </div>
+                ))}
             </div>
-          )}
+          ) : null}
         </DialogContent>
       </Dialog>
     </div>

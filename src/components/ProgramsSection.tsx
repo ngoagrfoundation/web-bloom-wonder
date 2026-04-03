@@ -68,10 +68,12 @@ const programs = [
 
 const ProgramsSection = () => {
   const [imageOverrides, setImageOverrides] = useState<Record<string, string>>({});
+  const [sectionCopy, setSectionCopy] = useState<Record<string, string>>({});
 
   useEffect(() => {
     fetchPublicSettings().then((settings) => {
       if (!settings) return;
+      setSectionCopy(settings);
       const overrides: Record<string, string> = {};
       if (settings.programs_education_image) overrides.education = settings.programs_education_image;
       if (settings.programs_healthcare_image) overrides.healthcare = settings.programs_healthcare_image;
@@ -98,11 +100,10 @@ const ProgramsSection = () => {
         {/* Section Header */}
         <div className="text-center mb-16">
           <h2 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-4">
-            Our Programs
+            {sectionCopy.programs_title || "Our Programs"}
           </h2>
           <p className="text-muted-foreground max-w-2xl mx-auto">
-            Our initiatives are designed to address the most pressing needs of underserved 
-            communities through holistic development programs.
+            {sectionCopy.programs_description || "Our initiatives are designed to address the most pressing needs of underserved communities through holistic development programs."}
           </p>
         </div>
 

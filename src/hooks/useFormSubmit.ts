@@ -7,6 +7,7 @@ interface UseFormSubmitOptions {
   formType: string;
   onSuccess?: () => void;
   onError?: (error: Error) => void;
+  showSuccessToast?: boolean;
 }
 
 interface UseFormSubmitReturn {
@@ -19,7 +20,7 @@ interface UseFormSubmitReturn {
 }
 
 export const useFormSubmit = (options: UseFormSubmitOptions): UseFormSubmitReturn => {
-  const { formType, onSuccess, onError } = options;
+  const { formType, onSuccess, onError, showSuccessToast = true } = options;
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -57,10 +58,12 @@ export const useFormSubmit = (options: UseFormSubmitOptions): UseFormSubmitRetur
       if (success) {
         setIsSuccess(true);
         security.recordSubmission();
-        toast({
-          title: "Submitted successfully!",
-          description: "Thank you for reaching out. We'll get back to you soon.",
-        });
+        if (showSuccessToast) {
+          toast({
+            title: "Submitted successfully!",
+            description: "We will get back to you within 24 hr.",
+          });
+        }
         onSuccess?.();
         return true;
       } else {
