@@ -97,7 +97,7 @@ const HeroSection = () => {
 
   return (
     <>
-      <section id="home" className="relative h-[70vh] min-h-[500px] pt-20">
+      <section id="home" className="relative h-[85vh] min-h-[600px] pt-20">
         <div className="overflow-hidden h-full" ref={emblaRef}>
           <div className="flex h-full">
             {slides.map((slide, index) => (

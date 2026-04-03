@@ -12,6 +12,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
 } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import VolunteerForm from "@/components/forms/VolunteerForm";
@@ -153,6 +154,7 @@ const GetInvolvedSection = () => {
         <DialogContent className="max-w-2xl max-h-[90vh] p-0">
           <DialogHeader className="sr-only">
             <DialogTitle>Become a Volunteer</DialogTitle>
+            <DialogDescription>Fill out the form to register as a volunteer</DialogDescription>
           </DialogHeader>
           <ScrollArea className="max-h-[90vh]">
             <VolunteerForm onSuccess={closeModal} />
@@ -165,6 +167,7 @@ const GetInvolvedSection = () => {
         <DialogContent className="max-w-2xl max-h-[90vh] p-0">
           <DialogHeader className="sr-only">
             <DialogTitle>Partner with Us</DialogTitle>
+            <DialogDescription>Fill out the form to become a partner</DialogDescription>
           </DialogHeader>
           <ScrollArea className="max-h-[90vh]">
             <PartnerForm onSuccess={closeModal} />
@@ -177,6 +180,7 @@ const GetInvolvedSection = () => {
         <DialogContent className="max-w-2xl max-h-[90vh] p-0">
           <DialogHeader className="sr-only">
             <DialogTitle>Report a Challenge</DialogTitle>
+            <DialogDescription>Fill out the form to report a community challenge</DialogDescription>
           </DialogHeader>
           <ScrollArea className="max-h-[90vh]">
             <ReportChallengeForm onSuccess={closeModal} />
@@ -189,6 +193,7 @@ const GetInvolvedSection = () => {
         <DialogContent className="max-w-2xl max-h-[90vh] p-0">
           <DialogHeader className="sr-only">
             <DialogTitle>Adopt a Student</DialogTitle>
+            <DialogDescription>Fill out the form to sponsor a student</DialogDescription>
           </DialogHeader>
           <ScrollArea className="max-h-[90vh]">
             <AdoptStudentForm onSuccess={closeModal} />
