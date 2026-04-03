@@ -61,6 +61,31 @@ const programs = [
 ];
 
 const ProgramsSection = () => {
+  const [imageOverrides, setImageOverrides] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    fetchPublicSettings().then((settings) => {
+      if (!settings) return;
+      const overrides: Record<string, string> = {};
+      if (settings.programs_education_image) overrides.education = settings.programs_education_image;
+      if (settings.programs_healthcare_image) overrides.healthcare = settings.programs_healthcare_image;
+      if (settings.programs_livelihood_image) overrides.livelihood = settings.programs_livelihood_image;
+      if (settings.programs_dental_image) overrides.dental = settings.programs_dental_image;
+      if (settings.programs_sanskrit_image) overrides.sanskrit = settings.programs_sanskrit_image;
+      if (settings.programs_food_image) overrides.food = settings.programs_food_image;
+      setImageOverrides(overrides);
+    });
+  }, []);
+
+  const programImages = {
+    "Education for All": imageOverrides.education || defaultEducationImage,
+    "Healthcare Initiatives": imageOverrides.healthcare || defaultHealthcareImage,
+    "Livelihood Support": imageOverrides.livelihood || defaultLivelihoodImage,
+    "Free Dental Treatment": imageOverrides.dental || defaultDentalImage,
+    "Learning Sanskrit": imageOverrides.sanskrit || defaultSanskritImage,
+    "Annadanam (Food Distribution)": imageOverrides.food || defaultFoodImage,
+  };
+
   return (
     <section id="programs" className="py-24 section-cream">
       <div className="container mx-auto px-4">

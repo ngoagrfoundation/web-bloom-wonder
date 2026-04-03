@@ -39,7 +39,7 @@ const EventsTicker = () => {
   const displayEvents = [...events, ...events];
 
   return (
-    <div className="bg-primary text-primary-foreground py-2 overflow-hidden">
+    <div className="bg-gray-900 text-white py-3 overflow-hidden">
       <div className="flex items-center">
         <div className="flex-shrink-0 px-4 flex items-center gap-1.5 border-r border-primary-foreground/20">
           <CalendarDays className="h-4 w-4" />

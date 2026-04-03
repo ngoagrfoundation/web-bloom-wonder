@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { getGalleryImages, uploadGalleryImage, updateGalleryImage, deleteGalleryImage } from "@/lib/admin-api";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -8,7 +8,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Trash2, Edit, Upload, X, FolderOpen, CheckSquare, Square, Inbox } from "lucide-react";
+import { Progress } from "@/components/ui/progress";
+import { Plus, Trash2, Edit, Upload, X, FolderOpen, CheckSquare, Square, Inbox, Images } from "lucide-react";
 import { toast } from "sonner";
 
 const defaultFolders = ["sustainability", "education", "healthcare", "community", "livelihood", "events", "volunteers", "others"];
@@ -21,12 +22,15 @@ const GalleryManager = () => {
   const [showUpload, setShowUpload] = useState(false);
   const [editImage, setEditImage] = useState<GalleryImage | null>(null);
   const [uploadForm, setUploadForm] = useState({ alt: "", category: "community", caption: "", tags: "", customCategory: "" });
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState({ current: 0, total: 0 });
   const [filterCategory, setFilterCategory] = useState("all");
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
   const [editCustomCategory, setEditCustomCategory] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
+  const [isDragging, setIsDragging] = useState(false);
+  const dropRef = useRef<HTMLDivElement>(null);
 
   const fetchData = async () => { setLoading(true); try { const result = await getGalleryImages(); setImages(result.data || []); } catch { toast.error("Failed to load gallery"); } setLoading(false); };
   useEffect(() => { fetchData(); }, []);
@@ -40,20 +44,32 @@ const GalleryManager = () => {
   const folderCounts = images.reduce<Record<string, number>>((acc, img) => { acc[img.category] = (acc[img.category] || 0) + 1; return acc; }, {});
 
   const handleUpload = async () => {
-    if (!selectedFile) { toast.error("Please select an image"); return; }
+    if (selectedFiles.length === 0) { toast.error("Please select at least one image"); return; }
     setUploading(true);
     const category = uploadForm.category === "others" ? uploadForm.customCategory || "others" : uploadForm.category;
-    try {
-      const formData = new FormData();
-      formData.append("image", selectedFile); formData.append("alt", uploadForm.alt);
-      formData.append("category", category); formData.append("caption", uploadForm.caption);
-      formData.append("tags", uploadForm.tags);
-      const result = await uploadGalleryImage(formData);
-      if (result.error) { toast.error(result.error); } else {
-        toast.success("Uploaded!"); setShowUpload(false); setSelectedFile(null);
-        setUploadForm({ alt: "", category: "community", caption: "", tags: "", customCategory: "" }); fetchData();
-      }
-    } catch { toast.error("Upload failed"); }
+    let success = 0;
+    setUploadProgress({ current: 0, total: selectedFiles.length });
+
+    for (let i = 0; i < selectedFiles.length; i++) {
+      setUploadProgress({ current: i + 1, total: selectedFiles.length });
+      try {
+        const formData = new FormData();
+        formData.append("image", selectedFiles[i]);
+        formData.append("alt", uploadForm.alt || selectedFiles[i].name.replace(/\.[^.]+$/, ""));
+        formData.append("category", category);
+        formData.append("caption", uploadForm.caption);
+        formData.append("tags", uploadForm.tags);
+        const result = await uploadGalleryImage(formData);
+        if (!result.error) success++;
+      } catch {}
+    }
+
+    toast.success(`${success}/${selectedFiles.length} images uploaded!`);
+    setShowUpload(false);
+    setSelectedFiles([]);
+    setUploadForm({ alt: "", category: "community", caption: "", tags: "", customCategory: "" });
+    setUploadProgress({ current: 0, total: 0 });
+    fetchData();
     setUploading(false);
   };
 
@@ -77,13 +93,43 @@ const GalleryManager = () => {
 
   const toggleSelect = (id: number) => { setSelectedIds(prev => { const next = new Set(prev); if (next.has(id)) next.delete(id); else next.add(id); return next; }); };
 
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+    const files = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith("image/"));
+    if (files.length > 0) {
+      setSelectedFiles(files);
+      setShowUpload(true);
+    }
+  };
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    setSelectedFiles(files);
+  };
+
   return (
-    <div className="space-y-4">
+    <div
+      className="space-y-4"
+      ref={dropRef}
+      onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
+      onDragLeave={() => setIsDragging(false)}
+      onDrop={handleDrop}
+    >
+      {isDragging && (
+        <div className="fixed inset-0 z-50 bg-primary/10 backdrop-blur-sm flex items-center justify-center pointer-events-none">
+          <div className="bg-background border-2 border-dashed border-primary rounded-2xl p-12 text-center">
+            <Images className="h-12 w-12 text-primary mx-auto mb-3" />
+            <p className="text-lg font-medium text-foreground">Drop images here to upload</p>
+          </div>
+        </div>
+      )}
+
       <div className="flex justify-between items-center">
         <p className="text-sm text-muted-foreground">{images.length} images</p>
         <div className="flex gap-2">
           {selectedIds.size > 0 && <Button variant="destructive" size="sm" onClick={handleBulkDelete}><Trash2 className="h-4 w-4 mr-1" /> Delete {selectedIds.size}</Button>}
-          <Button onClick={() => setShowUpload(true)} className="rounded-lg"><Plus className="h-4 w-4 mr-2" /> Upload Image</Button>
+          <Button onClick={() => setShowUpload(true)} className="rounded-lg"><Plus className="h-4 w-4 mr-2" /> Upload Images</Button>
         </div>
       </div>
 
@@ -130,8 +176,8 @@ const GalleryManager = () => {
               </div>
               <CardContent className="p-3">
                 <p className="text-sm font-medium truncate">{img.alt || "No title"}</p>
-                <div className="flex items-center gap-1 mt-1">
-                  <Badge variant="outline" className="text-[10px]">{img.category}</Badge>
+                <div className="flex items-center gap-1 mt-1 flex-wrap">
+                  <Badge variant="outline" className="text-[10px]"><FolderOpen className="h-2.5 w-2.5 mr-0.5" />{img.category}</Badge>
                   {img.tags && img.tags.split(",").filter(Boolean).map(t => <Badge key={t} variant="secondary" className="text-[10px]">{t.trim()}</Badge>)}
                 </div>
                 {img.caption && <p className="text-xs text-muted-foreground mt-1 truncate">{img.caption}</p>}
@@ -143,20 +189,34 @@ const GalleryManager = () => {
 
       {/* Upload Dialog */}
       <Dialog open={showUpload} onOpenChange={setShowUpload}>
-        <DialogContent>
-          <DialogHeader><DialogTitle>Upload Image</DialogTitle></DialogHeader>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader><DialogTitle>Upload Images</DialogTitle></DialogHeader>
           <div className="space-y-4">
             <div>
-              <Label>Image File</Label>
-              <div className="border-2 border-dashed rounded-lg p-4 text-center">
-                {selectedFile ? (
-                  <div className="flex items-center justify-between"><span className="text-sm">{selectedFile.name}</span><Button variant="ghost" size="icon" onClick={() => setSelectedFile(null)}><X className="h-4 w-4" /></Button></div>
+              <Label>Image Files</Label>
+              <div className="border-2 border-dashed rounded-lg p-6 text-center hover:border-primary/50 transition-colors">
+                {selectedFiles.length > 0 ? (
+                  <div className="space-y-2">
+                    <p className="text-sm font-medium">{selectedFiles.length} file{selectedFiles.length > 1 ? "s" : ""} selected</p>
+                    <div className="flex flex-wrap gap-2 justify-center">
+                      {selectedFiles.slice(0, 5).map((f, i) => (
+                        <Badge key={i} variant="secondary" className="text-xs">{f.name}</Badge>
+                      ))}
+                      {selectedFiles.length > 5 && <Badge variant="outline" className="text-xs">+{selectedFiles.length - 5} more</Badge>}
+                    </div>
+                    <Button variant="ghost" size="sm" onClick={() => setSelectedFiles([])}><X className="h-3 w-3 mr-1" /> Clear</Button>
+                  </div>
                 ) : (
-                  <label className="cursor-pointer"><Upload className="h-8 w-8 mx-auto text-muted-foreground mb-2" /><p className="text-sm text-muted-foreground">Click to select (max 5MB)</p><input type="file" accept="image/*" className="hidden" onChange={(e) => setSelectedFile(e.target.files?.[0] || null)} /></label>
+                  <label className="cursor-pointer block">
+                    <Upload className="h-10 w-10 mx-auto text-muted-foreground mb-2" />
+                    <p className="text-sm font-medium text-foreground">Click to select or drag & drop</p>
+                    <p className="text-xs text-muted-foreground mt-1">Multiple images supported (max 5MB each)</p>
+                    <input type="file" accept="image/*" multiple className="hidden" onChange={handleFileSelect} />
+                  </label>
                 )}
               </div>
             </div>
-            <div><Label>Alt Text / Title</Label><Input value={uploadForm.alt} onChange={(e) => setUploadForm(f => ({ ...f, alt: e.target.value }))} placeholder="Describe the image" /></div>
+            <div><Label>Alt Text / Title (shared)</Label><Input value={uploadForm.alt} onChange={(e) => setUploadForm(f => ({ ...f, alt: e.target.value }))} placeholder="Describe the images (or leave blank for filename)" /></div>
             <div>
               <Label>Folder</Label>
               <Select value={uploadForm.category} onValueChange={(v) => setUploadForm(f => ({ ...f, category: v }))}><SelectTrigger><SelectValue /></SelectTrigger>
@@ -165,8 +225,16 @@ const GalleryManager = () => {
               {uploadForm.category === "others" && <Input value={uploadForm.customCategory} onChange={(e) => setUploadForm(f => ({ ...f, customCategory: e.target.value }))} placeholder="Custom folder name" className="mt-2" />}
             </div>
             <div><Label>Tags (comma-separated)</Label><Input value={uploadForm.tags} onChange={(e) => setUploadForm(f => ({ ...f, tags: e.target.value }))} placeholder="e.g. outdoor, 2026, hyderabad" /></div>
-            <div><Label>Caption</Label><Textarea value={uploadForm.caption} onChange={(e) => setUploadForm(f => ({ ...f, caption: e.target.value }))} placeholder="Short caption" rows={2} /></div>
-            <Button onClick={handleUpload} disabled={uploading} className="w-full">{uploading ? "Uploading..." : "Upload"}</Button>
+            <div><Label>Caption (shared)</Label><Textarea value={uploadForm.caption} onChange={(e) => setUploadForm(f => ({ ...f, caption: e.target.value }))} placeholder="Short caption" rows={2} /></div>
+            {uploading && uploadProgress.total > 0 && (
+              <div className="space-y-1">
+                <Progress value={(uploadProgress.current / uploadProgress.total) * 100} className="h-2" />
+                <p className="text-xs text-muted-foreground text-center">Uploading {uploadProgress.current}/{uploadProgress.total}...</p>
+              </div>
+            )}
+            <Button onClick={handleUpload} disabled={uploading} className="w-full">
+              {uploading ? `Uploading ${uploadProgress.current}/${uploadProgress.total}...` : `Upload ${selectedFiles.length || ""} Image${selectedFiles.length !== 1 ? "s" : ""}`}
+            </Button>
           </div>
         </DialogContent>
       </Dialog>

@@ -13,6 +13,14 @@ const corePillars = [
 ];
 
 const AboutSection = () => {
+  const [heroImage, setHeroImage] = useState(defaultHeroImage);
+
+  useEffect(() => {
+    fetchPublicSettings().then((settings) => {
+      if (settings?.about_section_image) setHeroImage(settings.about_section_image);
+    });
+  }, []);
+
   return (
     <section id="about" className="py-24 bg-background">
       <div className="container mx-auto px-4">
