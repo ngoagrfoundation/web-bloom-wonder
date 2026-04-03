@@ -1,3 +1,12 @@
+# Prevent browser caching of index.html
+<IfModule mod_headers.c>
+  <Files "index.html">
+    Header set Cache-Control "no-cache, no-store, must-revalidate"
+    Header set Pragma "no-cache"
+    Header set Expires "0"
+  </Files>
+</IfModule>
+
 RewriteEngine On
 
 # Allow API and uploads to pass through to PHP
